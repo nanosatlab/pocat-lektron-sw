@@ -1,4 +1,6 @@
 # <sup>po</sup>CAT Lektron
+<img src="img/logo.png" alt="Image Description" width="200"/>
+
 
 1. [Introduction](#introduction)
 2. [Installation](#installation)
@@ -38,7 +40,7 @@ To be done. Just follow the steps indicated for each software.
 <a name="git"></a>
 You can create a new branch from the master at the GitHub website. 
 
-![alt_text](create_branch.png)
+![alt_text](img/create_branch.png)
 
 The following procedure is valid for both Windows, Mac and Linux users. If you are using Windows please open the git bash terminal. To clone the repository and being able to find it using git using and a SSH key (Please find the instructions to create and manage SSH keys in the following link: [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)) we can use the following commands:
 
