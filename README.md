@@ -36,7 +36,7 @@ In this section the installation of GitHub and the repository is provided. First
 <a name="requirements"></a>
 The required software to collaborate developing this project is:
 
-- **STM32CubeIDE**: This is the IDE used to develop the software development and debugging. It is available for different platforms (Linux and Windows in [here](https://www.st.com/en/development-tools/stm32cubeide.html))
+- **STM32CubeIDE**: This is the IDE used to develop the software development and debugging. It is available for different platforms (Linux and Windows in [here](https://www.st.com/en/development-tools/stm32cubeide.html)). The versions to use is 1.13.2.
 
 - **gcc-9-2020-q2-update**: The GNU Arm Embedded Toolchain for C and C++ tools and assembly programs. (Available [here](https://developer.arm.com/downloads/-/gnu-rm/9-2020-q2-update)) 
 
