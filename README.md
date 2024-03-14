@@ -28,8 +28,45 @@ This will need to be extended. By now you shall find in this file the instructio
 In this repository several directories are found. They are organized as follows:
 
 - **doc**: This folder contains useful documents such as the Coding conventions. The main documentation of the project is found in the wiki (available [here](https://wiki.nanosatlab.space/shelves/ieee-open-pocketqube-kit)).
-- **src**: This folder shall contain the source code. It will be organized by subsystems. Other folders can be found such as: `CommonResources`, the `Core` where the files to start up the software are found, `Middleware` folder that contain 3rd parties FreeRTOS software, and `Semtech` where the libraries provided by the manufacturer are found.
-- **misc**: In this folder configuration files will be found such as ./settings, 
+
+The following folders are generated automatically when generating the project in the 
+
+- **Core**: In this folder there are 3 folders: `Inc`, `Src`, `Startup`.
+    - *Inc*: System libraries and headers.
+    - *Src*: Configuration files of the system. Also, `freertos.c` and `main.c` are in this folder. Please notice that if any modification must be done in those files it shall be implemented inside the defined areas. All the implementations outside them will be deleted when the compiled again.
+    - *Startup*: System initialization file.
+
+- **Drivers**: This folder contains the HAL drivers and CMSIS files.
+
+
+On the other hand each subsystem has its own directory. The structure of the following directories consist of: `name_of_the_subsystem.c` which will be the main file of the directory, `inc` where all the headers are found, and other libraries used by the subsystem.
+
+- **ADCS**
+    - *inc* : Headers with all the library includes.
+    - adcs.c : Main file of the ADCS.
+    - *other files* : Other libraries used by the OBC.
+- **COMMS**
+    - *inc* : Headers with all the library includes.
+    - comms.c : Main file of the COMMS.
+    - *other files* : Other libraries used by the OBC.
+- **OBC**
+    - *inc* : Headers with all the library includes.
+    - obc.c : Main file of the OBC.
+    - *other files* : Other libraries used by the OBC.
+- **RFI**
+    - *inc* : Headers with all the library includes.
+    - rfi.c : Main file of the RFI.
+    - *other files* : Other libraries used by the OBC.
+- **VGA**
+    - *inc* : Headers with all the library includes.
+    - vga.c : Main file of the VGA.
+    - *other files* : Other libraries used by the OBC.
+
+Apart from the subsystems other folders can be found:
+- **CommonResources**:
+
+- **Middlewares**: This folder contains the FreeRTOS libraries.
+
 
 ## Installation
 <a name="installation"></a>
