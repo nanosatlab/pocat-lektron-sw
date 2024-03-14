@@ -6,12 +6,15 @@
     - [Requirements](#requirements)
     - [Steps](#steps)
         - [Git Basics](#git)
-4. [Coding Conventions](#cocos)
+4. [Hacks](#hacks)
+    - [printf in terminal](#printfinterminal)
+    - [print float as strings](#printfloatasstring)
+6. [Coding Conventions](#cocos)
     - [Formatting](#formatting)
     - [Comments](#comments)
     - [Syntactic conventions](#syntconv)
     - [Names](#names)
-5. [Licence](#license)
+7. [Licence](#license)
 
 ## Introduction
 <a name="introduction"></a>
@@ -74,6 +77,52 @@ Once we want to commit a change, we can use the following commands:
     git push                        # Push all the changes to the remote trancing.
 
 Congratulations, your code is now on [GitHub](https://github.com/nanosatlab/pocat-lektron-sw) :)
+
+## Hacks
+<a name="hacks"></a>
+
+### Print data on terminal using printf
+<a name="printfinterminal"></a>
+In main add between section (USER CODE 4):
+    
+    /* USER CODE BEGIN 4 */
+    int _write(int file, char *ptr, int len)
+    {
+    	int DataIdx;
+    		for(DataIdx=0; DataIdx<len; DataIdx++)
+    		{
+    			ITM_SendChar(*ptr++);
+            }
+    		return len;
+    }
+    /* USER CODE END 4 */
+
+Every time we want to print something in the terminal, we use: 
+`printf("Hi, Lektron team");`
+
+To activate: Winodws -> Show View -> SWV -> SWV IT Data Console -> Config
+
+Activate port0, and finally, click the red button to start recording
+
+### print float as strings
+<a name="printfloatasstring"></a>
+
+If we want to print a float, using printf, first we have to convert float to string and then print it using snprintf.
+
+    snprintf(temperature_buff, sizeof(temperature_buff), "Temperature: %.2f", real_temperature); // real_temperature is a float
+
+If we have the following error:
+
+    The float formatting support is not enabled, check your MCU Settings from
+		"Project Properties > C/C++ Build > Settings > Tool Settings",
+		or add manually "-u _printf_float" in linker flags."
+
+To solve that issue:
+
+    Project > Propierties > C/C++ Build > Settings > Tool Settings > MCU GCC Linker > Miscellaneous > Other flags 
+
+We add a new line: `-u _printf_float`
+
 
 ## Coding Conventions
 <a name="cocos"></a>
