@@ -68,4 +68,5 @@ ctrlp.root
 
 #Debug folder
 Debug
-.resources
+#.resources
+.vscode
