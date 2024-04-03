@@ -30,6 +30,8 @@ void Start_RFIPayload();
 void Check_RFIPayload();
 void Measure_loop();
 void Stop_RFIPayload();
+void prepare_variables();
+void configure_VCO();
 
 
 #endif /* INC_RFI_THREAD_H_ */

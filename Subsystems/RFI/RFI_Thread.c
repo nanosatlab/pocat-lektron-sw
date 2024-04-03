@@ -29,17 +29,6 @@ void Init_RFIPayload() {
 	ind1 = 0;
 }
 
-void Measure_loop() {
-	for (freq_cnt = 0; freq_cnt < NUM_FREQ; freq_cnt++) {
-		prepare_variables();
-		configure_VCO();
-		read_RSSI(); //provar fer continuousConvMode perque aixi el sampling time es molt menor i igualaria un dma (hauria de dividir el loop perque el contConvMode va amb interrupts)
-		check_final();
-		ind++;
-		check_notis();
-	}
-}
-
 void prepare_variables() {
 	frequency = 6670 - 869 + freqStep * freq_cnt;
 //	frequency = 6670 - 869 + 100*freq_cnt;
@@ -114,7 +103,7 @@ void read_RSSI() {
 ////		__HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_EOS);
 //	}
 
-	uint32_t prova =0;
+	//uint32_t prova =0;
 	HAL_ADC_Start(&hadc1);
 	for (int i = 0; i < N_SAMPLES; i++) {
 		dmaBuffer1[i] = HAL_ADC_GetValue(&hadc1);
@@ -150,8 +139,8 @@ void read_RSSI() {
 //}
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-	int i = 0;
-	int a = 3 + i;
+	int __attribute__((unused)) i = 0;
+	int __attribute__((unused)) a = 3 + i;
 }
 
 void check_notis() {
@@ -183,4 +172,15 @@ void Check_RFIPayload() {
 
 void Stop_RFIPayload() {
 
+}
+
+void Measure_loop() {
+	for (freq_cnt = 0; freq_cnt < NUM_FREQ; freq_cnt++) {
+		prepare_variables();
+		configure_VCO();
+		read_RSSI(); //provar fer continuousConvMode perque aixi el sampling time es molt menor i igualaria un dma (hauria de dividir el loop perque el contConvMode va amb interrupts)
+		check_final();
+		ind++;
+		check_notis();
+	}
 }

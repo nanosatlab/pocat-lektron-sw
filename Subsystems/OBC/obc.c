@@ -9,7 +9,7 @@
 void OBC_Init()
 {
 	uint8_t currentState; // OBC state : INIT, NOMINAL, CONTINGENCY, SUNSAFE OR SURVIVAL.
-	bool deploy = false; // Boolean for deployment. True if deployed. False otherwise.
+	uint8_t *deploy = 0; // Boolean for deployment. True if deployed. False otherwise.
 
 	xTaskNotify(ADCS_Handle, DETUMBLING_NOTI, eSetBits); // Stabilize the satellite.
 														 // OBC TASK -> ADCS TASK.
@@ -27,10 +27,10 @@ void OBC_Init()
 
 		// xTaskNotify(RFI_Handle, ANTENNA_DEPLOYMENT_NOTI, eSetBits); // Deploy RF antenna.
 																	   // OBC TASK -> RFI TASK.
-		deploy = true;
+		*deploy = 1;
 	}
 
-	Send_to_WFQueue(&deploy, 1, ANTENNA_DEPLOYED_ADDR, OBCsender); // Save to the memory flash the current deployment state
+	Send_to_WFQueue(deploy, 1, ANTENNA_DEPLOYED_ADDR, OBCsender); // Save to the memory flash the current deployment state
 																   // OBC TASK -> FLASH TASK
 
 	xTaskNotify(ADCS_Handle, CHECKROTATE_NOTI, eSetBits); // Poll lateral temperature sensors and determine if rotation is needed
@@ -44,8 +44,8 @@ void OBC_Init()
 void OBC_Nominal()
 {
 	uint32_t CPUFreq;
-	uint8_t currentState, previousState;
-	bool deploy;
+	//uint8_t currentState, previousState;
+	uint8_t deploy;
 
 
 	CPUFreq = HAL_RCC_GetHCLKFreq(); // Read the current CPU frequency stored within the RCC registers of the chip.
@@ -95,7 +95,7 @@ void OBC_Nominal()
 		//xTaskNotify(RFI_Handle, ANTENNA_DEPLOYMENT_NOTI, eSetBits); // Deploy RF antenna.
 		   	   	   	   	   	   	   	   	   	   	   	   	   	   	   	  // OBC TASK -> RFI TASK.
 
-		deploy = true;
+		deploy = 1;
 		Send_to_WFQueue(&deploy, 1, ANTENNA_DEPLOYED_ADDR, OBCsender); // Save to the memory that we have already deployed the antennas.
 	}
 
@@ -270,6 +270,7 @@ void OBC_Sunsafe()
 	uint32_t CPUFreq;
 	uint8_t currentState, previousState;
 
+	CPUFreq = HAL_RCC_GetHCLKFreq();
 	if(CPUFreq != 8000000)
 	{
 		vTaskSuspendAll();

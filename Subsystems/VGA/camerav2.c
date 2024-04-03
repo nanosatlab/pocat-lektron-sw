@@ -20,6 +20,7 @@
 //LIBRERIAS
 #include <camerav2.h>
 #include <flash.h>
+#include <stdint.h>
 
 //COMANDOS
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -116,6 +117,38 @@ bool anErrorHappened = false;
 
 int j = 0;
 
+//Comprobado
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * 																			 *
+ * 							"Checking"&"Extra" Functions				     *
+ *  @These functions are used in order to check the data from the sensor.    *
+ *   Check ack analyses if the ack is not the correct one. If it does not    *
+ *   work (return false)m it applied the error protocol. If it does not work *
+ *   it ends returning false.                                                *
+ *                                                                           *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+
+uint16_t storeDataFlash(){
+	memmove(rxdata, rxdata + 5, sizeof(rxdata));
+	//uint32_t photosize = sizeof(rxdata);
+	// Flash_Write_Data(PHOTO_ADDR, rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
+	//Write_Flash(PHOTO_ADDR, &rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
+	Send_to_WFQueue(rxdata, (uint16_t) sizeof(rxdata)/8 + 1, PHOTO_ADDR, PAYLOADsender);
+	return (256U*txdata[12]+txdata[13]); 	//longitud
+}
+
+void storeInfo(uint8_t info){
+	infoBuffer[j] = info;
+	if(info == CAM_START){
+		memset(infoBuffer, 0, sizeof(infoBuffer));
+		infoBuffer[j] = info;
+		j = 0;
+	}
+	j++;
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 								"BASIC" Functions						     *
  *  @These functions are used in order to transmit and obtain the data.      *
@@ -186,6 +219,7 @@ bool getDataLength(UART_HandleTypeDef huart){
 		txdata[13] = rxdataDL[8];
 		return true;
 	}
+	return false;
 }
 
 bool getData(UART_HandleTypeDef huart){
@@ -256,10 +290,11 @@ bool initCam(UART_HandleTypeDef huart, uint8_t res, uint8_t comp, uint8_t *array
 	storeInfo(CAM_END);
 	//This part returns the array to the Buffer
 	for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+	return true;
 }
+
 //FINALIZADA, FUNCIONA OK.
 uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
-	bool ok = true;
 
 	storeInfo(CAM_START);
 
@@ -290,39 +325,6 @@ uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
 	for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
 	return storeDataFlash();
 }
-
-//Comprobado
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * 																			 *
- * 							"Checking"&"Extra" Functions				     *
- *  @These functions are used in order to check the data from the sensor.    *
- *   Check ack analyses if the ack is not the correct one. If it does not    *
- *   work (return false)m it applied the error protocol. If it does not work *
- *   it ends returning false.                                                *
- *                                                                           *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
-
-uint16_t storeDataFlash(){
-	memmove(rxdata, rxdata + 5, sizeof(rxdata));
-	uint32_t photosize=sizeof(rxdata);
-	// Flash_Write_Data(PHOTO_ADDR, rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
-	//Write_Flash(PHOTO_ADDR, &rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
-	Send_to_WFQueue(&rxdata, (uint16_t) sizeof(rxdata)/8 + 1, PHOTO_ADDR, PAYLOADsender);
-	return (256U*txdata[12]+txdata[13]); 	//longitud
-}
-
-void storeInfo(uint8_t info){
-	infoBuffer[j] = info;
-	if(info == CAM_START){
-		memset(infoBuffer, 0, sizeof(infoBuffer));
-		infoBuffer[j] = info;
-		j = 0;
-	}
-	j++;
-}
-
 
 bool checkACK(UART_HandleTypeDef huart, uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4, uint8_t c5){
 	//All the ACKs are formed by these structure. If this does not work, it interrupts

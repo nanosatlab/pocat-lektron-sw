@@ -126,7 +126,7 @@ void igrf13(double fyears, double alt, double nlat, double elong, double *bb){
     }
 
     double tc=1-t;
-    if(fyears > 2020 & fyears < 2025){
+    if((fyears > 2020) && (fyears < 2025)){
         tc = 1;
         t = 5*t;
     }

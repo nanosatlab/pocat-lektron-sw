@@ -20,6 +20,7 @@
 
 #include <clock.h>
 #include "comms.h"
+#include "main.h"
 
 
 /************  STATES  *************/
@@ -108,7 +109,42 @@ uint16_t SymbTimeoutCnt = 0;
 int16_t RssiMoy = 0;
 int8_t SnrMoy = 0;
 correct_convolutional *conv;
+uint8_t byte_to_compare = 0xFF;
 
+/*************************************************************************
+ *                                                                       *
+ *  Function:  CADTimeoutTimeoutIrq                                      *
+ *  --------------------                                                 *
+ *  Function called automatically when a CAD IRQ occurs                  *
+ *                                                                       *
+ *  returns: nothing                                                     *
+ *                                                                       *
+ *************************************************************************/
+void CADTimeoutTimeoutIrq(void)
+{
+    Radio.Standby();
+    //if (request_execution){
+    //	State = TX;
+    //} else{
+	State = LOWPOWER;
+    //}
+    //State = START_CAD;
+    //State = RX;
+}
+
+/*************************************************************************
+ *                                                                       *
+ *  Function:  RxTimeoutTimerIrq                                         *
+ *  --------------------                                                 *
+ *  Function called automatically when a Timeout interruption occurs     *
+ *                                                                       *
+ *  returns: nothing                                                     *
+ *                                                                       *
+ *************************************************************************/
+void RxTimeoutTimerIrq(void)
+{
+    RxTimeoutTimerIrqFlag = true;
+}
 
 /*************************************************************************
  *                                                                       *
@@ -121,7 +157,7 @@ correct_convolutional *conv;
  *************************************************************************/
 void configuration(void){
 
-	uint64_t read_variable; //Read flash function requieres variables of 64 bits
+	//uint64_t read_variable; //Read flash function requieres variables of 64 bits
 
 	/* Reads the SF, CR and time between packets variables from memory */
 	SF = LORA_SPREADING_FACTOR;
@@ -148,6 +184,31 @@ void configuration(void){
 
     State = RX;             //To initialize in RX state
 };
+
+void COMMS_RX_OBCFlags()
+{
+	uint32_t RX_COMMS_NOTIS;
+
+	if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_COMMS_NOTIS, 0)==pdPASS)
+	{
+		if((RX_COMMS_NOTIS & WAKEUP_NOTI)==WAKEUP_NOTI)
+		{
+			// SEND WAKEUP NOTI TO GS
+		}
+
+		if((RX_COMMS_NOTIS & SUNSAFE_NOTI)==SUNSAFE_NOTI)
+		{
+			// SEND SUNSAFE NOTI TO GS
+		}
+
+		if((RX_COMMS_NOTIS & CONTINGENCY_NOTI)==CONTINGENCY_NOTI)
+		{
+			// SEND CONTINGENCY NOTI TO GS
+		}
+
+		xEventGroupSetBits(xEventGroup, COMMS_RXNOTI_EVENT);
+	}
+}
 
 /*************************************************************************
  *                                                                       *
@@ -193,7 +254,7 @@ void COMMS_StateMachine( void )
 
     configuration();               //Configures the transceiver
 
-    EventBits_t EventBits;
+    //EventBits_t EventBits;
 
     for(;;)                     //The only option to end the state machine is killing COMMS thread (by the OBC)
     {
@@ -242,8 +303,8 @@ void COMMS_StateMachine( void )
 							// no errs detected, codeword payload should match message
 						} else {
 							//nonzero syndrome, attempting correcting errors
-							int result = 0;//result 0 not able to correct, result 1 corrected
-							result =correct_errors_erasures (codeword_deinterleaved,
+							//result 0 not able to correct, result 1 corrected
+							int __attribute__((unused)) result = correct_errors_erasures (codeword_deinterleaved,
 															index,
 															nerasures,
 															erasures);
@@ -399,7 +460,7 @@ void COMMS_StateMachine( void )
             		if (window_packet < WINDOW_SIZE){
             			if (nack_flag){
             				if (nack_counter < nack_size){
-            					Read_Flash(PHOTO_ADDR + nack[nack_counter]*DATA_PACKET_SIZE, &read_photo, sizeof(read_photo));
+            					Read_Flash(PHOTO_ADDR + nack[nack_counter]*DATA_PACKET_SIZE,  (uint8_t*)read_photo, sizeof(read_photo));
                     			decoded[3] = nack[nack_counter];	//Number of the retransmitted packet
                     			nack_counter++;
 
@@ -410,7 +471,7 @@ void COMMS_StateMachine( void )
                     			window_packet = WINDOW_SIZE;
             				}
             			} else {
-            				Read_Flash(PHOTO_ADDR + packet_number*DATA_PACKET_SIZE, &read_photo, sizeof(read_photo));
+            				Read_Flash(PHOTO_ADDR + packet_number*DATA_PACKET_SIZE,  (uint8_t*)read_photo, sizeof(read_photo));
                 			decoded[3] = packet_number;	//Number of the packet
                 			packet_number++;
 
@@ -711,41 +772,6 @@ void SX126xConfigureCad(RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, 
 
 /*************************************************************************
  *                                                                       *
- *  Function:  CADTimeoutTimeoutIrq                                      *
- *  --------------------                                                 *
- *  Function called automatically when a CAD IRQ occurs                  *
- *                                                                       *
- *  returns: nothing                                                     *
- *                                                                       *
- *************************************************************************/
-static void CADTimeoutTimeoutIrq(void)
-{
-    Radio.Standby();
-    //if (request_execution){
-    //	State = TX;
-    //} else{
-	State = LOWPOWER;
-    //}
-    //State = START_CAD;
-    //State = RX;
-}
-
-/*************************************************************************
- *                                                                       *
- *  Function:  RxTimeoutTimerIrq                                         *
- *  --------------------                                                 *
- *  Function called automatically when a Timeout interruption occurs     *
- *                                                                       *
- *  returns: nothing                                                     *
- *                                                                       *
- *************************************************************************/
-static void RxTimeoutTimerIrq(void)
-{
-    RxTimeoutTimerIrqFlag = true;
-}
-
-/*************************************************************************
- *                                                                       *
  *  Function:  pin_correct                                               *
  *  --------------------                                                 *
  *  check if the pin in the telecommand is correct                       *
@@ -783,7 +809,7 @@ bool pin_correct(uint8_t pin_1, uint8_t pin_2) {
  *                                                                       *
  *************************************************************************/
 void process_telecommand(uint8_t header, uint8_t info) {
-	uint8_t info_write;	//Write_Flash functions requires uint64_t variables (64 bits) or arrays
+	//uint8_t info_write;	//Write_Flash functions requires uint64_t variables (64 bits) or arrays
 	switch(header) {
 	case RESET2:{
 		HAL_NVIC_SystemReset();
@@ -842,8 +868,8 @@ void process_telecommand(uint8_t header, uint8_t info) {
 
 		uint8_t transformed[TELEMETRY_PACKET_SIZE];	//Maybe is better to use 40 bytes, as multiple of 8
 		if (!contingency){
-			Read_Flash(PHOTO_ADDR, &read_telemetry, sizeof(read_telemetry)); // change to TELEMETRY_ADDR
-			Send_to_WFQueue(&read_telemetry, sizeof(read_telemetry), PHOTO_ADDR, COMMSsender);
+			Read_Flash(PHOTO_ADDR, (uint8_t*)read_telemetry, sizeof(read_telemetry)); // change to TELEMETRY_ADDR
+			Send_to_WFQueue((uint8_t*)read_telemetry, sizeof(read_telemetry), PHOTO_ADDR, COMMSsender);
 
 			/*
 
@@ -956,8 +982,8 @@ void process_telecommand(uint8_t header, uint8_t info) {
 		uint8_t transformed[CONFIG_PACKET_SIZE];	//Maybe is better to use 40 bytes, as multiple of 8
 		if (!contingency){
 
-			Read_Flash(PHOTO_ADDR, &read_config, sizeof(read_config)); // change to TELEMETRY_ADDR
-			Send_to_WFQueue(&read_config, sizeof(read_config), PHOTO_ADDR, COMMSsender);
+			Read_Flash(PHOTO_ADDR, (uint8_t*)read_config, sizeof(read_config)); // change to TELEMETRY_ADDR
+			Send_to_WFQueue((uint8_t*)read_config, sizeof(read_config), PHOTO_ADDR, COMMSsender);
 
 
 			decoded[0] = MISSION_ID;	//Satellite ID
@@ -1029,10 +1055,8 @@ int interleave(unsigned char *codeword, int size,unsigned char* codeword_interle
 	char block[BLOCK_ROW_INTER][BLOCK_COL_INTER];
 
 	while(q < size){
-		col = 0;
-		for(col; col < BLOCK_COL_INTER && !end; col++){
-			row = 0;
-			for(row; row < BLOCK_ROW_INTER && !end; row++){
+		for(col = 0; col < BLOCK_COL_INTER && !end; col++){
+			for(row = 0; row < BLOCK_ROW_INTER && !end; row++){
 				if (q < size){
 					block[row][col] = codeword[q];
 					q++;
@@ -1057,7 +1081,7 @@ int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* c
 	interleave(codeword_interleaved , size,codeword_deinterleaved);
 	bool end = false;
 	while(!end){
-	  if( memcmp(codeword_deinterleaved[size-1], 0xFF, 1) != 0){
+	  if( memcmp(codeword_deinterleaved[size-1], (const void *)&byte_to_compare, 1) != 0){
 		size--;
 	  }
 	  else{
@@ -1146,32 +1170,6 @@ int encode (uint8_t* buffer, uint8_t* encoded, int packet_size)
 	//print_word(size, encoded);
 	return size;
 
-}
-
-
-void COMMS_RX_OBCFlags()
-{
-	uint32_t RX_COMMS_NOTIS;
-
-	if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_COMMS_NOTIS, 0)==pdPASS)
-	{
-		if((RX_COMMS_NOTIS & WAKEUP_NOTI)==WAKEUP_NOTI)
-		{
-			// SEND WAKEUP NOTI TO GS
-		}
-
-		if((RX_COMMS_NOTIS & SUNSAFE_NOTI)==SUNSAFE_NOTI)
-		{
-			// SEND SUNSAFE NOTI TO GS
-		}
-
-		if((RX_COMMS_NOTIS & CONTINGENCY_NOTI)==CONTINGENCY_NOTI)
-		{
-			// SEND CONTINGENCY NOTI TO GS
-		}
-
-		xEventGroupSetBits(xEventGroup, COMMS_RXNOTI_EVENT);
-	}
 }
 
 void print_word(int p, unsigned char *data) {

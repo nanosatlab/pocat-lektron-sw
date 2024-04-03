@@ -318,7 +318,7 @@ void HAL_GPIO_EXTI_Callback( uint16_t gpioPin)
 	//xEventGroupWaitBits(xEventGroup, uxBitsToWaitFor, xClearOnExit, xWaitForAllBits, xTicksToWait)
 	if(gpioPin==GPIO_PIN_10)
 	{
-		uint8_t irq = 1;
+		uint8_t __attribute__((unused)) irq = 1;
 	}
 
     uint8_t callbackIndex = 0;

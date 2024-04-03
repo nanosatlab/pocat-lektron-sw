@@ -9,7 +9,7 @@
 
 void OBC_COMMS_RXFlags()
 {
-	uint8_t currentState, previousState, nominal, low, critical;
+	//uint8_t currentState, previousState, nominal, low, critical;
 	uint32_t RX_OBC_NOTIS;
 
 	 if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_OBC_NOTIS, 0)==pdPASS)

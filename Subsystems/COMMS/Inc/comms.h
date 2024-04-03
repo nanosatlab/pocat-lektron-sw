@@ -113,7 +113,7 @@ TimerEvent_t RxAppTimeoutTimer;
 /*!
  * Radio events function pointer
  */
-static RadioEvents_t RadioEvents;
+RadioEvents_t RadioEvents;
 
 /*!
  * \brief Function to be executed on Radio Tx Done event
@@ -160,12 +160,12 @@ void SX126xConfigureCad( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak,
 /*!
  * \brief CAD timeout timer callback
  */
-static void CADTimeoutTimeoutIrq( void );
+void CADTimeoutTimeoutIrq( void );
 
 /*!
  * \brief Rx timeout timer callback
  */
-static void RxTimeoutTimerIrq( void );
+void RxTimeoutTimerIrq( void );
 
 /*!
  * \brief Average the collected RSSIs during CAD

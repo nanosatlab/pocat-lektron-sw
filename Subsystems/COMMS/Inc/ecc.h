@@ -46,9 +46,6 @@
 
 
 
-#define TRUE 1
-#define FALSE 0
-
 typedef unsigned long BIT32;
 typedef unsigned short BIT16;
 

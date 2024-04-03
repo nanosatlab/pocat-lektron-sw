@@ -557,12 +557,12 @@ int sat_position_eci(double jd_actual, vec3 *position_eci, vec3 *velocity_eci)
 void solar_position_algorithm(double julian_day, vec3 pos_llh, vec3 *sun_pos_eci)
 {
 
-    int year, month, day, hour, minute, second;
+    int __attribute__((unused)) year, month, day, hour, minute, second;
 
-    double d, w, a, ec, m, M, L, oblecl, E, x, y, r ,v, lon;
-    double xeclip, yeclip, zeclip, xequat, yequat, zequat;
-    double RA, delta, UTH, GMST0, SIDTIME, HA ,z, xhor, yhor, zhor;
-    double alt;
+    double __attribute__((unused)) d, w, a, ec, m, M, L, oblecl, E, x, y, r ,v, lon;
+    double __attribute__((unused)) xeclip, yeclip, zeclip, xequat, yequat, zequat;
+    double __attribute__((unused)) RA, delta, UTH, GMST0, SIDTIME, HA ,z, xhor, yhor, zhor;
+    double __attribute__((unused)) alt;
 
     /* Altitude of the site above sea level (km) */
     alt = pos_llh.raw[2] / 1000.0;
@@ -642,7 +642,7 @@ void solar_position_algorithm(double julian_day, vec3 pos_llh, vec3 *sun_pos_eci
 
 void sun_position(double julian_day, vec3 pos_llh, vec3 *sun_pos_eci)
 {
-    vec3 non_normalized_sun_pos;
+    vec3 __attribute__((unused)) non_normalized_sun_pos;
     double gst;
     greenwidtchtime(julian_day, &gst);
     /* Sun position in ECI frame */

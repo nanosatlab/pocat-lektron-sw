@@ -75,6 +75,8 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void Init_Peripherals(void);
+void Stop_timer_16(void);
+void Start_timer_16(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

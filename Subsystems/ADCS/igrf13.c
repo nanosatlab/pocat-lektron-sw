@@ -168,6 +168,7 @@ static double coeff[54][7] = {
 	    {9, 9, -11.9000, 9.6000, 0.0000, 0.0000, 54}
 	};
 #include "igrf13.h"
+#include <stdio.h>
 
 int my_isnan(double d)
 {

@@ -120,7 +120,7 @@ void U2Q(double* vector_1, double* vector_2, double* quat) {
     double crossproduct[3];
     double crossproduct_minusOne[3];
     double result = 0.0;
-    double result2 = 0.0;
+    double __attribute__((unused)) result2 = 0.0;
     /*
     for (int i = 0; i < 3; i++) {
         result += vector_1[i] * vector_2[i];

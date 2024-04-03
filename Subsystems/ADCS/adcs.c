@@ -3,6 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/cFiles/file.c to edit this template
  */
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #include "help_adcs.h"
 
 #define PI 3.14159265358979323846
@@ -151,7 +153,7 @@ void detumbling_sim(int N_col) {
         i++;
 
     }
-    int i_final = i;
+    int __attribute__((unused)) i_final = i;
     printf("\n\nHa acabat en la iteració %d", i);
 
 }

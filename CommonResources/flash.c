@@ -130,6 +130,6 @@ void Read_Flash(uint32_t data_addr, uint8_t *RxBuf,
 void Send_to_WFQueue(uint8_t* pointer,uint32_t arrayLength,uint32_t addr,DataSource_t DataSource)
 {
 	QueueData_t TxQueueData = {pointer,arrayLength,addr,DataSource};
-	BaseType_t xQueueStatus = xQueueSendToBack(FLASH_Queue,&TxQueueData,portMAX_DELAY);
+	BaseType_t __attribute__((unused)) xQueueStatus = xQueueSendToBack(FLASH_Queue,&TxQueueData,portMAX_DELAY);
 }
 

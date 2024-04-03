@@ -10,6 +10,7 @@
 #include "math.h"
 #include "satutl.h"
 #include "flash.h"
+#include "satutl.h"
 #define ST_SIZE 256
 
 
@@ -120,7 +121,7 @@ void sgp(orbit_t orbit, int nPts, float *xvel, float *yvel, float *zvel,float *x
 	dFDT = -aux*cI0/2;
 	dWDT =  aux*(5*powf(cI0,2) - 1)/4;
 	tol  = eps;
-    float rK, uK, fK, iK, rDot, rFDot, u, ePW, c, s, eCosE, eSinE, eLSq, pL, r, sinU, cosU, sin2U, cos2U;
+    float __attribute__((unused)) rK, uK, fK, iK, rDot, rFDot, u, ePW, c, s, eCosE, eSinE, eLSq, pL, r, sinU, cosU, sin2U, cos2U;
 
 	for(int k = 0; k<nPts; k++){
 		dT = tVec[k];

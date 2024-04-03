@@ -8,13 +8,13 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include "sgp.h"
 #include "orbit_propagators_utils.h"
 #include "satutl.h"
 
 static long i_read(char *str, int start, int stop);
 static double d_read(char *str, int start, int stop);
-int read_twoline(tle_data tle, orbit_t *orb);
 
 #define ST_SIZE 256
 #define PI 3.14159265359

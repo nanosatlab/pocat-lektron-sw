@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "camerav2.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -701,16 +702,14 @@ static void MX_TIM5_Init(void);
 
 /* USER CODE BEGIN PFP */
 void SystemClockConfig( void );
-void Start_timer_16(void);
-void Stop_timer_16(void);
-void OBC_Task(void const * argument);
-void COMMS_Task(void const * argument);
-void ADCS_Task(void const * argument);
-void PAYLOAD_Task(void const * argument);
-void FLASH_Task(void const * argument);
-void EPS_Task(void const * argument);
-void sTIM_Task(void const * argument);
-void RFI_Task(void const * argument);
+static void OBC_Task(void *params);
+static void COMMS_Task(void *params);
+static void ADCS_Task(void *params);
+static void PAYLOAD_Task(void *params);
+static void FLASH_Task(void *params);
+static void EPS_Task(void *params);
+static void sTIM_Task(void *params);
+static void RFI_Task(void *params);
 
 /* USER CODE END PFP */
 
@@ -1403,7 +1402,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void OBC_Task(void const * argument)
+static void OBC_Task(void *params)
 {
 	xTimerStart(xTimerObc,0);
 
@@ -1441,11 +1440,11 @@ void OBC_Task(void const * argument)
   }
 }
 
-void COMMS_Task(void const * argument)
+static void COMMS_Task(void *params)
 {
-	Send_to_WFQueue(&photo_vect,sizeof(photo_vect),PHOTO_ADDR,COMMSsender);
-	Send_to_WFQueue(&config_vect,sizeof(config_vect),CONFIG_ADDR,COMMSsender);
-	Send_to_WFQueue(&telemetry_vect,sizeof(telemetry_vect),PHOTO_ADDR,COMMSsender);
+	Send_to_WFQueue(photo_vect,sizeof(photo_vect),PHOTO_ADDR,COMMSsender);
+	Send_to_WFQueue(config_vect,sizeof(config_vect),CONFIG_ADDR,COMMSsender);
+	Send_to_WFQueue(telemetry_vect,sizeof(telemetry_vect),PHOTO_ADDR,COMMSsender);
 
 	for(;;)
 	{
@@ -1454,7 +1453,7 @@ void COMMS_Task(void const * argument)
 
 }
 
-void ADCS_Task(void const * argument)
+static void ADCS_Task(void *params)
 {
 	xTimerStart(xTimerAdcs,0);
 
@@ -1514,7 +1513,7 @@ void ADCS_Task(void const * argument)
 	}
 }
 
-void PAYLOAD_Task(void const * argument)
+static void PAYLOAD_Task(void *params)
 {
 	xTimerStart(xTimerPayload,0);
 
@@ -1558,7 +1557,7 @@ void PAYLOAD_Task(void const * argument)
 					if( ((EventBits & PAYLOAD_TIMEFORPHOTO_EVENT) == PAYLOAD_TIMEFORPHOTO_EVENT) && ((EventBits & ADCS_POINTINGDONE_EVENT) == ADCS_POINTINGDONE_EVENT) )
 					{
 						initCam(huart4, resolution, compressibility, info);
-						uint16_t length = getPhoto(huart4, info);
+						uint16_t __attribute__((unused)) length = getPhoto(huart4, info);
 
 						xEventGroupClearBits(xEventGroup, PAYLOAD_TIMEFORPHOTO_EVENT | ADCS_POINTINGDONE_EVENT); // Clean the risen flags.
 					}
@@ -1569,10 +1568,11 @@ void PAYLOAD_Task(void const * argument)
 	}
 }
 
-void RFI_Task(void const * argument)
+static void RFI_Task(void *params)
 {
-	uint32_t RX_PAYLOAD_NOTIS, phototime, time, dT;
-	EventBits_t EventBits;
+	uint32_t RX_PAYLOAD_NOTIS;
+	//uint32_t phototime, time, dT;
+	//EventBits_t EventBits;
 	for (;;)
 	{
 		if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_PAYLOAD_NOTIS, portMAX_DELAY) == pdPASS)
@@ -1595,7 +1595,7 @@ void RFI_Task(void const * argument)
 	}
 }
 
-void FLASH_Task(void const * argument) // GateKeeper Task of Writing on Flash Memory
+static void FLASH_Task(void *params) // GateKeeper Task of Writing on Flash Memory
 {
 	QueueData_t RxQueueData;
 	BaseType_t xQueueStatus;
@@ -1694,7 +1694,7 @@ void FLASH_Task(void const * argument) // GateKeeper Task of Writing on Flash Me
 	}
 }
 
-void EPS_Task(void const * argument)
+static void EPS_Task(void *params)
 {
 	xTimerStart(xTimerEps,0);
 
@@ -1779,7 +1779,7 @@ void EPS_Task(void const * argument)
 	}
 }
 
-void sTIM_Task(void const * argument)
+static void sTIM_Task(void *params)
 {
 	uint32_t sTIM_RX_NOTIS; // Notifications received by sTIM task
 
@@ -1945,8 +1945,8 @@ void eighttosixfour (void){
 
 	uint64_t dataVect[sizeof(photo_vect)/8+1];
 	memcpy(&dataVect, photo_vect, sizeof(dataVect));
-	uint64_t info_write;
-	info_write=dataVect;
+	//uint64_t info_write;
+	//info_write=dataVect;
 	//Write_Flash(TEST_ADDRESS3, &info_write, (sizeof(photo_vect)/8+1));
 }
 

@@ -10,6 +10,185 @@ void prinn(){
 }
 
 
+//it is used in readtwoline!!
+/*
+%    Inputs:
+%     satn        - satellite number
+%     bstar       - sgp4 type drag coefficient              kg/m2er
+%     ecco        - eccentricity
+%     epoch       - epoch time in days from jan 0, 1950. 0 hr
+%     argpo       - argument of perigee (output if ds)
+%     inclo       - inclination
+%     mo          - mean anomaly (output if ds)
+%     no          - mean motion
+%     nodeo      - right ascension of ascending node
+
+%   outputs       :
+%     satrec      - common values for subsequent calls
+*/
+void sgp4init(int whichconst, satrec *s, double xbstar, double xecco, double epoch,
+            double xargpo, double xinclo, double xmo, double xno, double xnodeo){
+
+    s->method='n';
+    //this may not be necessary
+    s->bstar=xbstar;
+    s->ecco=xecco;
+    s->argpo=xargpo;
+    s->inclo=xinclo;
+    s->mo=xmo;
+    s->no=xno;
+    s->nodeo=xnodeo;
+    getgravc(whichconst);
+
+    double ss=78.0/radiusearthkm +1.0;
+    double qzms2t=pow( (120.0-78.0)/radiusearthkm, 4 );
+    double x2o3 =2.0/3.0;
+
+    double temp4=1.5e-12;
+    s->init='y';
+    s->t=0.0;
+
+    double ainv, ao, con41, con42, cosio, cosio2, einv, eccsq, omeosq, posq, rp, rteosq, sinio;
+
+    init(s->ecco, epoch, s->inclo, s->no, &ainv, &ao, &con41, &con42, &cosio,&cosio2,
+            &einv, &eccsq, &s->method, &omeosq, &posq, &rp, &rteosq, &sinio, s);
+
+    s->error=0;
+    if(rp<1.0){
+        s->error=5.0;
+    }
+
+    double sfour, qzms24, perige, pinvsq;
+
+
+    if( (omeosq>=0.0) || (s->no>=0.0)) {
+        s->isimp=0;
+        if(rp<(220.0/radiusearthkm)+1.0){
+            s->isimp=1;
+        }
+        sfour=ss;
+        qzms24=qzms2t;
+        perige=(rp-1.0)*radiusearthkm;
+
+        if(perige<156.0){
+            sfour=perige-78.0;
+            if(perige<98.0){
+                sfour=20.0;
+            }
+            qzms24=pow((120.0-sfour)/radiusearthkm, 4);
+            sfour=sfour/radiusearthkm +1.0;
+        }
+        pinvsq=1.0/posq;
+
+        double tsi, etasq, eeta, psisq, coef, coef1, cc2, cc3, cosio4;
+        double __attribute__((unused)) temp1, temp2, temp3, xhdot1, xpidot;
+
+        tsi=1.0/(ao-sfour);
+        s->eta=ao*s->ecco*tsi;
+        etasq=s->eta*s->eta;
+        eeta=s->ecco*s->eta;
+        psisq=(1.0-etasq);
+        if(psisq<0.0){//abs(psisq)
+            psisq=-psisq;
+        }
+        coef=qzms24*pow(tsi, 4);
+        coef1=coef/pow(psisq, 3.5);
+        cc2=coef1*s->no *(ao * (1.0 + 1.5 * etasq + eeta *
+           (4.0 + etasq)) + 0.375 * j2 * tsi / psisq * s->con41 *
+           (8.0 + 3.0 * etasq * (8.0 + etasq)));
+        s->cc1=s->bstar*cc2;
+        cc3=0.0;
+        if(s->ecco>1.0e-4){
+            cc3 = -2.0 * coef * tsi * j3oj2 * s->no * sinio / s->ecco;
+        }
+
+        s->x1mth2=1.0 - cosio2;
+        s->cc4=2.0* s->no * coef1 * ao * omeosq *
+           (s->eta * (2.0 + 0.5 * etasq) + s->ecco *
+           (0.5 + 2.0 * etasq) - j2 * tsi / (ao * psisq) *
+           (-3.0 * s->con41 * (1.0 - 2.0 * eeta + etasq *
+           (1.5 - 0.5 * eeta)) + 0.75 * s->x1mth2 *
+           (2.0 * etasq - eeta * (1.0 + etasq)) * cos(2.0 * s->argpo)));
+        s->cc5=2.0 * coef1 * ao * omeosq * (1.0 + 2.75 *(etasq + eeta) + eeta * etasq);
+        cosio4=cosio2 * cosio2;
+        temp1  = 1.5 * j2 * pinvsq * s->no;
+        temp2  = 0.5 * temp1 * j2 * pinvsq;
+        temp3  = -0.46875 * j4 * pinvsq * pinvsq * s->no;
+        s->mdot=s->no + 0.5 * temp1 * rteosq * s->con41 +
+           0.0625 * temp2 * rteosq * (13.0 - 78.0 * cosio2 + 137.0 * cosio4);
+        s->argpdot  = -0.5 * temp1 * con42 + 0.0625 * temp2 *
+           (7.0 - 114.0 * cosio2 + 395.0 * cosio4) +
+           temp3 * (3.0 - 36.0 * cosio2 + 49.0 * cosio4);
+        xhdot1= -temp1 * cosio;
+        s->nodedot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * cosio2) +
+           2.0 * temp3 * (3.0 - 7.0 * cosio2)) * cosio;
+        xpidot =  s->argpdot+ s->nodedot;
+        s->omgcof   = s->bstar * cc3 * cos(s->argpo);
+        s->xmcof    = 0.0;
+        if(s->ecco>1.0e-4){
+            s->xmcof = -x2o3 * coef * s->bstar / eeta;
+        }
+        s->nodecf = 3.5 * omeosq * xhdot1 * s->cc1;
+        s->t2cof   = 1.5 * s->cc1;
+
+        // sgp4fix for divide by zero with xinco = 180 deg
+
+        if(abs(cosio+1.0)>1.5e-12){
+            s->xlcof   = -0.25 * j3oj2 * sinio *
+              (3.0 + 5.0 * cosio) / (1.0 + cosio);
+        }else{
+            s->xlcof   = -0.25 * j3oj2 * sinio *
+              (3.0 + 5.0 * cosio) / temp4;
+        }
+        s->aycof =-0.5 * j3oj2 * sinio;
+        s->delmo = pow((1.0 + s->eta * cos(s->mo)), 3);
+        s->sinmao = sin(s->mo);
+        s->x7thm1 = 7.0 * cosio2 - 1.0;
+
+        /* --------------- deep space initialization ------------- */
+        //line 242 matlab
+        if((2*M_PI/s->no)>=225.0){
+            s->method='d';
+            s->isimp=1;
+            double __attribute__((unused)) tc=0.0;
+            double __attribute__((unused)) inclm=s->inclo;
+
+            //dscom
+            //dpper
+
+            double __attribute__((unused)) argpm=0.0;
+            double __attribute__((unused)) nodem=0.0;
+            double __attribute__((unused)) mm=0.0;
+
+            //dsinit
+        }
+
+        if(s->isimp!=1){
+            double cc1sq          = s->cc1 * s->cc1;
+            s->d2    = 4.0 * ao * tsi * cc1sq;
+            double temp = s->d2 * tsi * s->cc1 / 3.0;
+            s->d3    = (17.0 * ao + sfour) * temp;
+            s->d4    = 0.5 * temp * ao * tsi *
+               (221.0 * ao + 31.0 * sfour) * s->cc1;
+            s->t3cof = s->d2 + 2.0 * cc1sq;
+            s->t4cof = 0.25 * (3.0 * s->d3 + s->cc1 *
+               (12.0 * s->d2 + 10.0 * cc1sq));
+            s->t5cof = 0.2 * (3.0 * s->d4 +
+               12.0 * s->cc1 * s->d3 +
+               6.0 * s->d2 * s->d2 +
+               15.0 * cc1sq * (2.0 * s->d2 + cc1sq));
+        }
+
+    }//ifomeosq=0...
+
+    /* finally propogate to zero epoch to initialise all others. */
+    if(s->error==0){
+        //sgp4(s,0.0);
+    }
+    s->init='n';
+
+
+}
 
 /*MAlab function: twoline2rvMOD*/
 /*
@@ -28,13 +207,13 @@ satrec prova;
 */
 void readTwoLine(char const *longstr1, char const *longstr2, satrec *s){
     int whichconst=84;
-    char typerun ='m';
-    char typeinput='m';
+    char __attribute__((unused)) typerun ='m';
+    char __attribute__((unused)) typeinput='m';
     double deg2rad=M_PI/180.0; //deg/rad
     double xpdotp=1440.0/(2*M_PI);//[rev/day]/[rad/min]
 
-    double revnum=0;
-    double elnum=0;
+    double __attribute__((unused)) revnum=0;
+    double __attribute__((unused)) elnum=0;
     int year=0;
     s->error=0;
     
@@ -109,15 +288,15 @@ void readTwoLine(char const *longstr1, char const *longstr2, satrec *s){
     //parse first line:
     char aux[14];
 
-    int carnumb=(int) str1[0] -48;
+    int __attribute__((unused)) carnumb=(int) str1[0] -48;
     //str1(2-6) satnum;
-    char clasification=str1[7];
+    char __attribute__((unused)) clasification=str1[7];
     
     //intldesg
     for(i=9;i<17;i++){
         aux[i-9]=str1[i];
     }
-    int intldesg=strtod(aux, NULL);
+    int __attribute__((unused)) intldesg=strtod(aux, NULL);
     for(i=9;i<17;i++){
         aux[i-9]=' ';
     }
@@ -185,7 +364,7 @@ void readTwoLine(char const *longstr1, char const *longstr2, satrec *s){
     }
 
     //numb
-    double numb = str1[62]-48;
+    double __attribute__((unused)) numb = str1[62]-48;
 
     //elnum
     for(i=64;i<68;i++){
@@ -417,185 +596,6 @@ void jday(int yr, double mon, double day, double hr, double min, double sec, dou
             + floor(275*mon/9.0) +day+1721013.5 + ( (sec/60.0 + min)/60.0 +hr )/24.0;
 }
 
-//it is used in readtwoline!!
-/*
-%    Inputs:
-%     satn        - satellite number
-%     bstar       - sgp4 type drag coefficient              kg/m2er
-%     ecco        - eccentricity
-%     epoch       - epoch time in days from jan 0, 1950. 0 hr
-%     argpo       - argument of perigee (output if ds)
-%     inclo       - inclination
-%     mo          - mean anomaly (output if ds)
-%     no          - mean motion
-%     nodeo      - right ascension of ascending node
-
-%   outputs       :
-%     satrec      - common values for subsequent calls
-*/
-void sgp4init(int whichconst, satrec *s, double xbstar, double xecco, double epoch,
-            double xargpo, double xinclo, double xmo, double xno, double xnodeo){
-
-    s->method='n';
-    //this may not be necessary
-    s->bstar=xbstar;
-    s->ecco=xecco;
-    s->argpo=xargpo;
-    s->inclo=xinclo;
-    s->mo=xmo;
-    s->no=xno;
-    s->nodeo=xnodeo;
-    getgravc(whichconst);
-
-    double ss=78.0/radiusearthkm +1.0;
-    double qzms2t=pow( (120.0-78.0)/radiusearthkm, 4 );
-    double x2o3 =2.0/3.0;
-
-    double temp4=1.5e-12;
-    s->init='y';
-    s->t=0.0;
-
-    double ainv, ao, con41, con42, cosio, cosio2, einv, eccsq, omeosq, posq, rp, rteosq, sinio;
-   
-    init(s->ecco, epoch, s->inclo, s->no, &ainv, &ao, &con41, &con42, &cosio,&cosio2,
-            &einv, &eccsq, &s->method, &omeosq, &posq, &rp, &rteosq, &sinio, s);
-    
-    s->error=0;
-    if(rp<1.0){
-        s->error=5.0;
-    }
-
-    double sfour, qzms24, perige, pinvsq;
-    
-
-    if( (omeosq>=0.0) || (s->no>=0.0)) {
-        s->isimp=0;
-        if(rp<(220.0/radiusearthkm)+1.0){
-            s->isimp=1;
-        }
-        sfour=ss;
-        qzms24=qzms2t;
-        perige=(rp-1.0)*radiusearthkm;
-
-        if(perige<156.0){
-            sfour=perige-78.0;
-            if(perige<98.0){
-                sfour=20.0;
-            }
-            qzms24=pow((120.0-sfour)/radiusearthkm, 4);
-            sfour=sfour/radiusearthkm +1.0;
-        }
-        pinvsq=1.0/posq;
-
-        double tsi, etasq, eeta, psisq, coef, coef1, cc2, cc3, cosio4;
-        double temp1, temp2, temp3, xhdot1, xpidot;
-
-        tsi=1.0/(ao-sfour);
-        s->eta=ao*s->ecco*tsi;
-        etasq=s->eta*s->eta;
-        eeta=s->ecco*s->eta;
-        psisq=(1.0-etasq);
-        if(psisq<0.0){//abs(psisq)
-            psisq=-psisq;
-        }
-        coef=qzms24*pow(tsi, 4);
-        coef1=coef/pow(psisq, 3.5);
-        cc2=coef1*s->no *(ao * (1.0 + 1.5 * etasq + eeta *
-           (4.0 + etasq)) + 0.375 * j2 * tsi / psisq * s->con41 *
-           (8.0 + 3.0 * etasq * (8.0 + etasq)));
-        s->cc1=s->bstar*cc2;
-        cc3=0.0;
-        if(s->ecco>1.0e-4){
-            cc3 = -2.0 * coef * tsi * j3oj2 * s->no * sinio / s->ecco;
-        }
-
-        s->x1mth2=1.0 - cosio2;
-        s->cc4=2.0* s->no * coef1 * ao * omeosq *
-           (s->eta * (2.0 + 0.5 * etasq) + s->ecco *
-           (0.5 + 2.0 * etasq) - j2 * tsi / (ao * psisq) *
-           (-3.0 * s->con41 * (1.0 - 2.0 * eeta + etasq *
-           (1.5 - 0.5 * eeta)) + 0.75 * s->x1mth2 *
-           (2.0 * etasq - eeta * (1.0 + etasq)) * cos(2.0 * s->argpo)));
-        s->cc5=2.0 * coef1 * ao * omeosq * (1.0 + 2.75 *(etasq + eeta) + eeta * etasq);
-        cosio4=cosio2 * cosio2;
-        temp1  = 1.5 * j2 * pinvsq * s->no;
-        temp2  = 0.5 * temp1 * j2 * pinvsq;
-        temp3  = -0.46875 * j4 * pinvsq * pinvsq * s->no;
-        s->mdot=s->no + 0.5 * temp1 * rteosq * s->con41 +
-           0.0625 * temp2 * rteosq * (13.0 - 78.0 * cosio2 + 137.0 * cosio4);
-        s->argpdot  = -0.5 * temp1 * con42 + 0.0625 * temp2 *
-           (7.0 - 114.0 * cosio2 + 395.0 * cosio4) +
-           temp3 * (3.0 - 36.0 * cosio2 + 49.0 * cosio4);
-        xhdot1= -temp1 * cosio;
-        s->nodedot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * cosio2) +
-           2.0 * temp3 * (3.0 - 7.0 * cosio2)) * cosio;
-        xpidot =  s->argpdot+ s->nodedot;
-        s->omgcof   = s->bstar * cc3 * cos(s->argpo);
-        s->xmcof    = 0.0;
-        if(s->ecco>1.0e-4){
-            s->xmcof = -x2o3 * coef * s->bstar / eeta;
-        }
-        s->nodecf = 3.5 * omeosq * xhdot1 * s->cc1;
-        s->t2cof   = 1.5 * s->cc1;
-        
-        // sgp4fix for divide by zero with xinco = 180 deg
-
-        if(abs(cosio+1.0)>1.5e-12){
-            s->xlcof   = -0.25 * j3oj2 * sinio *
-              (3.0 + 5.0 * cosio) / (1.0 + cosio);
-        }else{
-            s->xlcof   = -0.25 * j3oj2 * sinio *
-              (3.0 + 5.0 * cosio) / temp4;
-        }
-        s->aycof =-0.5 * j3oj2 * sinio;
-        s->delmo = pow((1.0 + s->eta * cos(s->mo)), 3);
-        s->sinmao = sin(s->mo);
-        s->x7thm1 = 7.0 * cosio2 - 1.0;
-
-        /* --------------- deep space initialization ------------- */
-        //line 242 matlab
-        if((2*M_PI/s->no)>=225.0){
-            s->method='d';
-            s->isimp=1;
-            double tc=0.0;
-            double inclm=s->inclo;
-
-            //dscom
-            //dpper
-
-            double argpm=0.0;
-            double nodem=0.0;
-            double mm=0.0;
-
-            //dsinit
-        }
-
-        if(s->isimp!=1){
-            double cc1sq          = s->cc1 * s->cc1;
-            s->d2    = 4.0 * ao * tsi * cc1sq;
-            double temp = s->d2 * tsi * s->cc1 / 3.0;
-            s->d3    = (17.0 * ao + sfour) * temp;
-            s->d4    = 0.5 * temp * ao * tsi *
-               (221.0 * ao + 31.0 * sfour) * s->cc1;
-            s->t3cof = s->d2 + 2.0 * cc1sq;
-            s->t4cof = 0.25 * (3.0 * s->d3 + s->cc1 *
-               (12.0 * s->d2 + 10.0 * cc1sq));
-            s->t5cof = 0.2 * (3.0 * s->d4 +
-               12.0 * s->cc1 * s->d3 +
-               6.0 * s->d2 * s->d2 +
-               15.0 * cc1sq * (2.0 * s->d2 + cc1sq));
-        }
-
-    }//ifomeosq=0...
-
-    /* finally propogate to zero epoch to initialise all others. */
-    if(s->error==0){
-        //sgp4(s,0.0);
-    }
-    s->init='n';
-    
-
-}
 
 
 /*
@@ -703,7 +703,6 @@ double gstime(double jdut1){
     return temp;
 }
 
-
 /*
 %   inputs        :
 %     satrec    - initialised structure from sgp4init() call.
@@ -720,7 +719,7 @@ void sgp4(satrec *s, double tsince, double *r, double *v){
     // sgp4fix divisor for divide by zero check on inclination
     //the old check used 1.0 + cos(pi-1.0e-9), but then compared it to
     // 1.5 e-12, so the threshold was changed to 1.5e-12 for consistancy
-    double temp4    =   1.5e-12;
+    double __attribute__((unused)) temp4    =   1.5e-12;
     double vkmpersec     = radiusearthkm * xke/60.0;
 
     /* --------------------- clear sgp4 error flag ----------------- */
@@ -760,7 +759,7 @@ void sgp4(satrec *s, double tsince, double *r, double *v){
     inclm = s->inclo;
 
     if(s->method=='d'){
-        double tc;
+        double __attribute__((unused)) tc;
         tc=s->t;
         //dspace... line 153 Matlab
     }
