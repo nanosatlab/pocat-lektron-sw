@@ -3,15 +3,15 @@
 
 # compile ASM with /usr/bin/arm-none-eabi-gcc
 # compile C with /usr/bin/arm-none-eabi-gcc
-ASM_DEFINES = -DSTM32L476RGxx -DUSE_HAL_DRIVER
+ASM_DEFINES = -DSTM32L476xx -DUSE_HAL_DRIVER
 
-ASM_INCLUDES = -I/home/arnau/development/pocat-lektron-sw/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L476xx_HAL_Driver/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L476xx_HAL_Driver/Inc/Legacy -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Device/ST/STM32L476xx/Include -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I/home/arnau/development/pocat-lektron-sw -I/home/arnau/development/pocat-lektron-sw/home/arnau/development/pocat-lektron-sw/src
+ASM_INCLUDES = -I/home/arnau/development/pocat-lektron-sw/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Device/ST/STM32L4xx/Include -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I/home/arnau/development/pocat-lektron-sw -I/home/arnau/development/pocat-lektron-sw/home/arnau/development/pocat-lektron-sw/src
 
 ASM_FLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wall -Wextra -Wpedantic -Wno-unused-parameter
 
-C_DEFINES = -DSTM32L476RGxx -DUSE_HAL_DRIVER
+C_DEFINES = -DSTM32L476xx -DUSE_HAL_DRIVER
 
-C_INCLUDES = -I/home/arnau/development/pocat-lektron-sw/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L476xx_HAL_Driver/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L476xx_HAL_Driver/Inc/Legacy -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Device/ST/STM32L476xx/Include -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I/home/arnau/development/pocat-lektron-sw -I/home/arnau/development/pocat-lektron-sw/home/arnau/development/pocat-lektron-sw/src
+C_INCLUDES = -I/home/arnau/development/pocat-lektron-sw/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Inc -I/home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Device/ST/STM32L4xx/Include -I/home/arnau/development/pocat-lektron-sw/Drivers/CMSIS/Include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/include -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I/home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I/home/arnau/development/pocat-lektron-sw -I/home/arnau/development/pocat-lektron-sw/home/arnau/development/pocat-lektron-sw/src
 
 C_FLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wall -Wextra -Wpedantic -Wno-unused-parameter -std=gnu11
 

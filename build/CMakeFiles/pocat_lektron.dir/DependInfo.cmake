@@ -14,16 +14,16 @@ set(CMAKE_ASM_COMPILER_ID "GNU")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_ASM
-  "STM32L476RGxx"
+  "STM32L476xx"
   "USE_HAL_DRIVER"
   )
 
 # The include file search paths:
 set(CMAKE_ASM_TARGET_INCLUDE_PATH
   "../Inc"
-  "../Drivers/STM32L476xx_HAL_Driver/Inc"
-  "../Drivers/STM32L476xx_HAL_Driver/Inc/Legacy"
-  "../Drivers/CMSIS/Device/ST/STM32L476xx/Include"
+  "../Drivers/STM32L4xx_HAL_Driver/Inc"
+  "../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy"
+  "../Drivers/CMSIS/Device/ST/STM32L4xx/Include"
   "../Drivers/CMSIS/Include"
   "../Middlewares/Third_Party/FreeRTOS/Source/include"
   "../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"
