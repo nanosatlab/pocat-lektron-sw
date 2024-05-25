@@ -70,3 +70,6 @@ ctrlp.root
 Debug
 #.resources
 .vscode
+
+#build
+build
