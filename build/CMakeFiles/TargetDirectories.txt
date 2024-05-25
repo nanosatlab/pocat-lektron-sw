@@ -1,3 +1,3 @@
-/home/arnau/development/pocat-lektron-sw/build/CMakeFiles/pocat_lektron.dir
-/home/arnau/development/pocat-lektron-sw/build/CMakeFiles/edit_cache.dir
-/home/arnau/development/pocat-lektron-sw/build/CMakeFiles/rebuild_cache.dir
+/home/julia/dev/pocat-lektron-sw/build/CMakeFiles/pocat_lektron.dir
+/home/julia/dev/pocat-lektron-sw/build/CMakeFiles/edit_cache.dir
+/home/julia/dev/pocat-lektron-sw/build/CMakeFiles/rebuild_cache.dir

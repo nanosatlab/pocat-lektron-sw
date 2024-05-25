@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/arnau/development/pocat-lektron-sw
+CMAKE_SOURCE_DIR = /home/julia/dev/pocat-lektron-sw
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/arnau/development/pocat-lektron-sw/build
+CMAKE_BINARY_DIR = /home/julia/dev/pocat-lektron-sw/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/pocat_lektron.dir/depend.make
@@ -72,533 +72,1079 @@ include CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dac_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rtc_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c.s
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj: ../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj -c /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Building C object CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj -MF CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj.d -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.obj -c /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c > CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.i
 
 CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c -o CMakeFiles/pocat_lektron.dir/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_28) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/croutine.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/croutine.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/croutine.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/croutine.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/croutine.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/croutine.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/croutine.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/croutine.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/list.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/list.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/list.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/list.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/list.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/list.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/list.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/list.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_33) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_33) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_34) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/queue.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_34) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/queue.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/queue.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/queue.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/queue.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/queue.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/queue.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_35) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_35) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_36) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_36) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/tasks.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/tasks.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/tasks.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/tasks.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.s
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj: ../Middlewares/Third_Party/FreeRTOS/Source/timers.c
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_37) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj -c /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/timers.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_37) "Building C object CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj -MF CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj.d -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj -c /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/timers.c
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/timers.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/timers.c > CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.i
 
 CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/arnau/development/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/timers.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Middlewares/Third_Party/FreeRTOS/Source/timers.c -o CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj: ../Src/RFI.c
+CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_38) "Building C object CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/RFI.c
+
+CMakeFiles/pocat_lektron.dir/Src/RFI.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/RFI.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/RFI.c > CMakeFiles/pocat_lektron.dir/Src/RFI.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/RFI.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/RFI.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/RFI.c -o CMakeFiles/pocat_lektron.dir/Src/RFI.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj: ../Src/RFI_Thread.c
+CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_39) "Building C object CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/RFI_Thread.c
+
+CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/RFI_Thread.c > CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/RFI_Thread.c -o CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj: ../Src/adcs.c
+CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_40) "Building C object CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/adcs.c
+
+CMakeFiles/pocat_lektron.dir/Src/adcs.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/adcs.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/adcs.c > CMakeFiles/pocat_lektron.dir/Src/adcs.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/adcs.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/adcs.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/adcs.c -o CMakeFiles/pocat_lektron.dir/Src/adcs.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj: ../Src/berlekamp.c
+CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_41) "Building C object CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/berlekamp.c
+
+CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/berlekamp.c > CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/berlekamp.c -o CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/bit.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/bit.c.obj: ../Src/bit.c
+CMakeFiles/pocat_lektron.dir/Src/bit.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_42) "Building C object CMakeFiles/pocat_lektron.dir/Src/bit.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/bit.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/bit.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/bit.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/bit.c
+
+CMakeFiles/pocat_lektron.dir/Src/bit.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/bit.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/bit.c > CMakeFiles/pocat_lektron.dir/Src/bit.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/bit.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/bit.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/bit.c -o CMakeFiles/pocat_lektron.dir/Src/bit.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj: ../Src/camerav2.c
+CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_43) "Building C object CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/camerav2.c
+
+CMakeFiles/pocat_lektron.dir/Src/camerav2.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/camerav2.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/camerav2.c > CMakeFiles/pocat_lektron.dir/Src/camerav2.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/camerav2.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/camerav2.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/camerav2.c -o CMakeFiles/pocat_lektron.dir/Src/camerav2.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/clock.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/clock.c.obj: ../Src/clock.c
+CMakeFiles/pocat_lektron.dir/Src/clock.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_44) "Building C object CMakeFiles/pocat_lektron.dir/Src/clock.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/clock.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/clock.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/clock.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/clock.c
+
+CMakeFiles/pocat_lektron.dir/Src/clock.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/clock.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/clock.c > CMakeFiles/pocat_lektron.dir/Src/clock.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/clock.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/clock.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/clock.c -o CMakeFiles/pocat_lektron.dir/Src/clock.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/comms.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/comms.c.obj: ../Src/comms.c
+CMakeFiles/pocat_lektron.dir/Src/comms.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_45) "Building C object CMakeFiles/pocat_lektron.dir/Src/comms.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/comms.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/comms.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/comms.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/comms.c
+
+CMakeFiles/pocat_lektron.dir/Src/comms.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/comms.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/comms.c > CMakeFiles/pocat_lektron.dir/Src/comms.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/comms.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/comms.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/comms.c -o CMakeFiles/pocat_lektron.dir/Src/comms.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj: ../Src/convolutional.c
+CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_46) "Building C object CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/convolutional.c
+
+CMakeFiles/pocat_lektron.dir/Src/convolutional.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/convolutional.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/convolutional.c > CMakeFiles/pocat_lektron.dir/Src/convolutional.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/convolutional.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/convolutional.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/convolutional.c -o CMakeFiles/pocat_lektron.dir/Src/convolutional.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/decode.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/decode.c.obj: ../Src/decode.c
+CMakeFiles/pocat_lektron.dir/Src/decode.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building C object CMakeFiles/pocat_lektron.dir/Src/decode.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/decode.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/decode.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/decode.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/decode.c
+
+CMakeFiles/pocat_lektron.dir/Src/decode.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/decode.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/decode.c > CMakeFiles/pocat_lektron.dir/Src/decode.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/decode.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/decode.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/decode.c -o CMakeFiles/pocat_lektron.dir/Src/decode.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/ee.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/ee.c.obj: ../Src/ee.c
+CMakeFiles/pocat_lektron.dir/Src/ee.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_48) "Building C object CMakeFiles/pocat_lektron.dir/Src/ee.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/ee.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/ee.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/ee.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/ee.c
+
+CMakeFiles/pocat_lektron.dir/Src/ee.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/ee.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/ee.c > CMakeFiles/pocat_lektron.dir/Src/ee.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/ee.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/ee.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/ee.c -o CMakeFiles/pocat_lektron.dir/Src/ee.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/encode.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/encode.c.obj: ../Src/encode.c
+CMakeFiles/pocat_lektron.dir/Src/encode.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_49) "Building C object CMakeFiles/pocat_lektron.dir/Src/encode.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/encode.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/encode.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/encode.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/encode.c
+
+CMakeFiles/pocat_lektron.dir/Src/encode.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/encode.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/encode.c > CMakeFiles/pocat_lektron.dir/Src/encode.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/encode.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/encode.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/encode.c -o CMakeFiles/pocat_lektron.dir/Src/encode.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj: ../Src/error_buffer.c
+CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_50) "Building C object CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/error_buffer.c
+
+CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/error_buffer.c > CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/error_buffer.c -o CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj: ../Src/freertos.c
+CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_51) "Building C object CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/freertos.c
+
+CMakeFiles/pocat_lektron.dir/Src/freertos.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/freertos.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/freertos.c > CMakeFiles/pocat_lektron.dir/Src/freertos.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/freertos.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/freertos.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/freertos.c -o CMakeFiles/pocat_lektron.dir/Src/freertos.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/galois.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/galois.c.obj: ../Src/galois.c
+CMakeFiles/pocat_lektron.dir/Src/galois.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_52) "Building C object CMakeFiles/pocat_lektron.dir/Src/galois.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/galois.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/galois.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/galois.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/galois.c
+
+CMakeFiles/pocat_lektron.dir/Src/galois.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/galois.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/galois.c > CMakeFiles/pocat_lektron.dir/Src/galois.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/galois.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/galois.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/galois.c -o CMakeFiles/pocat_lektron.dir/Src/galois.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj: ../Src/help_adcs.c
+CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_53) "Building C object CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/help_adcs.c
+
+CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/help_adcs.c > CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/help_adcs.c -o CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj: ../Src/history_buffer.c
+CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_54) "Building C object CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/history_buffer.c
+
+CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/history_buffer.c > CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/history_buffer.c -o CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj: ../Src/igrf13.c
+CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_55) "Building C object CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/igrf13.c
+
+CMakeFiles/pocat_lektron.dir/Src/igrf13.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/igrf13.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/igrf13.c > CMakeFiles/pocat_lektron.dir/Src/igrf13.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/igrf13.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/igrf13.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/igrf13.c -o CMakeFiles/pocat_lektron.dir/Src/igrf13.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj: ../Src/igrf13syn.c
+CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_56) "Building C object CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/igrf13syn.c
+
+CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/igrf13syn.c > CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/igrf13syn.c -o CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj: ../Src/lookup.c
+CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_57) "Building C object CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/lookup.c
+
+CMakeFiles/pocat_lektron.dir/Src/lookup.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/lookup.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/lookup.c > CMakeFiles/pocat_lektron.dir/Src/lookup.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/lookup.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/lookup.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/lookup.c -o CMakeFiles/pocat_lektron.dir/Src/lookup.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/main.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/main.c.obj: ../Src/main.c
+CMakeFiles/pocat_lektron.dir/Src/main.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_58) "Building C object CMakeFiles/pocat_lektron.dir/Src/main.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/main.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/main.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/main.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/main.c
+
+CMakeFiles/pocat_lektron.dir/Src/main.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/main.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/main.c > CMakeFiles/pocat_lektron.dir/Src/main.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/main.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/main.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/main.c -o CMakeFiles/pocat_lektron.dir/Src/main.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/metric.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/metric.c.obj: ../Src/metric.c
+CMakeFiles/pocat_lektron.dir/Src/metric.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_59) "Building C object CMakeFiles/pocat_lektron.dir/Src/metric.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/metric.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/metric.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/metric.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/metric.c
+
+CMakeFiles/pocat_lektron.dir/Src/metric.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/metric.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/metric.c > CMakeFiles/pocat_lektron.dir/Src/metric.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/metric.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/metric.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/metric.c -o CMakeFiles/pocat_lektron.dir/Src/metric.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/obc.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/obc.c.obj: ../Src/obc.c
+CMakeFiles/pocat_lektron.dir/Src/obc.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_60) "Building C object CMakeFiles/pocat_lektron.dir/Src/obc.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/obc.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/obc.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/obc.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/obc.c
+
+CMakeFiles/pocat_lektron.dir/Src/obc.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/obc.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/obc.c > CMakeFiles/pocat_lektron.dir/Src/obc.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/obc.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/obc.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/obc.c -o CMakeFiles/pocat_lektron.dir/Src/obc.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj: ../Src/obc_task.c
+CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_61) "Building C object CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/obc_task.c
+
+CMakeFiles/pocat_lektron.dir/Src/obc_task.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/obc_task.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/obc_task.c > CMakeFiles/pocat_lektron.dir/Src/obc_task.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/obc_task.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/obc_task.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/obc_task.c -o CMakeFiles/pocat_lektron.dir/Src/obc_task.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj: ../Src/orbit_propagators_utils.c
+CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_62) "Building C object CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/orbit_propagators_utils.c
+
+CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/orbit_propagators_utils.c > CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/orbit_propagators_utils.c -o CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/periph.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/periph.c.obj: ../Src/periph.c
+CMakeFiles/pocat_lektron.dir/Src/periph.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_63) "Building C object CMakeFiles/pocat_lektron.dir/Src/periph.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/periph.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/periph.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/periph.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/periph.c
+
+CMakeFiles/pocat_lektron.dir/Src/periph.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/periph.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/periph.c > CMakeFiles/pocat_lektron.dir/Src/periph.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/periph.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/periph.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/periph.c -o CMakeFiles/pocat_lektron.dir/Src/periph.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj: ../Src/polynomial.c
+CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_64) "Building C object CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/polynomial.c
+
+CMakeFiles/pocat_lektron.dir/Src/polynomial.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/polynomial.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/polynomial.c > CMakeFiles/pocat_lektron.dir/Src/polynomial.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/polynomial.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/polynomial.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/polynomial.c -o CMakeFiles/pocat_lektron.dir/Src/polynomial.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj: ../Src/reed-solomon.c
+CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_65) "Building C object CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/reed-solomon.c
+
+CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/reed-solomon.c > CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/reed-solomon.c -o CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/rs.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/rs.c.obj: ../Src/rs.c
+CMakeFiles/pocat_lektron.dir/Src/rs.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_66) "Building C object CMakeFiles/pocat_lektron.dir/Src/rs.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/rs.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/rs.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/rs.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/rs.c
+
+CMakeFiles/pocat_lektron.dir/Src/rs.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/rs.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/rs.c > CMakeFiles/pocat_lektron.dir/Src/rs.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/rs.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/rs.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/rs.c -o CMakeFiles/pocat_lektron.dir/Src/rs.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj: ../Src/satutl.c
+CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_67) "Building C object CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/satutl.c
+
+CMakeFiles/pocat_lektron.dir/Src/satutl.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/satutl.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/satutl.c > CMakeFiles/pocat_lektron.dir/Src/satutl.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/satutl.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/satutl.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/satutl.c -o CMakeFiles/pocat_lektron.dir/Src/satutl.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj: ../Src/sgp.c
+CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_68) "Building C object CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/sgp.c
+
+CMakeFiles/pocat_lektron.dir/Src/sgp.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/sgp.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/sgp.c > CMakeFiles/pocat_lektron.dir/Src/sgp.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/sgp.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/sgp.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/sgp.c -o CMakeFiles/pocat_lektron.dir/Src/sgp.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj: ../Src/sgp4.c
+CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_69) "Building C object CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/sgp4.c
+
+CMakeFiles/pocat_lektron.dir/Src/sgp4.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/sgp4.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/sgp4.c > CMakeFiles/pocat_lektron.dir/Src/sgp4.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/sgp4.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/sgp4.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/sgp4.c -o CMakeFiles/pocat_lektron.dir/Src/sgp4.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj: ../Src/softTim.c
+CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_70) "Building C object CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/softTim.c
+
+CMakeFiles/pocat_lektron.dir/Src/softTim.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/softTim.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/softTim.c > CMakeFiles/pocat_lektron.dir/Src/softTim.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/softTim.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/softTim.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/softTim.c -o CMakeFiles/pocat_lektron.dir/Src/softTim.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj: ../Src/stm32l4xx_hal_msp.c
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_71) "Building C object CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_hal_msp.c
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_hal_msp.c > CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_hal_msp.c -o CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj: ../Src/stm32l4xx_hal_timebase_tim.c
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_72) "Building C object CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_hal_timebase_tim.c
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_hal_timebase_tim.c > CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_hal_timebase_tim.c -o CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj: ../Src/stm32l4xx_it.c
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_73) "Building C object CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_it.c
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_it.c > CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/stm32l4xx_it.c -o CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj: ../Src/syscalls.c
+CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_74) "Building C object CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/syscalls.c
+
+CMakeFiles/pocat_lektron.dir/Src/syscalls.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/syscalls.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/syscalls.c > CMakeFiles/pocat_lektron.dir/Src/syscalls.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/syscalls.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/syscalls.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/syscalls.c -o CMakeFiles/pocat_lektron.dir/Src/syscalls.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj: ../Src/sysmem.c
+CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_75) "Building C object CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/sysmem.c
+
+CMakeFiles/pocat_lektron.dir/Src/sysmem.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/sysmem.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/sysmem.c > CMakeFiles/pocat_lektron.dir/Src/sysmem.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/sysmem.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/sysmem.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/sysmem.c -o CMakeFiles/pocat_lektron.dir/Src/sysmem.c.s
+
+CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj: CMakeFiles/pocat_lektron.dir/flags.make
+CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj: ../Src/system_stm32l4xx.c
+CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj: CMakeFiles/pocat_lektron.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_76) "Building C object CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj -MF CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj.d -o CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj -c /home/julia/dev/pocat-lektron-sw/Src/system_stm32l4xx.c
+
+CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.i"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/julia/dev/pocat-lektron-sw/Src/system_stm32l4xx.c > CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.i
+
+CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.s"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/julia/dev/pocat-lektron-sw/Src/system_stm32l4xx.c -o CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.s
 
 CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj: CMakeFiles/pocat_lektron.dir/flags.make
 CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj: ../startup_stm32l476rgtx.s
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_38) "Building ASM object CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -o CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj -c /home/arnau/development/pocat-lektron-sw/startup_stm32l476rgtx.s
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_77) "Building ASM object CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj"
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -o CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj -c /home/julia/dev/pocat-lektron-sw/startup_stm32l476rgtx.s
 
 CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing ASM source to CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.i"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -E /home/arnau/development/pocat-lektron-sw/startup_stm32l476rgtx.s > CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.i
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -E /home/julia/dev/pocat-lektron-sw/startup_stm32l476rgtx.s > CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.i
 
 CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling ASM source to assembly CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.s"
-	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -S /home/arnau/development/pocat-lektron-sw/startup_stm32l476rgtx.s -o CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.s
+	/usr/bin/arm-none-eabi-gcc -fdata-sections -ffunction-sections     --specs=nano.specs -Wl,--gc-sections $(ASM_DEFINES) $(ASM_INCLUDES) $(ASM_FLAGS) -S /home/julia/dev/pocat-lektron-sw/startup_stm32l476rgtx.s -o CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.s
 
 # Object files for target pocat_lektron
 pocat_lektron_OBJECTS = \
@@ -639,6 +1185,45 @@ pocat_lektron_OBJECTS = \
 "CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj" \
 "CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj" \
 "CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/bit.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/clock.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/comms.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/decode.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/ee.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/encode.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/galois.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/main.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/metric.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/obc.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/periph.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/rs.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj" \
+"CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj" \
 "CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj"
 
 # External object files for target pocat_lektron
@@ -681,12 +1266,51 @@ pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS
 pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c.obj
 pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/tasks.c.obj
 pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Middlewares/Third_Party/FreeRTOS/Source/timers.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/RFI.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/RFI_Thread.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/adcs.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/berlekamp.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/bit.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/camerav2.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/clock.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/comms.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/convolutional.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/decode.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/ee.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/encode.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/error_buffer.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/freertos.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/galois.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/help_adcs.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/history_buffer.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/igrf13.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/igrf13syn.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/lookup.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/main.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/metric.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/obc.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/obc_task.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/orbit_propagators_utils.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/periph.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/polynomial.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/reed-solomon.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/rs.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/satutl.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/sgp.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/sgp4.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/softTim.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_msp.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_hal_timebase_tim.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/stm32l4xx_it.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/syscalls.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/sysmem.c.obj
+pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/Src/system_stm32l4xx.c.obj
 pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/startup_stm32l476rgtx.s.obj
 pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/build.make
 pocat_lektron.elf: CMakeFiles/pocat_lektron.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/arnau/development/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_39) "Linking C executable pocat_lektron.elf"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/julia/dev/pocat-lektron-sw/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_78) "Linking C executable pocat_lektron.elf"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/pocat_lektron.dir/link.txt --verbose=$(VERBOSE)
-	arm-none-eabi-size /home/arnau/development/pocat-lektron-sw/build/pocat_lektron.elf
+	arm-none-eabi-size /home/julia/dev/pocat-lektron-sw/build/pocat_lektron.elf
 
 # Rule to build all files generated by this target.
 CMakeFiles/pocat_lektron.dir/build: pocat_lektron.elf
@@ -697,6 +1321,6 @@ CMakeFiles/pocat_lektron.dir/clean:
 .PHONY : CMakeFiles/pocat_lektron.dir/clean
 
 CMakeFiles/pocat_lektron.dir/depend:
-	cd /home/arnau/development/pocat-lektron-sw/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/arnau/development/pocat-lektron-sw /home/arnau/development/pocat-lektron-sw /home/arnau/development/pocat-lektron-sw/build /home/arnau/development/pocat-lektron-sw/build /home/arnau/development/pocat-lektron-sw/build/CMakeFiles/pocat_lektron.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/julia/dev/pocat-lektron-sw/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/julia/dev/pocat-lektron-sw /home/julia/dev/pocat-lektron-sw /home/julia/dev/pocat-lektron-sw/build /home/julia/dev/pocat-lektron-sw/build /home/julia/dev/pocat-lektron-sw/build/CMakeFiles/pocat_lektron.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/pocat_lektron.dir/depend
 
