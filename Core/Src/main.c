@@ -26,6 +26,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "camerav2.h"
+#include "comms.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,6 +95,7 @@ TimerHandle_t xTimerEps;
 TimerHandle_t xTimerPayload;
 TimerHandle_t xTimerPhoto;
 TimerHandle_t xTimerRF;
+TimerHandle_t xTimerBeacon;
 
 /* USER CODE END PV */
 
@@ -231,6 +233,8 @@ int main(void)
   //xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
   //xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
   //xTimerRF = xTimerCreate("TIMER RF", pdMS_TO_TICKS(1000), false, NULL, RFTimerCallback);
+  xTimerBeacon = xTimerCreate("TIMER BEACON", pdMS_TO_TICKS(INIT_BEACON_PERIOD), true, NULL, BeaconTimerCallback);
+  xTimerStart(xTimerBeacon,0);
 
   /* The period of the timer that controls when the photo will be taken is now arbitrary.
    * It will be updated according to the data included in the telecommand TAKE PHOTO.

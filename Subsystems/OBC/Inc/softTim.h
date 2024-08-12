@@ -32,6 +32,7 @@ extern TimerHandle_t xTimerAdcs;
 extern TimerHandle_t xTimerEps;
 extern TimerHandle_t xTimerPayload;
 extern TimerHandle_t xTimerPhoto;
+extern TimerHandle_t xTimerBeacon;
 
 void ObcTimerCallback(TimerHandle_t xTimer);
 void CommsTimerCallback(TimerHandle_t xTimer);
@@ -40,5 +41,7 @@ void EpsTimerCallback(TimerHandle_t xTimer);
 void PayloadTimerCallback(TimerHandle_t xTimer);
 void PhotoTimerCallback(TimerHandle_t xTimer);
 void RFTimerCallback(TimerHandle_t xTimer);
+void BeaconTimerCallback(TimerHandle_t xTimer);
+
 
 #endif /* INC_SOFTTIM_H_ */

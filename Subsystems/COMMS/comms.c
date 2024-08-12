@@ -49,6 +49,7 @@ int TXACK_Flag=0;
 int GoTX_Flag=0;
 int TxData_Flag=0;
 int Beacon_Flag=0;
+int TXStopped_Flag=0;
 
 /***********  COUNTERS  ***********/
 
@@ -447,10 +448,15 @@ void process_telecommand(uint8_t Data[]) {
 			COMMS_State=STDBY;
 			break;
 		case STOP_TRANSMISIONS:
-			//notify obc to stop beacon timer for a specified time?
+			xTimerStop(xTimerBeacon,0);
+			TXStopped_Flag=1;
 		default:
 			COMMS_State=SLEEP;
 			break;
+	}
+	if (TXStopped_Flag)
+	{
+		GoTX_Flag=0;
 	}
 	//Now send notification to OBC
 	if (GoTX_Flag)
@@ -561,4 +567,8 @@ int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* c
 	return size;
 }
 
+void beacon_time(){
+	Beacon_Flag=1;
+	COMMS_State=TX;
+}
 

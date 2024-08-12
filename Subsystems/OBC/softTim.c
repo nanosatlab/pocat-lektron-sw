@@ -43,4 +43,9 @@ void RFTimerCallback(TimerHandle_t xTimer)
 
 }
 
+void BeaconTimerCallback(TimerHandle_t xTimer)
+{
+	beacon_time();
+
+}
 

@@ -252,4 +252,6 @@ int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* c
 void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
 int encode (uint8_t* Buffer, uint8_t* conv_encoded, int packet_size);
 
+void beacon_time();
+
 #endif /* INC_COMMS_H_ */

@@ -79,6 +79,8 @@ extern TimerHandle_t xTimerRF;
 
 /****SOFTWARE TIMERS DEFINITIONS****/
 
+#define INIT_BEACON_PERIOD			60000
+
 /***ACTIVE PERIODS IN ms***/
 #define OBC_ACTIVE_PERIOD 			3000
 #define COMMS_ACTIVE_PERIOD 		3000
