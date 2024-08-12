@@ -1,9 +1,4 @@
-/*
- * comms.h
- *
- *  Created on: 24 feb. 2022
- *      Author: Daniel Herencia Ruiz
- */
+
 
 #ifndef INC_COMMS_H_
 #define INC_COMMS_H_
@@ -18,7 +13,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "telecommands.h"
 
 #include "board.h"
 #include "sx126x.h"
@@ -32,15 +26,14 @@
 #include "event_groups.h"
 
 #include "notifications.h"
-#include "correct.h"
-#include "ecc.h"
 
 extern TaskHandle_t OBC_Handle;
 extern EventGroupHandle_t xEventGroup;
 
-#define RF_FREQUENCY                       	868000000 // Hz
+#define RF_ID1								128
+#define RF_ID2								255
 
-#define TX_OUTPUT_POWER                     22        // dBm
+#define TX_OUTPUT_POWER                     0        // dBm
 
 #define LORA_BANDWIDTH                      0         // [0: 125 kHz,
 													  //  1: 250 kHz,
@@ -68,6 +61,10 @@ extern EventGroupHandle_t xEventGroup;
 #define DATA_PACKET_SIZE                    39
 #define TIMEOUT_PACKET_SIZE                 2
 
+#define BEACON_OP 							1
+#define ACK_OP  							2
+#define DATA_OP 							3
+
 /*!
  *	CAD performance evaluation's parameters
  */
@@ -76,7 +73,6 @@ extern EventGroupHandle_t xEventGroup;
 #define FULL_DBG    1   //Active all traces
 
 // Apps CAD timer
-TimerEvent_t CADTimeoutTimer;
 #define CAD_TIMER_TIMEOUT       1000        //Define de CAD timer's timeout here
 
 TimerEvent_t RxAppTimeoutTimer;
@@ -84,8 +80,8 @@ TimerEvent_t RxAppTimeoutTimer;
 
 //CAD parameters
 #define CAD_SYMBOL_NUM          LORA_CAD_02_SYMBOL
-#define CAD_DET_PEAK            20
-#define CAD_DET_MIN             10
+#define CAD_DET_PEAK            23
+#define CAD_DET_MIN             1
 #define CAD_TIMEOUT_MS          2000
 #define NB_TRY                  10
 
@@ -110,10 +106,64 @@ TimerEvent_t RxAppTimeoutTimer;
 #define POCKETQUBE_ID			0x72
 #define POQUETQUBE_ID2			0x73
 
+
+
+
+#ifndef INC_TELECOMMANDS_H_
+#define INC_TELECOMMANDS_H_
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stm32l4xx_hal.h>
+
+/******TELECOMMANDS*****/
+
+/*OBC*/
+#define RESET2  				01	/*The PQ might take a reset*/
+#define EXIT_STATE				02
+
+/*ADCS*/
+#define TLE  					10 /*Packet from GS with the new TLE, update it inside memory
+ 	 	 	 	 	 	 	  	  	  the SPG4 uses it to propagate the orbit*/
+
+/*COMMS*/
+#define SEND_DATA  				20	/*If the acquired photo or spectogram is needed to be send to GS*/
+#define SEND_TELEMETRY 			21
+#define CHANGE_TIMEOUT			23
+#define STOP_TRANSMISIONS		24
+
+
+/*PAYLOAD*/
+#define ACTIVATE_PAYLOAD 		30	/*Might rotate the PQ into the right position +
+								wait until it is in the position where the picture is wanted to be taken.*/
+//#define SET_PHOTO_RESOL	31	//Photo Resolution
+//#define PHOTO_COMPRESSION 32
+
+/*PAYLOAD 2: ELECTROSMOG ANTENNA*/
+//#define F_MIN					41
+//#define F_MAX					42
+//#define DELTA_F				43
+//#define INTEGRATION_TIME		44
+
+/*GLOBAL*/
+#define SEND_CONFIG				40	//Send all configuration
+#define UPLINK_CONFIG			41	//Send all configuration
+#define STOP_TRANSMISSION		42	//Send all configuration
+
+#define ACK1					60
+#define ERROR					65
+#define BEACON					68
+
+
+
+#endif /* INC_TELECOMMANDS_H_ */
+
+
+
 /*!
  * Radio events function pointer
  */
-RadioEvents_t RadioEvents;
+static RadioEvents_t RadioEvents;
 
 /*!
  * \brief Function to be executed on Radio Tx Done event
@@ -160,12 +210,12 @@ void SX126xConfigureCad( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak,
 /*!
  * \brief CAD timeout timer callback
  */
-void CADTimeoutTimeoutIrq( void );
+static void CADTimeoutTimeoutIrq( void );
 
 /*!
- * \brief Rx timeout timer callback
+ * \brief Sleep timer
  */
-void RxTimeoutTimerIrq( void );
+void BedIRQ(TimerHandle_t Timer);
 
 /*!
  * \brief Average the collected RSSIs during CAD
@@ -181,19 +231,17 @@ int8_t GetLastCadRssi( void );
  * \brief Display collected RSSIs each ms during CAD
  */
 void DisplayCadRssivsTime( void );
-
-
+void TxPrepare(uint8_t operation);
 void COMMS_StateMachine( void );
 
 void txfunction( void );
 
 void configuration(void);
 
-void process_telecommand(uint8_t header, uint8_t info);
+void process_telecommand(uint8_t Data[]);
 
 bool pin_correct(uint8_t pin_1, uint8_t pin_2);
 
-void tx_beacon(void);
 
 void comms_timmer(void);
 
@@ -201,6 +249,7 @@ int interleave(unsigned char *codeword, int size,unsigned char* codeword_interle
 
 int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* codeword_deinterleaved );
 
+void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
 int encode (uint8_t* Buffer, uint8_t* conv_encoded, int packet_size);
 
 #endif /* INC_COMMS_H_ */
