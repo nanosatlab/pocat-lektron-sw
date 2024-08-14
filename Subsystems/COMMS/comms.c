@@ -59,8 +59,9 @@ uint16_t COMMSNotUs=0;
 uint8_t TLE_counter=1;
 uint8_t ADCS_counter=1;
 uint16_t window_counter=1;
-
+uint8_t telemetry_counter[TLCOUNTER_MAX]={0};
 TimerHandle_t xTimerBeacon;
+uint32_t current_telemetry_adress=TELEMETRY_LEGACY_ADDR;
 
 /*************  SIGNAL  *************/
 
@@ -570,5 +571,52 @@ int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* c
 void beacon_time(){
 	Beacon_Flag=1;
 	COMMS_State=TX;
+}
+
+void store_telemetry(){
+	//Design 1: Reserve a space for the counter and flash two times
+	uint8_t telemetry_data[BEACON_PL_LEN]={0};
+	if (telemetry_counter[0]==0)
+	{
+		Read_Flash(TELEMETRY_LEGACY_ADDR,&telemetry_counter,TLCOUNTER_MAX);
+		for (int i=0;i<TLCOUNTER_MAX;i++)
+		{
+			if (telemetry_counter[i]==0)
+			{
+				telemetry_counter[0]=i;
+				break;
+			}
+		}
+	}
+	//Telemetry data should be polled from sensors and stored in the telemetry_data[BEACON_PL_LEN] array
+
+	if (telemetry_counter[0]==TLCOUNTER_MAX)
+	{
+		erase_page(TELEMETRY_LEGACY_ADDR);
+		telemetry_counter[0]=0;
+	}
+	telemetry_counter[0]++;
+	current_telemetry_adress=(TELEMETRY_LEGACY_ADDR+telemetry_counter[0]*BEACON_PL_LEN+TLCOUNTER_MAX);
+	Send_to_WFQueue(&telemetry_data,sizeof(telemetry_data),current_telemetry_adress,COMMSsender);
+	Send_to_WFQueue(&telemetry_counter[0],sizeof(telemetry_counter[0]),TELEMETRY_LEGACY_ADDR+telemetry_counter[0],COMMSsender); //Design 1
+
+	//Design 2: Flash it with every telemetry save at the cost of further reading iterations
+	/*
+	uint8_t telemetry_data[BEACON_PL_LEN+1]=0;
+	if (telemetry_counter==0)
+	{
+		for(int i=0;i<TLCOUNTER_MAX;i++)
+		{
+			Read_Flash(TELEMETRY_LEGACY_ADDR+i*(BEACON_PL_LEN+1),&telemetry_counter,1);
+			if (telemetry_counter!=0)
+			{
+				break;
+			}
+
+		}
+	}
+	telemetry_data[BEACON_PL_LEN]=telemetry_counter;
+	Send_to_WFQueue(&telemetry_data,sizeof(telemetry_data),TELEMETRY_LEGACY_ADDR+telemetry_counter*(BEACON_PL_LEN+1)+TLCOUNTER_MAX,COMMSSender);
+	*/
 }
 

@@ -60,7 +60,7 @@
 #define PHOTODIODES_OFFSET_ADDR 	0x080300F3 // 12 bytes
 
 //TELEMETRY ADDRESSES
-#define TELEMETRY_ADDR				0x08030100 // 34 bytes in total
+#define TELEMETRY_ADDR				0x08030100
 #define TEMPLAT_ADDR 				0x08030100		// 6
 #define BATT_TEMP_ADDR 			    0x08030106		// 1
 #define MCU_TEMP_ADDR 			    0x08030107		// 1
@@ -69,6 +69,8 @@
 #define GYRO_ADDR 			        0x08030109		// 6
 #define MAGNETOMETER_ADDR 			0x0803010F      // 8
 #define PHOTODIODES_ADDR 			0x08030117      // 8
+
+#define TELEMETRY_LEGACY_ADDR		0x080FEFFF // 4096kb dedicated enabling stores of 89 old data.
 
 
 //TIME ADDR
@@ -102,6 +104,8 @@ extern SemaphoreHandle_t xMutex;
 void Write_Flash(uint32_t data_addr, uint8_t *data,uint16_t n_bytes);
 void Read_Flash(uint32_t data_addr, uint8_t *RxBuf, uint16_t n_bytes);
 void Send_to_WFQueue(uint8_t* pointer, uint32_t arrayLength, uint32_t addr, DataSource_t DataSource);
+
+void erase_page(uint32_t data_addr);
 
 
 #endif /* INC_FLASH_H_ */

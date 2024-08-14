@@ -65,6 +65,9 @@ extern EventGroupHandle_t xEventGroup;
 #define ACK_OP  							2
 #define DATA_OP 							3
 
+#define TLCOUNTER_MAX						146
+#define BEACON_PL_LEN						28
+
 /*!
  *	CAD performance evaluation's parameters
  */
@@ -253,5 +256,7 @@ void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
 int encode (uint8_t* Buffer, uint8_t* conv_encoded, int packet_size);
 
 void beacon_time();
+
+void store_telemetry();
 
 #endif /* INC_COMMS_H_ */

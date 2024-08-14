@@ -133,3 +133,21 @@ void Send_to_WFQueue(uint8_t* pointer,uint32_t arrayLength,uint32_t addr,DataSou
 	BaseType_t __attribute__((unused)) xQueueStatus = xQueueSendToBack(FLASH_Queue,&TxQueueData,portMAX_DELAY);
 }
 
+void erase_page(uint32_t data_addr)
+{
+	static FLASH_EraseInitTypeDef EraseInitStruct;
+
+	uint32_t StartPage = Get_Page(data_addr);
+	uint32_t PAGEError;
+
+	HAL_FLASH_Unlock();
+
+	EraseInitStruct.Banks = Get_Bank(data_addr);
+	EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+	EraseInitStruct.Page = StartPage;
+	EraseInitStruct.NbPages = 1;
+
+	while(HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK);
+
+	HAL_FLASH_Lock();
+}
