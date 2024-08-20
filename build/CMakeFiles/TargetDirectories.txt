@@ -1,3 +1,0 @@
-/home/dolz/development/pocat-lektron-sw/build/CMakeFiles/pocat_lektron.dir
-/home/dolz/development/pocat-lektron-sw/build/CMakeFiles/edit_cache.dir
-/home/dolz/development/pocat-lektron-sw/build/CMakeFiles/rebuild_cache.dir

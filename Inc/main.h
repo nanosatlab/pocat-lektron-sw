@@ -32,27 +32,20 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32l4xx.h"      // STM32 includes
+#include "sx126x.h"         // SX126x includes
 
-#include "obc.h"
-#include "comms.h"
-
-#include "flash.h"
-
-#include "stm32l4xx.h"
-#include "definitions.h"
-
-#include "sx126x.h"
-
-#include "softTim.h"
-
-#include "RFI.h"
-#include "RFI_Thread.h"
-
-#include "FreeRTOS.h"
+#include "FreeRTOS.h"       // FreeRTOS includes
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
 #include "event_groups.h"
+
+#include "definitions.h"    // Common includes
+#include "flash.h"
+
+#include "Subsystems/obc.h"            // SUBSYSTEMS includes
+// #include "Subsystems/comms.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

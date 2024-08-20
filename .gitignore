@@ -71,6 +71,7 @@ Debug
 
 #.resources
 .vscode
+.cache
 
 #build
 build

@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain.cmake)
 
-project(pocat_lektron)
+project(pocat_lektron_sw)
 set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Src)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(MAIN_SOURCE_FILE main.c)
 
@@ -18,74 +18,80 @@ set(CPU_PARAMETERS
     -mfpu=fpv4-sp-d16
     -mfloat-abi=hard)
 
-
-
-
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32l476rgtx.s)
-set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32L476RGTX_FLASH.ld)
-
+set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/cmake/startup_stm32l476rgtx.s)
+set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/cmake/STM32L476RGTX_FLASH.ld)
 
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 enable_language(C ASM)
-# enable_language(C CXX ASM)    # Not C++
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
-# set(CMAKE_CXX_STANDARD 20)    # Not C++
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS ON)
 
 # Headers
 set(CUBEMX_INCLUDE_DIRECTORIES
-    
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include
-    )
+)
 
 set(PROJECT_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/CommonResources/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Semtech/Inc
-    )
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Common
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/HAL
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Interrupts
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Subsystem
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Tasks
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/Semtech/Inc
+)
 
 set(FREERTOS_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS/Source/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
-    ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
-    ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/CMSIS_RTOS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/portable/GCC/ARM_CM4F
+)
 
-
-
+# Gather source files
 file(GLOB_RECURSE STM32CUBEMX_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/LINK_SEARCH_END_STATIC/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/*.c
-    )
+)
 
-file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
-    ${PROJECT_DIR}/*.c)
+file(GLOB_RECURSE PROJECT_SOURCES
+    ${PROJECT_DIR}/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Common/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Interrupts/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Subsystem/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/System/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Tasks/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Utils/*.c
+)
 
 file(GLOB_RECURSE FREERTOS_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS/Source/*.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/*.c
+)
+
 # Executable files
 add_executable(${EXECUTABLE}
     ${STM32CUBEMX_SOURCES}
-    ${FREERTOS_SOURCES} 
+    ${FREERTOS_SOURCES}
     ${PROJECT_SOURCES}
-    ${STARTUP_SCRIPT})
+    ${STARTUP_SCRIPT}
+)
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
     ${MCU_MODEL}
-    USE_HAL_DRIVER)
+    USE_HAL_DRIVER
+)
 
 # Add header directories (AFTER add_executable !!)
 target_include_directories(${EXECUTABLE} PRIVATE
     ${CUBEMX_INCLUDE_DIRECTORIES}
     ${FREERTOS_INCLUDE_DIRECTORIES}
-    ${PROJECT_INCLUDE_DIRECTORIES})
+    ${PROJECT_INCLUDE_DIRECTORIES}
+)
 
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
@@ -93,13 +99,9 @@ target_compile_options(${EXECUTABLE} PRIVATE
     -Wextra
     -Wpedantic
     -Wno-unused-parameter
-    $<$<COMPILE_LANGUAGE:CXX>:
-        -Wno-volatile
-        -Wold-style-cast
-        -Wuseless-cast
-        -Wsuggest-override>
     $<$<CONFIG:Debug>:-Og -g3 -ggdb>
-    $<$<CONFIG:Release>:-Og -g0>)
+    $<$<CONFIG:Release>:-Og -g0>
+)
 
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
@@ -109,9 +111,10 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,--start-group
     -lc
     -lm
-    -lstdc++
     -Wl,--end-group
-    -Wl,--print-memory-usage)
+    -Wl,--print-memory-usage
+)
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
+)
