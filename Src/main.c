@@ -19,8 +19,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
-
+// #include "cmsis_os.h"
+/*
+ * Comment out the 'cmsis_os.h' library that is automatically added by the 
+ * CubeIDE, and then manually add the FreeRTOS libraries.
+ */
+ 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
