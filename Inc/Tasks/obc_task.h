@@ -8,9 +8,9 @@
 #ifndef INC_OBC_TASK_H_
 #define INC_OBC_TASK_H_
 
+#include "Subsystems/obc.h"
 #include <stdbool.h>
 #include <stdlib.h>
-#include "Subsystems/obc.h"
 
 #include "definitions.h"
 #include "flash.h"
@@ -19,8 +19,8 @@
 #include "softTim.h"
 
 #include "FreeRTOS.h"
-#include "task.h"
 #include "event_groups.h"
+#include "task.h"
 
 /****PERIPHERAL VARIABLES****/
 extern RTC_HandleTypeDef hrtc;

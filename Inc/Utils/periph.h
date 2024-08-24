@@ -11,13 +11,13 @@
 #include "main.h"
 
 #include "stm32l4xx_hal.h"
-#include "stm32l4xx_hal_gpio.h"
-#include "stm32l4xx_hal_tim.h"
 #include "stm32l4xx_hal_adc.h"
 #include "stm32l4xx_hal_dac.h"
-#include "stm32l4xx_hal_spi.h"
-#include "stm32l4xx_hal_uart.h"
+#include "stm32l4xx_hal_gpio.h"
 #include "stm32l4xx_hal_i2c.h"
+#include "stm32l4xx_hal_spi.h"
+#include "stm32l4xx_hal_tim.h"
+#include "stm32l4xx_hal_uart.h"
 
 /****PERIPHERAL VARIABLES****/
 extern ADC_HandleTypeDef hadc1;
