@@ -858,8 +858,8 @@ static void OBC_Task(void *params)
 static void COMMS_Task(void *params)
 {
 	//Send_to_WFQueue(photo_vect,sizeof(photo_vect),PHOTO_ADDR,COMMSsender);
-	Send_to_WFQueue(config_vect,sizeof(config_vect),CONFIG_ADDR,COMMSsender);
-	Send_to_WFQueue(telemetry_vect,sizeof(telemetry_vect),PHOTO_ADDR,COMMSsender);
+	//Send_to_WFQueue(config_vect,sizeof(config_vect),CONFIG_ADDR,COMMSsender);
+	//Send_to_WFQueue(telemetry_vect,sizeof(telemetry_vect),PHOTO_ADDR,COMMSsender);
 
 	for(;;)
 	{
@@ -1129,9 +1129,9 @@ static void EPS_Task(void *params)
 
 				Read_Flash(CURRENT_STATE_ADDR, &state, 1);
 				Read_Flash(PREVIOUS_STATE_ADDR, &prev_state, 1);
-				Read_Flash(NOMINAL_ADDR, &nom, 1);
-				Read_Flash(LOW_ADDR, &low, 1);
-				Read_Flash(CRITICAL_ADDR, &crit, 1);
+				//Read_Flash(NOMINAL_ADDR, &nom, 1);
+				//Read_Flash(LOW_ADDR, &low, 1);
+				//Read_Flash(CRITICAL_ADDR, &crit, 1);
 
 				Send_to_WFQueue(&state, 1, PREVIOUS_STATE_ADDR, EPSsender); // store the current state as previous
 

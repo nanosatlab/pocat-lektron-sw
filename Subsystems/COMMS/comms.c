@@ -37,7 +37,7 @@ uint8_t packet_window=5;
 uint8_t TLCReceived=0;
 
 
-uint8_t packet_to_send[3] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
+uint8_t packet_to_send[48] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
 
 /*************  FLAGS  *************/
 
@@ -108,11 +108,7 @@ void COMMS_StateMachine( void )
         switch(COMMS_State)
         {
             case RX:
-            	if (CADMODE_Flag && CADRX_Flag)
-            	{
-            		Radio.Rx(4000);
-            		CADRX_Flag=0;
-            	}
+
             	if (Wait_ACK_Flag)
             	{
             		Radio.Rx(4000);
@@ -135,8 +131,8 @@ void COMMS_StateMachine( void )
 				{
             		Beacon_Flag=0;
             		TxPrepare(BEACON_OP);
-            		Radio.Send(packet_to_send,3);
-                	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,6)));
+            		Radio.Send(packet_to_send,48);
+                	vTaskDelay(4000);
                 	COMMS_State=SLEEP;
 				}
 
@@ -223,7 +219,12 @@ void COMMS_StateMachine( void )
             	}
             	else
             	{
-            		if (CADMODE_Flag)
+                   	if (CADMODE_Flag && CADRX_Flag)
+                    	{
+                    		Radio.Rx(4000);
+                    		CADRX_Flag=0;
+                    	}
+                   	else if (CADMODE_Flag)
 					{
 						Radio.StartCad( );
 						vTaskDelay(pdMS_TO_TICKS(rxTime));
@@ -265,8 +266,9 @@ void OnCadDone(bool channelActivityDetected)
 {
     if(channelActivityDetected == true)
     {
-        COMMS_State=RX;
+        COMMS_State=SLEEP;
         CADRX_Flag=1;
+        BedTime_Flag=0;
     }
     else
     {
