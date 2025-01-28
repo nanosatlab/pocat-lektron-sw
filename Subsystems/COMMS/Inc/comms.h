@@ -33,7 +33,7 @@ extern EventGroupHandle_t xEventGroup;
 #define RF_ID1								128
 #define RF_ID2								255
 
-#define TX_OUTPUT_POWER                     0        // dBm
+#define TX_OUTPUT_POWER                     10        // dBm
 
 #define LORA_BANDWIDTH                      0         // [0: 125 kHz,
 													  //  1: 250 kHz,
@@ -248,11 +248,15 @@ bool pin_correct(uint8_t pin_1, uint8_t pin_2);
 
 void comms_timmer(void);
 
-int interleave(unsigned char *codeword, int size,unsigned char* codeword_interleaved);
+void interleave(uint8_t *input, uint8_t *output);
 
-int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* codeword_deinterleaved );
+void deinterleave(uint8_t *input, uint8_t *output);
+
 
 void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
+
+void SX1262TLCConfig(uint8_t config_data[]);
+
 int encode (uint8_t* Buffer, uint8_t* conv_encoded, int packet_size);
 
 void beacon_time();

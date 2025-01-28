@@ -24,7 +24,6 @@ COMMS_States COMMS_State=STARTUP;
 /************  PACKETS  ************/
 
 uint8_t RxData[48];        //Tx and Rx decoded
-uint8_t Decoded_Data[48];
 
 uint8_t TxPacket[48]={MISSION_ID,POCKETQUBE_ID};
 uint8_t payloadData[48];
@@ -33,7 +32,7 @@ uint8_t Encoded_Packet[48];
 uint8_t packet_number=1;
 uint8_t packet_start=1;
 uint8_t plsize=39;
-uint8_t packet_window=5;
+uint8_t packet_window=255;
 uint8_t TLCReceived=0;
 
 
@@ -100,11 +99,14 @@ void COMMS_StateMachine( void )
     COMMS_State = SLEEP; //Radio is already in STDBY
     SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
 
+
     for(;;)
     {
     	//COMMS_RX_OBCFlags(); // Function that checks the notifications sent by OBC to COMMS.
 
     	Radio.IrqProcess();     //Checks the interruptions
+    	vTaskDelay(pdMS_TO_TICKS(200));
+
         switch(COMMS_State)
         {
             case RX:
@@ -132,7 +134,7 @@ void COMMS_StateMachine( void )
             		Beacon_Flag=0;
             		TxPrepare(BEACON_OP);
             		Radio.Send(packet_to_send,48);
-                	vTaskDelay(4000);
+                	vTaskDelay(pdMS_TO_TICKS(1600));
                 	COMMS_State=SLEEP;
 				}
 
@@ -147,19 +149,14 @@ void COMMS_StateMachine( void )
 
             	if (TxData_Flag)
             	{
-            		TxData_Flag=0;
-            		packet_start=RxData[3]; //TDB
-            		packet_number=packet_start;
             		for (window_counter=1;window_counter<=packet_window;window_counter++)
             		{
-            			packet_number++;
-						TxPrepare(DATA_OP);
-						Radio.Send(TxPacket,plsize+9);
-						vTaskDelay(pdMS_TO_TICKS(2000));
 
+						TxPrepare(DATA_OP);
+						Radio.Send(Encoded_Packet,plsize+9);
+						vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
+						packet_number++;
             		}
-            		COMMS_State=RX;
-            		Wait_ACK_Flag=1;
             	}
 
             	break;
@@ -168,36 +165,7 @@ void COMMS_StateMachine( void )
             	{
             	case (UPLINK_CONFIG):
                     Radio.Standby();
-                    if (RxData[4]==RF_ID1 && (RF_F/86800000)!=1) //128
-                    {
-                    	RF_F=86800000;
-                    	Radio.SetChannel(RF_F);
-                    }
-                    else if (RxData[4]==RF_ID2  && (RF_F/91500000)!=1) //255
-                    {
-                    	RF_F=91500000;
-                    	Radio.SetChannel(RF_F);
-                    }
-
-                    if ((10<=RxData[5]) | (RxData[5]<=14))
-                    {
-                    	SF=RxData[5]; //TBD
-                    }
-
-                    if ((1<=RxData[6]) | (RxData[6]<=4))
-                    {
-                    	CR=RxData[6]; //TBD
-                    }
-
-                    if ((10000>RxData[4]) | (RxData[4]>1000)){rxTime=RxData[4];} //Might not be data 4, to revisit
-
-                    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH, SF, CR,
-                                                       LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                                       true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
-
-                    Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, SF, CR, 0, LORA_PREAMBLE_LENGTH,
-                                                       LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                                       0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
+            		SX1262TLCConfig(RxData);
 
                     COMMS_State=TX;
                     Beacon_Flag=1;
@@ -213,8 +181,8 @@ void COMMS_StateMachine( void )
             case SLEEP:
             	if (BedTime_Flag)
             	{
-            		Radio.Sleep();
-					vTaskDelay(pdMS_TO_TICKS(rxTime));
+            		//Radio.Sleep();
+					//vTaskDelay(pdMS_TO_TICKS(rxTime));
 					BedTime_Flag=0;
             	}
             	else
@@ -280,13 +248,19 @@ void OnCadDone(bool channelActivityDetected)
 
 void OnTxDone()
 {
+	if (packet_number==packet_window)
+	{
+		TxData_Flag=0;
+		COMMS_State=RX;
+	}
 }
 
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
 
+
     memset(RxData, 0, size);
-    memcpy(RxData, payload, size);
+    deinterleave((uint8_t*) payload,(uint8_t*) RxData);
 
     RssiValue = rssi;
     SnrValue = snr;
@@ -357,8 +331,42 @@ void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F){
                                    LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
 
-};
+}
 
+void SX1262TLCConfig(uint8_t config_data[])
+	{
+    if (config_data[4]==RF_ID1 && (RF_F/86800000)!=1) //128
+    {
+    	RF_F=86800000;
+    	Radio.SetChannel(RF_F);
+    }
+    else if (config_data[4]==RF_ID2  && (RF_F/91500000)!=1) //255
+    {
+    	RF_F=91500000;
+    	Radio.SetChannel(RF_F);
+    }
+
+    if ((10<=config_data[5]) | (config_data[5]<=14))
+    {
+    	SF=config_data[5]; //TBD
+    }
+
+    if ((1<=config_data[6]) | (config_data[6]<=4))
+    {
+    	CR=config_data[6]; //TBD
+    }
+
+    if ((10000>config_data[4]) | (config_data[4]>1000)){rxTime=config_data[4];} //Might not be data 4, to revisit
+
+    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH, SF, CR,
+                                       LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                       true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+
+    Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, SF, CR, 0, LORA_PREAMBLE_LENGTH,
+                                       LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                       0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
+
+	}
 
 
 void process_telecommand(uint8_t Data[]) {
@@ -501,9 +509,9 @@ void TxPrepare(uint8_t operation){
 			TxPacket[plsize+7] = unixTime32 & 0xFF;
 			TxPacket[plsize+8] = 0xFF;
 
-			Read_Flash(PHOTO_ADDR + packet_number*plsize, &payloadData, plsize);
+			Read_Flash(PHOTO_ADDR + packet_number*plsize, (uint8_t *)payloadData, plsize);
 			memmove(TxPacket+4,payloadData,plsize);
-			//interleave(TxPacket,plsize+9,Encoded_Packet);
+			interleave((uint8_t*) TxPacket,(uint8_t*) Encoded_Packet);
 			Wait_ACK_Flag=1;
 			break;
 		default:
@@ -517,63 +525,33 @@ void TxPrepare(uint8_t operation){
 }
 
 
-int interleave(unsigned char *codeword, int size,unsigned char* codeword_interleaved){
 
-	int initial_length = size;
-	for(int i = 1; (initial_length + i) % (BLOCK_ROW_INTER*BLOCK_COL_INTER) != 0; i++){
-		codeword[initial_length + i] = 0;
-		size++;
-	}
-	bool end = false;
-	int q = 0;
-	int r = 0;
-	int col;
-	int row;
-	char block[BLOCK_ROW_INTER][BLOCK_COL_INTER];
-	while(q < size){
-		col = 0;
-		for(col; col < BLOCK_COL_INTER && !end; col++){
-			row = 0;
-			for(row; row < BLOCK_ROW_INTER && !end; row++){
-				if (q < size){
-					block[row][col] = codeword[q];
-					q++;
-				}
-				else{
-					end = true;
-				}
-			}
-		}
-		for(int t = 0; t < BLOCK_COL_INTER; t++){
-			for(int p = 0; p < BLOCK_ROW_INTER; p++){
-					codeword_interleaved[r] = block[t][p];
-					r++;
-			}
-		}
-	}
-	return size;
+
+void interleave(uint8_t *input, uint8_t *output) {
+    for (int j = 0; j < 48; j++) {
+        int row = j % 6;
+        int column = j / 6;
+        int original_index = row * 8 + column;
+        output[j] = input[original_index];
+    }
 }
 
-int deinterleave(unsigned char *codeword_interleaved , int size,unsigned char* codeword_deinterleaved ){
-
-	interleave(codeword_interleaved , size,codeword_deinterleaved);
-	bool end = false;
-	while(!end){
-	  if( memcmp(codeword_deinterleaved[size-1], 0xFF, 1) != 0){
-		size--;
-	  }
-	  else{
-		size --;
-		end = true;
-	  }
-	}
-	return size;
+void deinterleave(uint8_t *input, uint8_t *output) {
+    for (int i = 0; i < 48; i++) {
+        int row = i / 8;
+        int column = i % 8;
+        int interleaved_index = column * 6 + row;
+        output[i] = input[interleaved_index];
+    }
 }
 
 void beacon_time(){
 	Beacon_Flag=1;
 	COMMS_State=TX;
 }
+
+
+
 
 void store_telemetry(){
 	//Design 1: Reserve a space for the counter and flash two times
