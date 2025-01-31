@@ -73,7 +73,8 @@ int8_t SnrMoy = 0;
 int CADMODE_Flag=0;
 
 uint16_t packetwindow=1;
-uint32_t rxTime=1000;
+uint32_t rxTime=2000;
+uint16_t ACKTimeout=4000;
 uint32_t sleepTime=1000;
 uint32_t RF_F=868000000;
 uint8_t SF=11;
@@ -113,7 +114,7 @@ void COMMS_StateMachine( void )
 
             	if (Wait_ACK_Flag)
             	{
-            		Radio.Rx(4000);
+            		Radio.Rx(ACKTimeout);
             		Wait_ACK_Flag=0;
             	}
             	if (TLCReceived_Flag)
@@ -134,7 +135,7 @@ void COMMS_StateMachine( void )
             		Beacon_Flag=0;
             		TxPrepare(BEACON_OP);
             		Radio.Send(packet_to_send,48);
-                	vTaskDelay(pdMS_TO_TICKS(1600));
+                	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
                 	COMMS_State=SLEEP;
 				}
 
@@ -181,20 +182,20 @@ void COMMS_StateMachine( void )
             case SLEEP:
             	if (BedTime_Flag)
             	{
-            		//Radio.Sleep();
-					//vTaskDelay(pdMS_TO_TICKS(rxTime));
+            		Radio.Sleep();
+					vTaskDelay(pdMS_TO_TICKS(rxTime));
 					BedTime_Flag=0;
             	}
             	else
             	{
                    	if (CADMODE_Flag && CADRX_Flag)
                     	{
-                    		Radio.Rx(4000);
+                    		Radio.Rx(rxTime);
                     		CADRX_Flag=0;
                     	}
                    	else if (CADMODE_Flag)
 					{
-						Radio.StartCad( );
+						Radio.StartCad();
 						vTaskDelay(pdMS_TO_TICKS(rxTime));
 					}
             		else
