@@ -204,6 +204,7 @@ TimerEvent_t RxAppTimeoutTimer;
 
 
 
+
 /*!
  * Radio events function pointer
  */
@@ -274,31 +275,23 @@ int8_t GetLastCadRssi( void );
 /*!
  * \brief Display collected RSSIs each ms during CAD
  */
-void DisplayCadRssivsTime( void );
+
+
 void TxPrepare(uint8_t operation);
+
 void COMMS_StateMachine( void );
 
-void txfunction( void );
-
-void configuration(void);
-
 void process_telecommand(uint8_t Data[]);
-
-bool pin_correct(uint8_t pin_1, uint8_t pin_2);
-
-
-void comms_timmer(void);
 
 void interleave(uint8_t *input, uint8_t *output);
 
 void deinterleave(uint8_t *input, uint8_t *output);
 
-
 void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
 
 void SX1262TLCConfig(uint8_t config_data[]);
 
-int encode (uint8_t* Buffer, uint8_t* conv_encoded, int packet_size);
+void COMMSTLCConfig(uint8_t config_data[]);
 
 void beacon_time();
 

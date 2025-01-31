@@ -81,6 +81,7 @@ uint8_t SF=11;
 uint8_t CR=1;
 
 
+
 void COMMS_StateMachine( void )
 {
 	COMMS_State=STARTUP;
@@ -119,7 +120,6 @@ void COMMS_StateMachine( void )
             	}
             	if (TLCReceived_Flag)
             	{
-            		//deinterleave(&RxData,sizeof(RxData),Decoded_Data);
                 	process_telecommand(RxData);
                 	TLCReceived_Flag=0;
             	}
@@ -164,19 +164,24 @@ void COMMS_StateMachine( void )
             case STDBY:
             	switch(TLCReceived)
             	{
-            	case (UPLINK_CONFIG):
+            	case (UPLOAD_COMMS_CONFIG):
                     Radio.Standby();
             		SX1262TLCConfig(RxData);
-
                     COMMS_State=TX;
                     Beacon_Flag=1;
                     break;
-            	case (RESET2):
+            	case(COMMS_UPLOAD_PARAMS):
+					Radio.Standby();
+					COMMSTLCConfig(RxData);
+                    Beacon_Flag=1;
+            		break;
+            	case (OBC_SOFT_REBOOT):
 					COMMS_State=STARTUP;
             		break;
             	default:
             		COMMS_State=SLEEP;
             		break;
+
             	}
             	break;
             case SLEEP:
@@ -369,56 +374,48 @@ void SX1262TLCConfig(uint8_t config_data[])
 
 	}
 
+void COMMSTLCConfig(uint8_t config_data[])
+	{
+	 if ((10000>(config_data[3]*100)) | ((config_data[3]*100)>1000)){rxTime=config_data[3];} //Thresholded in case of error rxTime
+	 if ((10000>(config_data[4]*100)) | ((config_data[4]*100)>1000)){sleepTime=config_data[4];} //Thresholded in case of error sleepTime
+	 if ((0<config_data[5] && config_data[5]<127)){CADMODE_Flag=1;} //CAD Mode (On/Off)
+	 if ((128<config_data[5] && config_data[5]<255)){CADMODE_Flag=0;}
+	 if ((0<config_data[6] && config_data[6]<255)){packet_window=config_data[6];}
+
+	}
+
 
 void process_telecommand(uint8_t Data[]) {
 	TLCReceived=Data[2];
-	switch (TLCReceived)
-	{
-		case RESET2:
-			HAL_NVIC_SystemReset();
-			GoTX_Flag=1;
-			Beacon_Flag=1;
-			break;
-		case EXIT_STATE:
-			if(Data[3]==0xF0){
-				xTaskNotify(OBC_Handle, EXIT_CONTINGENCY_NOTI, eSetBits); //Notification to OBC
-			}
-			else if(Data[3]==0x0F){
-				xTaskNotify(OBC_Handle, EXIT_SUNSAFE_NOTI, eSetBits); //Notification to OBC
-			}
-			else if(Data[4]==0xF0){
-				xTaskNotify(OBC_Handle, EXIT_SURVIVAL_NOTI, eSetBits); //Notification to OBC
-			}
+	switch (TLCReceived){
 
+		case PING:
+			TXACK_Flag=1; //ACK acts as a ping
 			GoTX_Flag=1;
-			Beacon_Flag=1;
-			break;
-		case TLE:
-			if ((TLE_counter==1 && Data[2]==86) ||(TLE_counter==2 && Data[2]==164) ){
-				Send_to_WFQueue(&Data[3],TLE_PACKET_SIZE,TLE_ADDR1+(TLE_counter-1)*TLE_PACKET_SIZE,COMMSsender);
-				TLE_counter++;
-				Wait_ACK_Flag=1;
-			}
-			else if (TLE_counter==3 && Data[2]==255){
-				Send_to_WFQueue(&Data[3],1,TLE_ADDR1+2*TLE_PACKET_SIZE,COMMSsender);
-				Send_to_WFQueue(&Data[4],TLE_PACKET_SIZE-1,TLE_ADDR2,COMMSsender);
-				TLE_counter=1;
-				GoTX_Flag=1;
-				TXACK_Flag=1;
-			}
-			break;
-		case SEND_DATA:
-			plsize=39;
-			packetwindow=5;
-			GoTX_Flag=1;
-			TxData_Flag=1;
-			break;
-		case SEND_TELEMETRY:
+		break;
+
+		case TRANSIT_TO_NM:
 			Beacon_Flag=1;
 			GoTX_Flag=1;
-			break;
-		/*
-		case ADCS_CALIBRATION:
+		break;
+
+		case TRANSIT_TO_CM:
+			Beacon_Flag=1;
+			GoTX_Flag=1;
+		break;
+
+		case TRANSIT_TO_SSM:
+			Beacon_Flag=1;
+			GoTX_Flag=1;
+		break;
+
+		case TRANSIT_TO_SM:
+			Beacon_Flag=1;
+			GoTX_Flag=1;
+		break;
+
+		case UPLOAD_ADCS_CALIBRATION:
+			/* tbd
 			if(ADCS_counter == 1 && Data[2]==86){
 				Send_to_WFQueue(&Data[3], CALIBRATION_PACKET_SIZE, MAGNETO_MATRIX_ADDR, COMMSsender);
 				ADCS_counter++;
@@ -441,8 +438,109 @@ void process_telecommand(uint8_t Data[]) {
 				ADCS_counter=1;
 			}
 			*/
-			break;
-		case ACTIVATE_PAYLOAD:
+		  break;
+
+		case UPLOAD_ADCS_TLE:
+		if ((TLE_counter==1 && Data[2]==86) ||(TLE_counter==2 && Data[2]==164) ){
+
+			Send_to_WFQueue(&Data[3],TLE_PACKET_SIZE,TLE_ADDR1+(TLE_counter-1)*TLE_PACKET_SIZE,COMMSsender);
+			TLE_counter++;
+			Wait_ACK_Flag=1;
+		}
+		else if (TLE_counter==3 && Data[2]==255){
+
+			Send_to_WFQueue(&Data[3],1,TLE_ADDR1+2*TLE_PACKET_SIZE,COMMSsender);
+			Send_to_WFQueue(&Data[4],TLE_PACKET_SIZE-1,TLE_ADDR2,COMMSsender);
+			TLE_counter=1;
+			GoTX_Flag=1;
+			TXACK_Flag=1;
+		}
+		break;
+
+
+		case UPLOAD_COMMS_CONFIG: //Transciever configuration
+			COMMS_State=STDBY;
+		break;
+
+		case COMMS_UPLOAD_PARAMS: // COMMS Flags/Counters/etc config.
+			COMMS_State=STDBY;
+		break;
+		case UPLOAD_UNIX_TIME:
+		  printf("Executing: upload UNIX time TBD\n");
+		  //TBD
+		  break;
+		case UPLOAD_EPS_TH:
+		  printf("Executing: upload EPS thresholds TBD\n");
+		  //TBD
+		  break;
+		case UPLOAD_PL_CONFIG:
+		  printf("Executing: upload payload config TBD\n");
+		  //TBD
+		  break;
+		case DOWNLINK_CONFIG:
+		  printf("Executing: downlink config TBD\n");
+		  //TBD
+		  break;
+		case EPS_HEATER_ENABLE:
+		  printf("Executing: enable EPS heater TBD\n");
+		  //TBD
+		  break;
+		case EPS_HEATER_DISABLE:
+		  printf("Executing: disable EPS heater TBD\n");
+		  //TBD
+		  break;
+		case POL_PAYLOAD_SHUT:
+		  printf("Executing: shut down payload TBD\n");
+		  break;
+		case POL_ADCS_SHUT:
+		  printf("Executing: shut down ADCS TBD\n");
+		  break;
+		case POL_BURNCOMMS_SHUT:
+		  printf("Executing: shut down burn comms TBD\n");
+		  break;
+		case POL_HEATER_SHUT:
+		  printf("Executing: shut down heater TBD\n");
+		  break;
+		case POL_PAYLOAD_ENABLE:
+		  printf("Executing: enable payload TBD\n");
+		  break;
+		case POL_ADCS_ENABLE:
+		  printf("Executing: enable ADCS TBD\n");
+		  break;
+		case POL_BURNCOMMS_ENABLE:
+		  printf("Executing: enable burn comms TBD\n");
+		  break;
+		case POL_HEATER_ENABLE:
+		  printf("Executing: enable heater TBD\n");
+		  break;
+		case CLEAR_PL_DATA:
+		  printf("Executing: clear payload data TBD\n");
+		  break;
+		case CLEAR_FLASH:
+		  printf("Executing: clear flash memory TBD\n");
+		  break;
+		case CLEAR_HT:
+		  printf("Executing: clear housekeeping telemetry TBD\n");
+		  break;
+		case COMMS_STOP_TX:
+			xTimerStop(xTimerBeacon,0);
+			TXStopped_Flag=1;
+		break;
+		case COMMS_RESUME_TX:
+		  printf("Executing: resume comms transmission\n");
+		  break;
+
+		case COMMS_IT_DOWNLINK:
+		Beacon_Flag=1;
+		GoTX_Flag=1;
+		break;
+
+		case COMMS_HT_DOWNLINK:
+		  printf("Executing: initiate housekeeping telemetry downlink TBD\n");
+		  //TBD
+		  break;
+
+		case PAYLOAD_SCHEDULE:
 			Send_to_WFQueue(&Data[3], 4, PL_TIME_ADDR, COMMSsender);
 			Send_to_WFQueue(&Data[7], 1, PHOTO_RESOL_ADDR, COMMSsender);
 			Send_to_WFQueue(&Data[8], 1, PHOTO_COMPRESSION_ADDR, COMMSsender);
@@ -455,16 +553,40 @@ void process_telecommand(uint8_t Data[]) {
 			Send_to_WFQueue(&Data[20], 1, INTEGRATION_TIME_ADDR, COMMSsender);
 			GoTX_Flag=1;
 			TXACK_Flag=1;
-			break;
-		case UPLINK_CONFIG:
-			COMMS_State=STDBY;
-			break;
-		case STOP_TRANSMISIONS:
-			xTimerStop(xTimerBeacon,0);
-			TXStopped_Flag=1;
+		break;
+
+		case PAYLOAD_DEACTIVATE:
+		  printf("Executing: deactivate payload TBD\n");
+		  //TBD33
+		  break;
+
+		case PAYLOAD_SEND_DATA:
+			plsize=39;
+			packetwindow=5;
+			GoTX_Flag=1;
+			TxData_Flag=1;
+		break;
+
+		case OBC_HARD_REBOOT:
+		  printf("Executing: hard reboot of OBC TBD\n");
+		  //TBD
+		  break;
+		case OBC_SOFT_REBOOT:
+			HAL_NVIC_SystemReset();
+			GoTX_Flag=1;
+			Beacon_Flag=1;
+		break;
+		case OBC_PERIPH_REBOOT:
+		  printf("Executing: reboot peripherals of OBC TBD\n");
+		  //TBD
+		  break;
+		case OBC_DEBUG_MODE:
+		  printf("Executing: enable debug mode TBD\n");
+		  //TBD
+		  break;
 		default:
-			COMMS_State=SLEEP;
-			break;
+		  printf("Unknown command\n");
+		  break;
 	}
 	if (TXStopped_Flag)
 	{
