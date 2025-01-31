@@ -105,6 +105,7 @@ extern EventGroupHandle_t xEventGroup;
 #define BEACON_OP 							1
 #define ACK_OP  							2
 #define DATA_OP 							3
+#define DOWNLINK_CONFIG_OP 					4
 
 #define TLCOUNTER_MAX						146
 #define BEACON_PL_LEN						28
