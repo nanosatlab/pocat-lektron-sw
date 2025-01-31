@@ -155,14 +155,20 @@ void COMMS_StateMachine( void )
             	{
             		for (window_counter=1;window_counter<=packet_window;window_counter++)
             		{
-
 						TxPrepare(DATA_OP);
 						Radio.Send(Encoded_Packet,plsize+9);
 						vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
 						packet_number++;
             		}
             	}
-
+            	if (TxConfig_Data_Flag)
+            	{
+            		TxConfig_Data_Flag=0;
+            		TxPrepare(DOWNLINK_CONFIG_OP);
+            		Radio.Send(Encoded_Packet,48);
+                	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
+                	COMMS_State=SLEEP;
+            	}
             	break;
             case STDBY:
             	switch(TLCReceived)
@@ -278,7 +284,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 
 
     memset(RxData, 0, size);
-    deinterleave((uint8_t*) payload,(uint8_t*) RxData);
+    deinterleave((uint8_t*) payload,(uint8_t*) RxData,sizeof(RxData));
 
     RssiValue = rssi;
     SnrValue = snr;
@@ -657,7 +663,7 @@ void TxPrepare(uint8_t operation){
 
 			Read_Flash(PHOTO_ADDR + packet_number*plsize, (uint8_t *)payloadData, plsize); //Change to  payload_data_adress (pol( requena))
 			memmove(TxPacket+8,payloadData,plsize);
-			interleave((uint8_t*) TxPacket,(uint8_t*) Encoded_Packet);
+			interleave((uint8_t*) TxPacket,(uint8_t*) Encoded_Packet, sizeof(TxPacket));
 			Wait_ACK_Flag=1;
 			break;
 
@@ -674,8 +680,8 @@ void TxPrepare(uint8_t operation){
 			uint8_t eps_config_array[4];
 			uint8_t pl_config_array[8];
 
-			//Read_Flash(NOMINAL_TH_ADDR, (uint8_t *)eps_config_array, 4); To be tested pol classic
-			//Read_Flash(RFI_CONFIG_ADDR, (uint8_t *)pl_config_array, 8);
+			Read_Flash(NOMINAL_TH_ADDR, (uint8_t *)eps_config_array, 4); //To be tested
+			Read_Flash(RFI_CONFIG_ADDR, (uint8_t *)pl_config_array, 8);
 
 			memmove(TxPacket+7,comms_config_array,sizeof(comms_config_array));
 			memmove(TxPacket+7+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
@@ -696,21 +702,37 @@ void TxPrepare(uint8_t operation){
 
 
 
-void interleave(uint8_t *input, uint8_t *output) {
-    for (int j = 0; j < 48; j++) {
-        int row = j % 6;
-        int column = j / 6;
-        int original_index = row * 8 + column;
-        output[j] = input[original_index];
+void interleave(uint8_t *input, uint8_t *output, int size) {
+    if (size <= 0) return;  // Handle invalid size
+
+    // Determine matrix dimensions
+    int rows = (int)sqrt(size);  // Number of rows (rounded down)
+    if (rows == 0) rows = 1;     // Ensure at least 1 row
+    int cols = (size + rows - 1) / rows;  // Number of columns
+
+    // Interleave by writing row-wise and reading column-wise
+    for (int j = 0; j < size; j++) {
+        int row = j % rows;      // Row index in the matrix
+        int col = j / rows;      // Column index in the matrix
+        int input_index = row * cols + col;  // Map to input array
+        output[j] = (input_index < size) ? input[input_index] : 0;  // Handle padding
     }
 }
 
-void deinterleave(uint8_t *input, uint8_t *output) {
-    for (int i = 0; i < 48; i++) {
-        int row = i / 8;
-        int column = i % 8;
-        int interleaved_index = column * 6 + row;
-        output[i] = input[interleaved_index];
+void deinterleave(uint8_t *input, uint8_t *output, int size) {
+    if (size <= 0) return;  // Handle invalid size
+
+    // Determine matrix dimensions
+    int rows = (int)sqrt(size);  // Number of rows (rounded down)
+    if (rows == 0) rows = 1;     // Ensure at least 1 row
+    int cols = (size + rows - 1) / rows;  // Number of columns
+
+    // Deinterleave by writing column-wise and reading row-wise
+    for (int i = 0; i < size; i++) {
+        int row = i / cols;      // Row index in the matrix
+        int col = i % cols;      // Column index in the matrix
+        int input_index = col * rows + row;  // Map to input array
+        output[i] = (input_index < size) ? input[input_index] : 0;  // Handle padding
     }
 }
 
