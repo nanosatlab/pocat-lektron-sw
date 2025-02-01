@@ -24,19 +24,23 @@ COMMS_States COMMS_State=STARTUP;
 /************  PACKETS  ************/
 
 uint8_t RxData[48];        //Tx and Rx decoded
+uint8_t TxPacket[48];
 
-uint8_t TxPacket[48]={MISSION_ID,POCKETQUBE_ID};
 uint8_t payloadData[48];
 uint8_t Encoded_Packet[48];
 
 uint8_t packet_number=1;
 uint8_t packet_start=1;
-uint8_t plsize=39;
+uint8_t plsize=0;
 uint8_t packet_window=255;
 uint8_t TLCReceived=0;
 
 
 uint8_t packet_to_send[48] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
+uint8_t eps_config_array[4];
+uint8_t pl_config_array[8];
+
+uint8_t totalpacketsize=0;
 
 /*************  FLAGS  *************/
 
@@ -83,6 +87,13 @@ uint32_t RF_F=868000000; // Hz
 uint8_t SF=11;
 uint8_t CR=1; // 4/5
 
+
+uint8_t debugsize=0;
+
+
+//uint8_t comms_config_array[8]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100, sleepTime/100,CADMODE_Flag,COMMS_DEBUG_MODE};
+
+uint8_t comms_config_array[8]={}; //Figure out how to do this
 
 
 void COMMS_StateMachine( void )
@@ -146,7 +157,7 @@ void COMMS_StateMachine( void )
             	{
             		TXACK_Flag=0;
             		TxPrepare(ACK_OP);
-            		Radio.Send(packet_to_send,3);
+            		Radio.Send(Encoded_Packet,3);
                 	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,6)));
                 	COMMS_State=SLEEP;
             	}
@@ -156,7 +167,7 @@ void COMMS_StateMachine( void )
             		for (window_counter=1;window_counter<=packet_window;window_counter++)
             		{
 						TxPrepare(DATA_OP);
-						Radio.Send(Encoded_Packet,plsize+9);
+						Radio.Send(Encoded_Packet,48);
 						vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
 						packet_number++;
             		}
@@ -282,9 +293,18 @@ void OnTxDone()
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
 
+	memset(RxData,0,sizeof(RxData));
+    uint8_t *RxPacket =(uint8_t *) malloc(size);
+    if (RxPacket == NULL) {
+        exit(EXIT_FAILURE);
+    }
 
-    memset(RxData, 0, size);
-    deinterleave((uint8_t*) payload,(uint8_t*) RxData,sizeof(RxData));
+    memcpy(RxPacket,payload,size);
+
+    deinterleave((uint8_t*) RxPacket,size);
+    memcpy(RxData,RxPacket,size);
+
+    free(RxPacket);
 
     RssiValue = rssi;
     SnrValue = snr;
@@ -595,7 +615,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		break;
 
 		case PAYLOAD_SEND_DATA:
-			plsize=39;
+			plsize=40;
 			packetwindow=5;
 			GoTX_Flag=1;
 			Tx_PL_Data_Flag=1;
@@ -637,103 +657,125 @@ void process_telecommand(uint8_t tlc_data[]) {
 void TxPrepare(uint8_t operation){
 	TimerTime_t currentUnixTime = RtcGetTimerValue();
 	uint32_t unixTime32 = (uint32_t)currentUnixTime;
+
 	switch(operation)
 	{
 
 		case BEACON_OP:
-			TxPacket[2] = COMMS_IT_DOWNLINK; //should be packet ID
-			break;
+			totalpacketsize=48;
+			plsize=41;
+		break;
+
 		case ACK_OP:
-			TxPacket[2] = PAYLOAD_SEND_DATA;
-			TxPacket[3] = (unixTime32 >> 24) & 0xFF;
-			TxPacket[4] = (unixTime32 >> 16) & 0xFF;
-			TxPacket[5] = (unixTime32 >> 8) & 0xFF;
-			TxPacket[6] = unixTime32 & 0xFF;
-			TxPacket[7] = 1; //should be TLC result
-			TxPacket[8] = 0xFF;
-			break;
+			totalpacketsize=48;
+			plsize=41;
+		break;
+
 		case DATA_OP:
-			TxPacket[2] = PAYLOAD_SEND_DATA;
-			TxPacket[3] = (unixTime32 >> 24) & 0xFF;
-			TxPacket[4] = (unixTime32 >> 16) & 0xFF;
-			TxPacket[5] = (unixTime32 >> 8) & 0xFF;
-			TxPacket[6] = unixTime32 & 0xFF;
-			TxPacket[7] = packet_number;
-			TxPacket[plsize+8] = 0xFF;
+			totalpacketsize=48;
+			plsize=41;
 
+			TxPacket[6] = packet_number;
 			Read_Flash(PHOTO_ADDR + packet_number*plsize, (uint8_t *)payloadData, plsize); //Change to  payload_data_adress (pol( requena))
-			memmove(TxPacket+8,payloadData,plsize);
-			interleave((uint8_t*) TxPacket,(uint8_t*) Encoded_Packet, sizeof(TxPacket));
+			memmove(TxPacket+7,payloadData,plsize);
 			Wait_ACK_Flag=1;
-			break;
+		break;
 
-		case DOWNLINK_CONFIG_OP:
-			TxPacket[2] = DOWNLINK_CONFIG;
+		case DOWNLINK_CONFIG_OP: // Not finished revisit
 
-			TxPacket[3] = (unixTime32 >> 24) & 0xFF;
-			TxPacket[4] = (unixTime32 >> 16) & 0xFF;
-			TxPacket[5] = (unixTime32 >> 8) & 0xFF;
-			TxPacket[6] = unixTime32 & 0xFF;
-			TxPacket[plsize+8] = 0xFF;
 
-			uint8_t comms_config_array[7]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100,CADMODE_Flag, sleepTime};
-			uint8_t eps_config_array[4];
-			uint8_t pl_config_array[8];
+			totalpacketsize=36;
+			plsize=16;
 
 			Read_Flash(NOMINAL_TH_ADDR, (uint8_t *)eps_config_array, 4); //To be tested
 			Read_Flash(RFI_CONFIG_ADDR, (uint8_t *)pl_config_array, 8);
 
-			memmove(TxPacket+7,comms_config_array,sizeof(comms_config_array));
-			memmove(TxPacket+7+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
-			memmove(TxPacket+7+sizeof(comms_config_array)+sizeof(eps_config_array),pl_config_array,sizeof(pl_config_array));
-
-			break;
+			memmove(TxPacket+6,comms_config_array,sizeof(comms_config_array));
+			memmove(TxPacket+6+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
+			memmove(TxPacket+6+sizeof(comms_config_array)+sizeof(eps_config_array),pl_config_array,sizeof(pl_config_array));
+		break;
 
 		default:
 			Radio.Standby();
 			COMMS_State=STDBY;
-			memset(TxPacket,0,sizeof(TxPacket));
 			memset(payloadData,0,sizeof(payloadData));
-			break;
+		break;
 	}
+	TxPacket[0] = (unixTime32 >> 24) & 0xFF;
+	TxPacket[1] = (unixTime32 >> 16) & 0xFF;
+	TxPacket[2] = (unixTime32 >> 8) & 0xFF;
+	TxPacket[3] = unixTime32 & 0xFF;
+	TxPacket[4] = 0;
+	TxPacket[5] = operation;
 
+    uint8_t *TxData =(uint8_t *) malloc(totalpacketsize);
+    if (TxData == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(TxData,TxPacket,totalpacketsize);
+    memcpy(Encoded_Packet,TxData,totalpacketsize);
+	interleave((uint8_t*) TxData, totalpacketsize);
+	memcpy(Encoded_Packet,TxData,totalpacketsize);
+
+	free(TxData);
 }
 
 
 
 
-void interleave(uint8_t *input, uint8_t *output, int size) {
-    if (size <= 0) return;  // Handle invalid size
-
-    // Determine matrix dimensions
-    int rows = (int)sqrt(size);  // Number of rows (rounded down)
-    if (rows == 0) rows = 1;     // Ensure at least 1 row
-    int cols = (size + rows - 1) / rows;  // Number of columns
-
-    // Interleave by writing row-wise and reading column-wise
-    for (int j = 0; j < size; j++) {
-        int row = j % rows;      // Row index in the matrix
-        int col = j / rows;      // Column index in the matrix
-        int input_index = row * cols + col;  // Map to input array
-        output[j] = (input_index < size) ? input[input_index] : 0;  // Handle padding
+void interleave(uint8_t *inputarr, int size) {
+    // Check that the size is a multiple of 6.
+    if (size % 6 != 0) {
+        return;
     }
+
+    int groupSize = size / 6;
+
+    // Allocate temporary array to hold the interleaved result.
+    uint8_t *temp =(uint8_t *) malloc(size * sizeof(uint8_t));
+    if (temp == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    // For each index within the groups,
+    // pick one element from each of the 6 groups.
+    for (int i = 0; i < groupSize; i++) {
+        for (int j = 0; j < 6; j++) {
+            temp[i * 6 + j] = inputarr[j * groupSize + i];
+        }
+    }
+
+    // Copy the interleaved elements back into the original array.
+    memcpy(inputarr, temp, size);
+
+    free(temp);
 }
 
-void deinterleave(uint8_t *input, uint8_t *output, int size) {
-    if (size <= 0) return;  // Handle invalid size
+void deinterleave(uint8_t *inputarr, int size) {
 
-    // Determine matrix dimensions
-    int rows = (int)sqrt(size);  // Number of rows (rounded down)
-    if (rows == 0) rows = 1;     // Ensure at least 1 row
-    int cols = (size + rows - 1) / rows;  // Number of columns
-
-    // Deinterleave by writing column-wise and reading row-wise
-    for (int i = 0; i < size; i++) {
-        int row = i / cols;      // Row index in the matrix
-        int col = i % cols;      // Column index in the matrix
-        int input_index = col * rows + row;  // Map to input array
-        output[i] = (input_index < size) ? input[input_index] : 0;  // Handle padding
+    if (size % 6 != 0) {
+        return;
     }
+
+    int groupSize = size / 6;
+    uint8_t *temp =(uint8_t *) malloc(size * sizeof(uint8_t));
+    if (temp == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    // Reconstruct the original groups.
+    // For each group index i and for each group j:
+    // The interleaved array holds the jth element of group j at position i*6 + j.
+    // We restore it to temp[ j * groupSize + i ].
+    for (int i = 0; i < groupSize; i++) {
+        for (int j = 0; j < 6; j++) {
+            temp[j * groupSize + i] = inputarr[i * 6 + j];
+        }
+    }
+
+    memcpy(inputarr, temp, size);
+    free(temp);
 }
 
 void beacon_time(){

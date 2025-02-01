@@ -284,9 +284,9 @@ void COMMS_StateMachine( void );
 
 void process_telecommand(uint8_t Data[]);
 
-void interleave(uint8_t *input, uint8_t *output, int size);
+void interleave(uint8_t *inputarr, int size);
 
-void deinterleave(uint8_t *input, uint8_t *output, int size);
+void deinterleave(uint8_t *inputarr, int size);
 
 void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
 
