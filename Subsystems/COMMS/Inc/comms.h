@@ -278,24 +278,75 @@ int8_t GetLastCadRssi( void );
  */
 
 
+
+
+/**
+ * @brief Prepares the transmission with the specified operation.
+ *
+ * @param operation The operation code for transmission preparation.
+ */
 void TxPrepare(uint8_t operation);
 
-void COMMS_StateMachine( void );
+/**
+ * @brief Communications state machine.
+ */
+void COMMS_StateMachine(void);
 
+/**
+ * @brief Processes an incoming telecommand.
+ *
+ * @param Data Array containing telecommand data.
+ */
 void process_telecommand(uint8_t Data[]);
 
+/**
+ * @brief Interleaves the given input array.
+ *
+ * @param inputarr Pointer to the input array.
+ * @param size The size of the input array.
+ */
 void interleave(uint8_t *inputarr, int size);
 
+/**
+ * @brief Deinterleaves the given input array.
+ *
+ * @param inputarr Pointer to the input array.
+ * @param size The size of the input array.
+ */
 void deinterleave(uint8_t *inputarr, int size);
 
-void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F);
+/**
+ * @brief Configures the SX1262 module with specified parameters.
+ *
+ * @param SF Spreading factor.
+ * @param CR Coding rate.
+ * @param RF_F RF frequency.
+ */
+void SX1262Config(uint8_t SF, uint8_t CR, uint32_t RF_F);
 
+/**
+ * @brief Configures the SX1262 module using telecommand configuration data.
+ *
+ * @param config_data Array containing configuration data.
+ */
 void SX1262TLCConfig(uint8_t config_data[]);
 
+/**
+ * @brief Configures the communications settings using telecommand configuration data.
+ *
+ * @param config_data Array containing configuration data.
+ */
 void COMMSTLCConfig(uint8_t config_data[]);
 
+/**
+ * @brief Beacon callback executed function.
+ */
 void beacon_time();
 
+/**
+ * @brief Stores telemetry data ito flash memory.
+ */
 void store_telemetry();
+
 
 #endif /* INC_COMMS_H_ */
