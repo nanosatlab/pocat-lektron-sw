@@ -32,7 +32,7 @@ uint8_t Encoded_Packet[48];
 uint8_t packet_number=1;
 uint8_t packet_start=1;
 uint8_t plsize=0;
-uint8_t packet_window=255;
+uint8_t packet_window=5;
 uint8_t TLCReceived=0;
 
 
@@ -93,7 +93,7 @@ uint8_t debugsize=0;
 
 //uint8_t comms_config_array[8]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100, sleepTime/100,CADMODE_Flag,COMMS_DEBUG_MODE};
 
-uint8_t comms_config_array[8]={}; //Figure out how to do this
+uint8_t comms_config_array[10]={}; //Figure out how to do this
 
 
 void COMMS_StateMachine( void )
@@ -148,7 +148,7 @@ void COMMS_StateMachine( void )
 				{
             		Beacon_Flag=0;
             		TxPrepare(BEACON_OP);
-            		Radio.Send(packet_to_send,48);
+            		Radio.Send(Encoded_Packet,48);
                 	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
                 	COMMS_State=SLEEP;
 				}
@@ -167,17 +167,18 @@ void COMMS_StateMachine( void )
             		for (window_counter=1;window_counter<=packet_window;window_counter++)
             		{
 						TxPrepare(DATA_OP);
-						Radio.Send(Encoded_Packet,48);
+						Radio.Send(Encoded_Packet,totalpacketsize);
 						vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
 						packet_number++;
             		}
+            	Tx_PL_Data_Flag=0;
             	}
             	if (TxConfig_Data_Flag)
             	{
             		TxConfig_Data_Flag=0;
             		TxPrepare(DOWNLINK_CONFIG_OP);
-            		Radio.Send(Encoded_Packet,48);
-                	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
+            		Radio.Send(Encoded_Packet,totalpacketsize);
+                	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,totalpacketsize+6)));
                 	COMMS_State=SLEEP;
             	}
             	break;
@@ -664,6 +665,7 @@ void TxPrepare(uint8_t operation){
 		case BEACON_OP:
 			totalpacketsize=48;
 			plsize=41;
+			memcpy(TxPacket+6,packet_to_send,sizeof(packet_to_send)); //Should be changed to the IT, test right now
 		break;
 
 		case ACK_OP:
@@ -683,8 +685,7 @@ void TxPrepare(uint8_t operation){
 
 		case DOWNLINK_CONFIG_OP: // Not finished revisit
 
-
-			totalpacketsize=36;
+			totalpacketsize=30;
 			plsize=16;
 
 			Read_Flash(NOMINAL_TH_ADDR, (uint8_t *)eps_config_array, 4); //To be tested
@@ -714,7 +715,6 @@ void TxPrepare(uint8_t operation){
     }
 
     memcpy(TxData,TxPacket,totalpacketsize);
-    memcpy(Encoded_Packet,TxData,totalpacketsize);
 	interleave((uint8_t*) TxData, totalpacketsize);
 	memcpy(Encoded_Packet,TxData,totalpacketsize);
 
