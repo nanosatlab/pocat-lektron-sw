@@ -93,11 +93,25 @@ It is important to notice that inside both `Src/` and `Inc/` directories there i
 
 **Note**: `pocat-sw.ioc` file **MUST NOT** be modified under no circumstances. The `cmake/` directory **MUST NOT** be modified under no circumstances. The `CMakeLists.txt` file **ONLY MUST** be modified when a new folder is added. 
 
-## 3. Tools (For STM32CubeIDE)
+## 3. Tools
 <a name="tools"></a>
+
+### Build
+To build this project just run the script `build.sh`.
+
+    chmod +x build.sh  # We give execution permisions
+    ./build.sh         # We build the project
+
+### Format
+To format all the files of the project just run the `format.sh` script. It will make your code to be formatted according to the Coding Conventions.
+
+    chmod +x format.sh  # We give execution permisions
+    ./format.sh         # Execute the formating
+
+### Prints (For STM32CubeIDE)
 As debugging is not an easy task, here are some tools to be able to print some data on the terminal. As this feature is not native on the STM32 here is an explanation of how to do it. However, in this repo the CMake has the debugging flags enabled. Warnings show up on the terminal.
 
-### Print data on terminal using `printf`
+#### Print data on terminal using `printf`
 <a name="print-data-on-terminal-using-printf"></a>
 In main add between section (USER CODE 4):
     
@@ -121,7 +135,7 @@ To activate it:\
 
 Activate port0, and finally, click the red button to start recording
 
-### Print float as strings
+#### Print float as strings
 <a name="print-float-as-strings"></a>
 If we want to print a float, using printf, first we have to convert float to string and then print it using snprintf.
 
