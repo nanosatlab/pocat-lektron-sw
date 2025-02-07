@@ -74,7 +74,7 @@ extern EventGroupHandle_t xEventGroup;
 #define RF_ID1								128
 #define RF_ID2								255
 
-#define TX_OUTPUT_POWER                     10        // dBm
+#define TX_OUTPUT_POWER                     18        // dBm
 
 #define LORA_BANDWIDTH                      0         // [0: 125 kHz,
 													  //  1: 250 kHz,
