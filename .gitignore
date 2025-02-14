@@ -75,3 +75,6 @@ Debug
 
 #build
 build
+
+#DOCU
+res/doc/out/*
