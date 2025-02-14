@@ -14,10 +14,6 @@
 
 #include "FreeRTOS.h"
 
-// Define the pointers to the memory addresses
-volatile uint8_t *State = (uint8_t *)CURRENT_STATE_ADDR;
-volatile uint8_t *previousState = (uint8_t *)PREVIOUS_STATE_ADDR;
-
 static uint32_t Get_Page(uint32_t Addr) {
   uint32_t page = 0;
 
@@ -88,9 +84,8 @@ void Write_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
   EraseInitStruct.NbPages =
       n_pages; // Erase the pages we are going to write on.
 
-  while (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK) {
-
-  }; // loop that attempts to erase the page until it returns HAL_OK
+  while (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK)
+    ; // loop that attempts to erase the page until it returns HAL_OK
 
   /******WRITE THE WHOLE PAGE IN DOUBLEWORDS FORM WITH THE NEW DATA******/
   uint64_t doubleWord;
@@ -110,7 +105,6 @@ void Write_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
       i += 8;
       ;
     } else {
-      HAL_FLASH_GetError();
       // return HAL_FLASH_GetError();
     }
   }
@@ -138,4 +132,23 @@ void Send_to_WFQueue(uint8_t *pointer, uint32_t arrayLength, uint32_t addr,
   QueueData_t TxQueueData = {pointer, arrayLength, addr, DataSource};
   BaseType_t __attribute__((unused)) xQueueStatus =
       xQueueSendToBack(FLASH_Queue, &TxQueueData, portMAX_DELAY);
+}
+
+void erase_page(uint32_t data_addr) {
+  static FLASH_EraseInitTypeDef EraseInitStruct;
+
+  uint32_t StartPage = Get_Page(data_addr);
+  uint32_t PAGEError;
+
+  HAL_FLASH_Unlock();
+
+  EraseInitStruct.Banks = Get_Bank(data_addr);
+  EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+  EraseInitStruct.Page = StartPage;
+  EraseInitStruct.NbPages = 1;
+
+  while (HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError) != HAL_OK)
+    ;
+
+  HAL_FLASH_Lock();
 }

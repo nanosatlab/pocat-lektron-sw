@@ -44,8 +44,8 @@ extern "C" {
 #include "definitions.h" // Common includes
 #include "flash.h"
 
+#include "Subsystems/comms.h"
 #include "Subsystems/obc.h" // SUBSYSTEMS includes
-// #include "Subsystems/comms.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

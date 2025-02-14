@@ -37,6 +37,6 @@ extern EventGroupHandle_t xEventGroup;
 
 extern TimerHandle_t xTimerPhoto;
 
-void OBC_COMMS_RXFlags();
+// void OBC_COMMS_RXFlags();
 
 #endif /* INC_OBC_TASK_H_ */

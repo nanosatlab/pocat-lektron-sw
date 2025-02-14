@@ -9,10 +9,12 @@
 #define INC_OBC_H_
 
 #include "clock.h"
-#include "main.h"
+// #include "main.h"
 #include "periph.h"
 #include <softTim.h>
 #include <stdbool.h>
+#include "comms.h"
+
 
 #include "obc_task.h"
 
@@ -80,6 +82,7 @@ extern TimerHandle_t xTimerRF;
 /****SOFTWARE TIMERS DEFINITIONS****/
 
 /***ACTIVE PERIODS IN ms***/
+#define INIT_BEACON_PERIOD 5000
 #define OBC_ACTIVE_PERIOD 3000
 #define COMMS_ACTIVE_PERIOD 3000
 #define ADCS_ACTIVE_PERIOD 3000

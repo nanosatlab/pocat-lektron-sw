@@ -8,16 +8,13 @@
 #ifndef INC_FLASH_H_
 #define INC_FLASH_H_
 
-/* External Includes */
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Internal Includes */
 #include "Subsystems/obc.h"
 #include "definitions.h"
 
-/* FreeRTOS includes */
-#include "FreeRTOS.h"        
+#include "FreeRTOS.h"
 #include "task.h"
 #include "event_groups.h"
 #include "queue.h"
@@ -28,13 +25,11 @@
 //#define PAYLOAD_STATE_ADDR 		0x08008000
 //#define COMMS_STATE_ADDR 			0x08008001
 //#define DETUMBLE_STATE_ADDR 		0x08008004
-#define CURRENT_STATE_ADDR			0x08030000
-#define PREVIOUS_STATE_ADDR			0x08030001
-#define DEPLOYMENT_STATE_ADDR 		0x08030002
-#define DEPLOYMENTRF_STATE_ADDR 	0x08030003
-#define NOMINAL_ADDR 				0x08030004
-#define LOW_ADDR 					0x08030005
-#define CRITICAL_ADDR 				0x08030006
+#define CURRENT_STATE_ADDR			0x08030000 //OBC STATE MACHINE CURRENT STATE
+#define PREVIOUS_STATE_ADDR			0x08030001 //OBC STATE MACHINE PREVIOUS STATE
+#define DEPLOYMENT_STATE_ADDR 		0x08030002 //DEPLOYMENT STATE
+#define DEPLOYMENTRF_STATE_ADDR 	0x08030003 //ANTENNA DEPLYMENT STATE
+
 #define EXIT_LOW_ADDR 				0x08030007
 #define SET_TIME_ADDR				0x08030008 	//4 bytes (GS -> RTC)
 #define RTC_TIME_ADDR				0x0803000C	//4 bytes (RTC -> Unix) Get from the RTC
@@ -63,7 +58,7 @@
 #define PHOTODIODES_OFFSET_ADDR 	0x080300F3 // 12 bytes
 
 //TELEMETRY ADDRESSES
-#define TELEMETRY_ADDR				0x08030100 // 34 bytes in total
+#define TELEMETRY_ADDR				0x08030100
 #define TEMPLAT_ADDR 				0x08030100		// 6
 #define BATT_TEMP_ADDR 			    0x08030106		// 1
 #define MCU_TEMP_ADDR 			    0x08030107		// 1
@@ -72,6 +67,8 @@
 #define GYRO_ADDR 			        0x08030109		// 6
 #define MAGNETOMETER_ADDR 			0x0803010F      // 8
 #define PHOTODIODES_ADDR 			0x08030117      // 8
+
+#define TELEMETRY_LEGACY_ADDR		0x080FEFFF // 4096kb dedicated enabling stores of 89 old data.
 
 
 //TIME ADDR
@@ -98,10 +95,6 @@
 #define COMMS_BOOL_ADDR				0x08038013
 /************************************************/
 
-// Declare pointers to the memory addresses
-extern volatile uint8_t* currentState;
-extern volatile uint8_t* previousState;
-
 extern EventGroupHandle_t xEventGroup;
 extern QueueHandle_t FLASH_Queue;
 extern SemaphoreHandle_t xMutex;
@@ -109,6 +102,8 @@ extern SemaphoreHandle_t xMutex;
 void Write_Flash(uint32_t data_addr, uint8_t *data,uint16_t n_bytes);
 void Read_Flash(uint32_t data_addr, uint8_t *RxBuf, uint16_t n_bytes);
 void Send_to_WFQueue(uint8_t* pointer, uint32_t arrayLength, uint32_t addr, DataSource_t DataSource);
+
+void erase_page(uint32_t data_addr);
 
 
 #endif /* INC_FLASH_H_ */

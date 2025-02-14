@@ -156,7 +156,7 @@ void OBC_Nominal() {
          * check if COMMS TASK has sent any notification to OBC TASK.
          */
 
-        OBC_COMMS_RXFlags();
+        // OBC_COMMS_RXFlags();
         xEventGroupClearBits(xEventGroup,
                              COMMS_RXIRQFlag_EVENT | COMMS_TELECOMMAND_EVENT |
                                  COMMS_WRONGPACKET_EVENT); // Clear risen flags.
@@ -190,11 +190,10 @@ void OBC_Nominal() {
                            // EPS task updates the current state according to
                            // the battery capacity. OBC TASK -> EPS TASK.
     // int8_t* tempCurrentState = currentState;
-    Read_Flash(CURRENT_STATE_ADDR, (uint8_t *)&currentState,
-               1); // Read from the flash which is the current state.
-    if (*currentState != _NOMINAL) {
-      break;
-    }
+    // Read_Flash(CURRENT_STATE_ADDR, (uint8_t *)&currentState,1); // Read from
+    // the flash which is the current state. if (*currentState != _NOMINAL) {
+    //   break;
+    // }
   }
 }
 
@@ -267,7 +266,7 @@ void OBC_Contingency() {
           false, pdMS_TO_TICKS(15000));
 
       if ((EventBits & COMMS_TELECOMMAND_EVENT) == COMMS_TELECOMMAND_EVENT) {
-        OBC_COMMS_RXFlags();
+        // OBC_COMMS_RXFlags();
         xEventGroupClearBits(xEventGroup, COMMS_RXIRQFlag_EVENT |
                                               COMMS_TELECOMMAND_EVENT |
                                               COMMS_WRONGPACKET_EVENT);
@@ -382,7 +381,7 @@ void OBC_Sunsafe() {
           false, pdMS_TO_TICKS(15000));
 
       if ((EventBits & COMMS_TELECOMMAND_EVENT) == COMMS_TELECOMMAND_EVENT) {
-        OBC_COMMS_RXFlags();
+        // OBC_COMMS_RXFlags();
         xEventGroupClearBits(xEventGroup, COMMS_RXIRQFlag_EVENT |
                                               COMMS_TELECOMMAND_EVENT |
                                               COMMS_WRONGPACKET_EVENT);

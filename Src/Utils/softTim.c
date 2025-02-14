@@ -33,3 +33,5 @@ void PhotoTimerCallback(TimerHandle_t xTimer) {
 void RFTimerCallback(TimerHandle_t xTimer) {
   xEventGroupSetBits(xEventGroup, PAYLOAD_TIMERF_EVENT);
 }
+
+void BeaconTimerCallback(TimerHandle_t xTimer) { beacon_time(); }
