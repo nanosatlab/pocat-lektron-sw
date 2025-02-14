@@ -12,6 +12,8 @@
 #include <stdbool.h>
 
 #include "Subsystems/obc.h"
+#include "Subsystems/comms.h"
+
 #include "definitions.h"
 
 #include "FreeRTOS.h"
@@ -21,6 +23,9 @@
 #include "semphr.h"
 
 #define PHOTO_ADDR 					0x08040000
+// #define COMMS_CONFIG_ADDR
+// #define COMMS_CONFIG_ADDR
+// #define COMMS_CONFIG_ADDR
 
 //#define PAYLOAD_STATE_ADDR 		0x08008000
 //#define COMMS_STATE_ADDR 			0x08008001
@@ -94,6 +99,26 @@
 #define COMMS_STATE_ADDR			0x08038012
 #define COMMS_BOOL_ADDR				0x08038013
 /************************************************/
+
+
+
+//EPS
+#define NOMINAL_TH_ADDR             0x08030800  // 1
+#define CONTINGENCY_TH_ADDR         0x08030801  // 1
+#define SUNSAFE_TH_ADDR             0x08030802  // 1
+#define SURVIVAL_TH_ADDR            0x08030803  // 1
+
+#define RFI_CONFIG_ADDR             0x08031000  // 8
+
+
+//COMMS
+#define COMMS_CONFIG_ADDR           0x08031800  // 7
+
+
+
+
+
+
 
 extern EventGroupHandle_t xEventGroup;
 extern QueueHandle_t FLASH_Queue;
