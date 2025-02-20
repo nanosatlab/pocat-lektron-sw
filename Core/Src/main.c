@@ -991,7 +991,7 @@ static void PAYLOAD_Task(void *params)
 	uint32_t RX_PAYLOAD_NOTIS,dT;
 	EventBits_t EventBits;
 
-	uint8_t resolution = 0x00;      //0x11 o 0x00
+	uint8_t resolution = 0x11;      //0x11 o 0x00
 	uint8_t compressibility = 0xFF; // 0x00 --- 0xFF
 	uint8_t info[50];
 
