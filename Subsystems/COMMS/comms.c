@@ -30,7 +30,7 @@ uint8_t TxPacket[48];
 uint8_t payloadData[48];
 uint8_t Encoded_Packet[48];
 
-uint8_t packet_number=1;
+uint8_t packet_number=0;
 uint8_t packet_start=1;
 uint8_t plsize=0;
 uint8_t packet_window=255;

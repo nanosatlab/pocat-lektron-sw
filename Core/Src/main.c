@@ -223,7 +223,7 @@ int main(void)
   xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
-  //xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
+  xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
   //xTaskCreate( sTIM_Task,     "TIM",   sTIM_STACK_SIZE, NULL,   sTIM_PRIORITY, &sTIM_Handle  );
   //xTaskCreate( RFI_Task,     "RFI",   PAYLOAD_STACK_SIZE, NULL,   PAYLOAD_PRIORITY, &RFI_Handle  );
 
@@ -234,12 +234,12 @@ int main(void)
   /****SOFTWARE TIMERS CREATION****/
 
   //xTimerObc = xTimerCreate("TIMER OBC", pdMS_TO_TICKS(OBC_ACTIVE_PERIOD), false, NULL, ObcTimerCallback);
-  //xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
+  xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
   //xTimerAdcs = xTimerCreate("TIMER ADCS", pdMS_TO_TICKS(ADCS_ACTIVE_PERIOD), false, NULL, AdcsTimerCallback);
   //xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
   xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
   //xTimerRF = xTimerCreate("TIMER RF", pdMS_TO_TICKS(1000), false, NULL, RFTimerCallback);
-  xTimerBeacon = xTimerCreate("TIMER BEACON", pdMS_TO_TICKS(INIT_BEACON_PERIOD), true, NULL, BeaconTimerCallback);
+  //xTimerBeacon = xTimerCreate("TIMER BEACON", pdMS_TO_TICKS(INIT_BEACON_PERIOD), true, NULL, BeaconTimerCallback);
 
   /* The period of the timer that controls when the photo will be taken is now arbitrary.
    * It will be updated according to the data included in the telecommand TAKE PHOTO.
@@ -991,12 +991,10 @@ static void PAYLOAD_Task(void *params)
 	uint32_t RX_PAYLOAD_NOTIS,dT;
 	EventBits_t EventBits;
 
-	uint8_t resolution = 0x22;      //0x11 o 0x00
+	uint8_t resolution = 0x00;      //0x11 o 0x00
 	uint8_t compressibility = 0xFF; // 0x00 --- 0xFF
 	uint8_t info[50];
 
-	initCam(huart4, resolution, compressibility, info);
-	uint16_t length = getPhoto(huart4, info);
 	for(;;)
 	{
 
