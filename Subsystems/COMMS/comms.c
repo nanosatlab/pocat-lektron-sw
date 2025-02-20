@@ -57,7 +57,7 @@ int TxConfig_Data_Flag=0;
 
 /***********  COUNTERS  ***********/
 
-TimerHandle_t xTimerBeacon;
+//TimerHandle_t xTimerBeacon;
 
 uint16_t COMMSRxErrors=0;
 uint16_t COMMSRxTimeouts=0;
