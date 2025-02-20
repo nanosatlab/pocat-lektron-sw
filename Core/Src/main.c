@@ -930,8 +930,8 @@ static void PAYLOAD_Task(void *params)
 	uint32_t RX_PAYLOAD_NOTIS,dT;
 	EventBits_t EventBits;
 
-	uint8_t resolution = 0x00;      //0x11 o 0x00
-	uint8_t compressibility = 0xF0; // 0x00 --- 0xFF
+	uint8_t resolution = 0x22;      //0x11 o 0x00
+	uint8_t compressibility = 0xFF; // 0x00 --- 0xFF
 	uint8_t info[50];
 
 	for(;;)
@@ -942,37 +942,44 @@ static void PAYLOAD_Task(void *params)
 
 				if((RX_PAYLOAD_NOTIS & ACTIVATE_PAYLOAD)==ACTIVATE_PAYLOAD)
 				{
+					initCam(huart4, resolution, compressibility, info);
+					uint16_t __attribute__((unused)) length = getPhoto(huart4, info);
+
+					xTaskNotifyStateClear(PAYLOAD_Handle);
+
+					//Branch Stub
 
 					/*
+
+
 					 * The time for photo should be extracted from the telecommand ACTIVATE_PAYLOAD.
 					 * Additionally, we have to synchronize our RTC time to the one on ground.
 					 * The dT would be photo time - ground station current time.
 					 * The data format of the time is Unix given in the telecommands are
-					 */
+
 
 					dT = 10000; // Arbitrary time for photo of 10.000 ms
 
 					xTimerChangePeriod(xTimerPhoto,pdMS_TO_TICKS(dT),0); // Update software timer controlling the photo time.
 					xTimerStart(xTimerPhoto,0); // Start counting.
 
-					/*
+
 					 * The photo has to be taken when two events happen.
 					 * 		1. The time for photo has been reached.
 					 * 		2. ADCS has finished pointing to the location.
 					 * If only one condition is met the photo will NOT be taken.
-					 */
+
 
 					EventBits = xEventGroupWaitBits(xEventGroup, PAYLOAD_TIMEFORPHOTO_EVENT | ADCS_POINTINGDONE_EVENT, 0, true, portMAX_DELAY);
 
 					if( ((EventBits & PAYLOAD_TIMEFORPHOTO_EVENT) == PAYLOAD_TIMEFORPHOTO_EVENT) && ((EventBits & ADCS_POINTINGDONE_EVENT) == ADCS_POINTINGDONE_EVENT) )
 					{
-						initCam(huart4, resolution, compressibility, info);
-						uint16_t __attribute__((unused)) length = getPhoto(huart4, info);
+
 
 						xEventGroupClearBits(xEventGroup, PAYLOAD_TIMEFORPHOTO_EVENT | ADCS_POINTINGDONE_EVENT); // Clean the risen flags.
 					}
 
-					xTimerStop(xTimerPayload,0);
+					xTimerStop(xTimerPayload,0); */
 				}
 			}
 	}

@@ -11,6 +11,7 @@
 #include "comms.h"
 
 
+
 typedef enum                        //Possible States of the State Machine
 {
 	STARTUP,
@@ -32,8 +33,11 @@ uint8_t Encoded_Packet[48];
 uint8_t packet_number=1;
 uint8_t packet_start=1;
 uint8_t plsize=0;
-uint8_t packet_window=5;
+uint8_t packet_window=255;
 uint8_t TLCReceived=0;
+
+TimerTime_t currentUnixTime=0;
+uint32_t unixTime32=0;
 
 
 uint8_t packet_to_send[48] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
@@ -228,7 +232,7 @@ void COMMS_StateMachine( void )
 					}
             		else
             		{
-            			if(COMMS_DEBUG_MODE)
+            			if(!COMMS_DEBUG_MODE)
             			{
 							Radio.Rx(rxTime);
 							vTaskDelay(pdMS_TO_TICKS(rxTime));
@@ -596,6 +600,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  break;
 
 		case PAYLOAD_SCHEDULE:
+			/*
 			//vTaskResume(PAYLOAD_Task); Should be a notification to OBC to enable the task
 			Send_to_WFQueue(&tlc_data[3], 4, PL_TIME_ADDR, COMMSsender);
 			Send_to_WFQueue(&tlc_data[7], 1, PHOTO_RESOL_ADDR, COMMSsender);
@@ -609,6 +614,8 @@ void process_telecommand(uint8_t tlc_data[]) {
 			Send_to_WFQueue(&tlc_data[20], 1, INTEGRATION_TIME_ADDR, COMMSsender);
 			GoTX_Flag=1;
 			TXACK_Flag=1;
+			*/
+			xTaskNotify( PAYLOAD_Handle, 0x1E, eSetValueWithOverwrite );
 		break;
 
 		case PAYLOAD_DEACTIVATE:
@@ -658,8 +665,8 @@ void process_telecommand(uint8_t tlc_data[]) {
 
 
 void TxPrepare(uint8_t operation){
-	TimerTime_t currentUnixTime = RtcGetTimerValue();
-	uint32_t unixTime32 = (uint32_t)currentUnixTime;
+	currentUnixTime = RtcGetTimerValue();
+	unixTime32 = (uint32_t)currentUnixTime;
 
 	switch(operation)
 	{
