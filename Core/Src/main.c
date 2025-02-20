@@ -60,6 +60,7 @@ TIM_HandleTypeDef htim16;
 TIM_HandleTypeDef htim17;
 
 UART_HandleTypeDef huart4;
+DMA_HandleTypeDef hdma_uart4_rx;
 /* USER CODE BEGIN PV */
 uint8_t timer_counter = 0;		//TEST
 uint8_t beacon_counter = 0;		//COMMS BEACON
@@ -102,6 +103,7 @@ TimerHandle_t xTimerBeacon;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_RTC_Init(void);
 static void MX_SPI2_Init(void);
@@ -158,6 +160,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_RTC_Init();
   MX_SPI2_Init();
@@ -212,23 +215,23 @@ int main(void)
    */
 
   /****TASK CREATION****/
-  xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
+  //xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
   //xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   EPS_PRIORITY, &EPS_Handle  );
   xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
-  xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
+  //xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
   //xTaskCreate( sTIM_Task,     "TIM",   sTIM_STACK_SIZE, NULL,   sTIM_PRIORITY, &sTIM_Handle  );
   //xTaskCreate( RFI_Task,     "RFI",   PAYLOAD_STACK_SIZE, NULL,   PAYLOAD_PRIORITY, &RFI_Handle  );
 
-  FLASH_Queue = xQueueCreate(10,sizeof(QueueData_t)); // QUEUE : FIFO buffer for controlling the writing on the memory flash
+  //FLASH_Queue = xQueueCreate(10,sizeof(QueueData_t)); // QUEUE : FIFO buffer for controlling the writing on the memory flash
 
   xEventGroup = xEventGroupCreate();                  // EVENT GROUP : communication object used for blocking events
 
   /****SOFTWARE TIMERS CREATION****/
 
   //xTimerObc = xTimerCreate("TIMER OBC", pdMS_TO_TICKS(OBC_ACTIVE_PERIOD), false, NULL, ObcTimerCallback);
-  xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
+  //xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
   //xTimerAdcs = xTimerCreate("TIMER ADCS", pdMS_TO_TICKS(ADCS_ACTIVE_PERIOD), false, NULL, AdcsTimerCallback);
   //xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
   xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
@@ -732,6 +735,21 @@ static void MX_UART4_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel5_IRQn);
+
+}
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -856,7 +874,7 @@ static void OBC_Task(void *params)
 
 static void COMMS_Task(void *params)
 {
-	xTimerStart(xTimerBeacon,0);
+	//xTimerStart(xTimerBeacon,0);
 	for(;;)
 	{
 		COMMS_StateMachine();
@@ -934,6 +952,8 @@ static void PAYLOAD_Task(void *params)
 	uint8_t compressibility = 0xFF; // 0x00 --- 0xFF
 	uint8_t info[50];
 
+	initCam(huart4, resolution, compressibility, info);
+	uint16_t length = getPhoto(huart4, info);
 	for(;;)
 	{
 
@@ -1281,6 +1301,7 @@ static void sTIM_Task(void *params)
 void Init_Peripherals()
 {
 	MX_GPIO_Init();
+	MX_DMA_Init();
 	MX_I2C1_Init();
 	MX_RTC_Init();
 	MX_SPI2_Init();

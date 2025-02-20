@@ -1,21 +1,36 @@
 
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
-
 /* USER CODE BEGIN Includes */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 			                    camerav2.c                                   *
  *                                                                           *
  *  Created on: Nov 18, 2022  												 *
- *  Modified on: Jan 20, 2025                                                *
- *      Author: Óscar                                              	         *
- *      Email: opavonam11@alumnes.ub.edu					                 *
+ *  Modified on: Jan 09, 2023                                                *
+ *      Author: Xavier                                                       *
+ *      Email: xavier.morales.rivero@estudiantat.upc.edu                     *
  *                                                                           *
- *  Previous Camera Work:
- *
- *  Jan 2024
- *  	Author: Xavier Morales                                               *
+ *  Previous Camera Work:                                                    *
  *                                                                           *
  *  Nov 25, 2021                                                             *
  *      Author: Jaume                                                        *
@@ -44,7 +59,7 @@ uint8_t ACK[] = {0x76, 0x00}; //All ACKS have the same structure.
 //DMA Callback Variables: Requiered in order to continuosly transmit data.
 
 int HTC = 0, FTC = 0;
-uint32_t indx=0;
+uint32_t indxVGA=0;
 
 int isSizeRxed = 0;
 uint32_t longitud;
@@ -83,7 +98,7 @@ uint8_t rxdataGV[20];
 //Note2: Personally, I though it is due to a change on the firmware on the newest version, but it does not appear on any web.
 																							//12   //13
 uint8_t txdata[16] = {0x56, 0x00, 0x32, 0x0C, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A};
-uint8_t rxdata[4096]={0};
+uint8_t rxdataImage[4096]={0};
 
 
 //StopCapture: These commands enables to stop the capture.
@@ -134,7 +149,7 @@ uint8_t infoBuffer[50];
 
 bool anErrorHappened = false;
 
-int j = 0;
+int numerrorsVGA = 0;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 								"BASIC" Functions						     *
@@ -182,7 +197,7 @@ bool setCompressibility(UART_HandleTypeDef huart){
 	memset(rxdataSC, 0, sizeof(rxdataSC));
 	HAL_UART_Transmit(&huart, txdataSC, sizeof(txdataSC), 100);
 	HAL_UART_Receive(&huart, rxdataSC, sizeof(rxdataSC) ,100);
-	return checkACK(huart, rxdataSC[0], rxdataSC[1], rxdataSC[2], rxdataSC[3], rxdata[4]);
+	return checkACK(huart, rxdataSC[0], rxdataSC[1], rxdataSC[2], rxdataSC[3], rxdataImage[4]);
 }
 
 bool startCapture(UART_HandleTypeDef huart){
@@ -212,49 +227,53 @@ bool getData(UART_HandleTypeDef huart){
 	state = CAM_GET_DATA;
 	storeInfo(CAM_GET_DATA);
 	longitud=256U*rxdataDL[7]+rxdataDL[8]+8;
-	memset(rxdata, 0, sizeof(rxdata));
+	memset(rxdataImage, 0, sizeof(rxdataImage));
 	HAL_UART_Transmit(&huart, txdata, sizeof(txdata), 30000);
-	HAL_UART_Receive_DMA(&huart, rxdata,4096); //1000 bytes is around the smallest photo to be received
+	HAL_UART_Receive_DMA(&huart, rxdataImage,4096); //1000 bytes is around the smallest photo to be received
 	while (!doneTransfer)
 	{
-	  if (((longitud-indx)>0) && ((longitud-indx)<2048))
+	  if (((longitud-indxVGA)>0) && ((longitud-indxVGA)<2048))
 	  {
 	    if (HTC==1)
 	    {
-	      memcpy(auxrxdata,rxdata+2048,2048);
-	      HAL_Delay(200);
-	      store_flash_memory(PHOTO_ADDR+indx, &auxrxdata, (longitud-indx));
-	      //Send_to_WFQueue(&auxrxdata, (longitud-indx), PHOTO_ADDR+indx, PAYLOADsender); //memcpy (FinalBuf+indx, rxdata+500, (longitud-indx));
-	      indx = longitud;
+	      memcpy(auxrxdata,rxdataImage+2048,2048);
+	      vTaskDelay(200);
+	      store_flash_memory(PHOTO_ADDR+indxVGA, &auxrxdata, (longitud-indxVGA));
+	      //Send_to_WFQueue(&auxrxdata, (longitud-indxVGA), PHOTO_ADDR+indxVGA, PAYLOADsender); //memcpy (FinalBuf+indxVGA, rxdataImage+500, (longitud-indxVGA));
+	      indxVGA = longitud;
 	      memset(auxrxdata, '\0', 2048);
 	      isSizeRxed = 0;
 	      HTC = 0;
 	      HAL_UART_DMAStop(&huart);
 	      doneTransfer=1;
+	      //HAL_UART_Receive_DMA(&huart, rxdataImage, 1000);
 	    }
 
 	  else if (FTC==1)
 	  {
-		 HAL_Delay(50);
-	     store_flash_memory(PHOTO_ADDR+indx, &rxdata, (longitud-indx));
-		 //Send_to_WFQueue(&rxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy (FinalBuf+indx, rxdata, (longitud-indx));
-	     indx = longitud;
+		  vTaskDelay(50);
+	     //Write_Flash(PHOTO_ADDR+indxVGA, &rxdataImage,(longitud-indxVGA));
+	     store_flash_memory(PHOTO_ADDR+indxVGA, &rxdataImage, (longitud-indxVGA));
+		 //Send_to_WFQueue(&rxdataImage, 500, PHOTO_ADDR+indxVGA, PAYLOADsender);//memcpy (FinalBuf+indxVGA, rxdataImage, (longitud-indxVGA));
+	     indxVGA = longitud;
 	     isSizeRxed = 0;
 	     FTC = 0;
 	     HAL_UART_DMAStop(&huart);
 	     doneTransfer=1;
+	     //HAL_UART_Receive_DMA(&huart, rxdataImage, 1000);
 	  }
 	  }
-	  else if ((indx == longitud) && ((HTC==1)||(FTC==1)))
+	  else if ((indxVGA == longitud) && ((HTC==1)||(FTC==1)))
 	  {
 		  isSizeRxed = 0;
 		  HTC = 0;
 		  FTC = 0;
 		  HAL_UART_DMAStop(&huart);
 	      doneTransfer=1;
+		  //HAL_UART_Receive_DMA(&huart, rxdataImage, 1000);
 	  }
 	}
-	return 1;//checkACK(huart, rxdata[0], rxdata[1], rxdata[2], rxdata[3], 0x00); //return 0s with the checkACK() //cant check due to dma
+	return 1;//checkACK(huart, rxdataImage[0], rxdataImage[1], rxdataImage[2], rxdataImage[3], 0x00); //return 0s with the checkACK() //cant check due to dma
 }
 
 
@@ -277,6 +296,7 @@ bool stopCapture(UART_HandleTypeDef huart){
  *                                                                           *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+//FINALIZADA, FUNCIONA OK.
 bool initCam(UART_HandleTypeDef huart, uint8_t res, uint8_t comp, uint8_t *array){
 
 	storeInfo(CAM_START);
@@ -291,33 +311,33 @@ bool initCam(UART_HandleTypeDef huart, uint8_t res, uint8_t comp, uint8_t *array
 
 	if(!reset(huart)){
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return false;
 	}
 
 	if(!getVersion(huart)){
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return false;
 	}
 
 	if(!setResolution(huart)){		//res is the Resolution used.
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return false;
 	}
 
 	if(!setCompressibility(huart)){	//comp is the compression used.
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return false;
 	}
 
 	storeInfo(CAM_END);
 	//This part returns the array to the Buffer
-	for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+	for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 }
-
+//FINALIZADA, FUNCIONA OK.
 uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
 	bool ok = true;
 
@@ -325,32 +345,33 @@ uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
 
 	if(!startCapture(huart)){
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return 0x0000;
 	}
 
 	if(!getDataLength(huart)){
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return 0x0000;
 	}
 
 	if(!getData(huart)){
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return 0x0000;
 	}
 
 	if(!stopCapture(huart)){
 		storeInfo(CAM_ERROR);
-		for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+		for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 		return 0x0000;
 	}
 	storeInfo(CAM_END);
-	for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
+	for ( uint8_t a = 0; a < numerrorsVGA; a++ ) { array[a] = infoBuffer[a]; }
 	//return storeDataFlash();
 }
 
+//Comprobado
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 																			 *
@@ -364,22 +385,22 @@ uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
  */
 
 uint16_t storeDataFlash(){
-	memmove(rxdata, rxdata + 5, sizeof(rxdata));
-	uint32_t photosize=sizeof(rxdata);
-	// Flash_Write_Data(PHOTO_ADDR, rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
-	//Write_Flash(PHOTO_ADDR, &rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
-	//Send_to_WFQueue(&rxdata, (uint16_t) sizeof(rxdata) + 1, PHOTO_ADDR, PAYLOADsender);
+	memmove(rxdataImage, rxdataImage + 5, sizeof(rxdataImage));
+	uint32_t photosize=sizeof(rxdataImage);
+	// Flash_Write_Data(PHOTO_ADDR, rxdataImage, (uint16_t) sizeof(rxdataImage)/8 + 1);
+	//Write_Flash(PHOTO_ADDR, &rxdataImage, (uint16_t) sizeof(rxdataImage)/8 + 1);
+	//Send_to_WFQueue(&rxdataImage, (uint16_t) sizeof(rxdataImage) + 1, PHOTO_ADDR, PAYLOADsender);
 	return (256U*txdata[12]+txdata[13]); 	//longitud
 }
 
 void storeInfo(uint8_t info){
-	infoBuffer[j] = info;
+	infoBuffer[numerrorsVGA] = info;
 	if(info == CAM_START){
 		memset(infoBuffer, 0, sizeof(infoBuffer));
-		infoBuffer[j] = info;
-		j = 0;
+		infoBuffer[numerrorsVGA] = info;
+		numerrorsVGA = 0;
 	}
-	j++;
+	numerrorsVGA++;
 }
 
 
@@ -463,21 +484,23 @@ void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (isSizeRxed == 0)
 	{
-		indx = 0;
-		memcpy(auxrxdata,rxdata+5,2048);
-		store_flash_memory(PHOTO_ADDR+indx,  &auxrxdata, 2048);
-		//Send_to_WFQueue(&auxrxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy(FinalBuf+indx, rxdata+5, 500);  // copy the data into the main buffer/file
-		memset(rxdata, '\0', 2048);  // clear the RxData buffer
+		indxVGA = 0;
+		memcpy(auxrxdata,rxdataImage+5,2048);
+		//HAL_Delay(50);
+		store_flash_memory(PHOTO_ADDR+indxVGA,  &auxrxdata, 2048);
+		//Write_Flash(PHOTO_ADDR+indxVGA, &auxrxdata,500);
+		//Send_to_WFQueue(&auxrxdata, 500, PHOTO_ADDR+indxVGA, PAYLOADsender);//memcpy(FinalBuf+indxVGA, rxdataImage+5, 500);  // copy the data into the main buffer/file
+		memset(rxdataImage, '\0', 2048);  // clear the RxData buffer
 		memset(auxrxdata, '\0', 2048);  // clear the auxrxdata buffer
-		indx += 2048;  // update the indx variable
+		indxVGA += 2048;  // update the indxVGA variable
 		isSizeRxed = 1;  // set the variable to 1 so that this loop does not enter again
 	}
 	else
 	{
-		store_flash_memory(PHOTO_ADDR+indx, &rxdata, 2048);
-		//Send_to_WFQueue(&rxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy(FinalBuf+indx, rxdata, 500);
-		memset(rxdata, '\0', 2048);
-		indx += 2048;
+		store_flash_memory(PHOTO_ADDR+indxVGA, &rxdataImage, 2048);
+		//Send_to_WFQueue(&rxdataImage, 500, PHOTO_ADDR+indxVGA, PAYLOADsender);//memcpy(FinalBuf+indxVGA, rxdataImage, 500);
+		memset(rxdataImage, '\0', 2048);
+		indxVGA += 2048;
 	}
 	HTC=1;  // half transfer complete callback was called
 	FTC=0;
@@ -485,12 +508,12 @@ void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	  memcpy(auxrxdata,rxdata+2048,2048);
-	  store_flash_memory(PHOTO_ADDR+indx, &auxrxdata, 2048);
-	  //Send_to_WFQueue(&auxrxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy(FinalBuf+indx, rxdata+500, 500);
-	  memset(rxdata+2048, '\0', 2048);
+	  memcpy(auxrxdata,rxdataImage+2048,2048);
+	  store_flash_memory(PHOTO_ADDR+indxVGA, &auxrxdata, 2048);
+	  //Send_to_WFQueue(&auxrxdata, 500, PHOTO_ADDR+indxVGA, PAYLOADsender);//memcpy(FinalBuf+indxVGA, rxdataImage+500, 500);
+	  memset(rxdataImage+2048, '\0', 2048);
 	  memset(auxrxdata, '\0', 2048);
-	  indx+=2048;
+	  indxVGA+=2048;
 	  HTC=0;
 	  FTC=1;
 }
