@@ -29,13 +29,11 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "delay.h"
 #include "gpio.h"
 #include "spi.h"
-#include "uart.h"
 #include "radio.h"
 #include "sx126x.h"
 #include "sx126x-board.h"
 #include "rtc-board.h"
 
-#include "uart-board.h"
 
 #include "stm32l4xx_it.h"
 /*!
@@ -87,16 +85,6 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define OPT                                         PA_11//PB_0	//Check this lines NOT USED
 #define DEVICE_SEL                                  PB_9//PA_4	//Check this lines
 
-/*!
- * LED GPIO pins objects
- */
-extern Gpio_t Led1;
-extern Gpio_t Led2;
-
-/*!
- * MCU objects
- */
-extern Uart_t Uart2;
 
 /*!
  * Possible power sources

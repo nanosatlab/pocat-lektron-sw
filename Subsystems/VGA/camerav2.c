@@ -1,12 +1,21 @@
+
+#include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+
+/* USER CODE BEGIN Includes */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 			                    camerav2.c                                   *
  *                                                                           *
  *  Created on: Nov 18, 2022  												 *
- *  Modified on: Jan 09, 2023                                                *
- *      Author: Xavier                                                       *
- *      Email: xavier.morales.rivero@estudiantat.upc.edu                     *
+ *  Modified on: Jan 20, 2025                                                *
+ *      Author: Óscar                                              	         *
+ *      Email: opavonam11@alumnes.ub.edu					                 *
  *                                                                           *
- *  Previous Camera Work:                                                    *
+ *  Previous Camera Work:
+ *
+ *  Jan 2024
+ *  	Author: Xavier Morales                                               *
  *                                                                           *
  *  Nov 25, 2021                                                             *
  *      Author: Jaume                                                        *
@@ -19,9 +28,6 @@
 
 //LIBRERIAS
 #include <camerav2.h>
-#include <flash.h>
-#include <stdint.h>
-
 //COMANDOS
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 							       COMMANDS                                  *
@@ -35,10 +41,21 @@ uint8_t ACK[] = {0x76, 0x00}; //All ACKS have the same structure.
 
 //All these commands are obtained from the datasheet v1.0, which can be easily found on the web.
 
+//DMA Callback Variables: Requiered in order to continuosly transmit data.
+
+int HTC = 0, FTC = 0;
+uint32_t indx=0;
+
+int isSizeRxed = 0;
+uint32_t longitud;
+int doneTransfer=0;
+uint8_t auxrxdata[2048];
+
 
 //RESET: This command starts the communication.
 uint8_t txdataReset[4] = {0x56, 0x00, 0x26, 0x00};
 uint8_t rxdataReset[60];
+
 
 //SETRESOLUTION: Sets the necessary resolution. Its default value is 0x11, but it can be modified in its function.
 
@@ -66,11 +83,13 @@ uint8_t rxdataGV[20];
 //Note2: Personally, I though it is due to a change on the firmware on the newest version, but it does not appear on any web.
 																							//12   //13
 uint8_t txdata[16] = {0x56, 0x00, 0x32, 0x0C, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A};
-uint8_t rxdata[5]; // This should be 140000
+uint8_t rxdata[4096]={0};
+
 
 //StopCapture: These commands enables to stop the capture.
 uint8_t txdataStop[5] = {0x56, 0x00, 0x36, 0x01, 0x03};
 uint8_t rxdataStop[5];
+
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -116,38 +135,6 @@ uint8_t infoBuffer[50];
 bool anErrorHappened = false;
 
 int j = 0;
-
-//Comprobado
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * 																			 *
- * 							"Checking"&"Extra" Functions				     *
- *  @These functions are used in order to check the data from the sensor.    *
- *   Check ack analyses if the ack is not the correct one. If it does not    *
- *   work (return false)m it applied the error protocol. If it does not work *
- *   it ends returning false.                                                *
- *                                                                           *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
-
-uint16_t storeDataFlash(){
-	memmove(rxdata, rxdata + 5, sizeof(rxdata));
-	//uint32_t photosize = sizeof(rxdata);
-	// Flash_Write_Data(PHOTO_ADDR, rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
-	//Write_Flash(PHOTO_ADDR, &rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
-	Send_to_WFQueue(rxdata, (uint16_t) sizeof(rxdata)/8 + 1, PHOTO_ADDR, PAYLOADsender);
-	return (256U*txdata[12]+txdata[13]); 	//longitud
-}
-
-void storeInfo(uint8_t info){
-	infoBuffer[j] = info;
-	if(info == CAM_START){
-		memset(infoBuffer, 0, sizeof(infoBuffer));
-		infoBuffer[j] = info;
-		j = 0;
-	}
-	j++;
-}
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * 								"BASIC" Functions						     *
@@ -219,17 +206,57 @@ bool getDataLength(UART_HandleTypeDef huart){
 		txdata[13] = rxdataDL[8];
 		return true;
 	}
-	return false;
 }
 
 bool getData(UART_HandleTypeDef huart){
 	state = CAM_GET_DATA;
 	storeInfo(CAM_GET_DATA);
+	longitud=256U*rxdataDL[7]+rxdataDL[8]+8;
 	memset(rxdata, 0, sizeof(rxdata));
 	HAL_UART_Transmit(&huart, txdata, sizeof(txdata), 30000);
-	HAL_UART_Receive(&huart, rxdata, sizeof(rxdata), 30000);
-	return checkACK(huart, rxdata[0], rxdata[1], rxdata[2], rxdata[3], 0x00); //return 0s with the checkACK()
+	HAL_UART_Receive_DMA(&huart, rxdata,4096); //1000 bytes is around the smallest photo to be received
+	while (!doneTransfer)
+	{
+	  if (((longitud-indx)>0) && ((longitud-indx)<2048))
+	  {
+	    if (HTC==1)
+	    {
+	      memcpy(auxrxdata,rxdata+2048,2048);
+	      HAL_Delay(200);
+	      store_flash_memory(PHOTO_ADDR+indx, &auxrxdata, (longitud-indx));
+	      //Send_to_WFQueue(&auxrxdata, (longitud-indx), PHOTO_ADDR+indx, PAYLOADsender); //memcpy (FinalBuf+indx, rxdata+500, (longitud-indx));
+	      indx = longitud;
+	      memset(auxrxdata, '\0', 2048);
+	      isSizeRxed = 0;
+	      HTC = 0;
+	      HAL_UART_DMAStop(&huart);
+	      doneTransfer=1;
+	    }
+
+	  else if (FTC==1)
+	  {
+		 HAL_Delay(50);
+	     store_flash_memory(PHOTO_ADDR+indx, &rxdata, (longitud-indx));
+		 //Send_to_WFQueue(&rxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy (FinalBuf+indx, rxdata, (longitud-indx));
+	     indx = longitud;
+	     isSizeRxed = 0;
+	     FTC = 0;
+	     HAL_UART_DMAStop(&huart);
+	     doneTransfer=1;
+	  }
+	  }
+	  else if ((indx == longitud) && ((HTC==1)||(FTC==1)))
+	  {
+		  isSizeRxed = 0;
+		  HTC = 0;
+		  FTC = 0;
+		  HAL_UART_DMAStop(&huart);
+	      doneTransfer=1;
+	  }
+	}
+	return 1;//checkACK(huart, rxdata[0], rxdata[1], rxdata[2], rxdata[3], 0x00); //return 0s with the checkACK() //cant check due to dma
 }
+
 
 bool stopCapture(UART_HandleTypeDef huart){
 	state = CAM_STOP_CAPTURE;
@@ -250,7 +277,6 @@ bool stopCapture(UART_HandleTypeDef huart){
  *                                                                           *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-//FINALIZADA, FUNCIONA OK.
 bool initCam(UART_HandleTypeDef huart, uint8_t res, uint8_t comp, uint8_t *array){
 
 	storeInfo(CAM_START);
@@ -290,11 +316,10 @@ bool initCam(UART_HandleTypeDef huart, uint8_t res, uint8_t comp, uint8_t *array
 	storeInfo(CAM_END);
 	//This part returns the array to the Buffer
 	for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
-	return true;
 }
 
-//FINALIZADA, FUNCIONA OK.
 uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
+	bool ok = true;
 
 	storeInfo(CAM_START);
 
@@ -323,8 +348,40 @@ uint16_t getPhoto(UART_HandleTypeDef huart, uint8_t *array){
 	}
 	storeInfo(CAM_END);
 	for ( uint8_t a = 0; a < j; a++ ) { array[a] = infoBuffer[a]; }
-	return storeDataFlash();
+	//return storeDataFlash();
 }
+
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * 																			 *
+ * 							"Checking"&"Extra" Functions				     *
+ *  @These functions are used in order to check the data from the sensor.    *
+ *   Check ack analyses if the ack is not the correct one. If it does not    *
+ *   work (return false)m it applied the error protocol. If it does not work *
+ *   it ends returning false.                                                *
+ *                                                                           *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+
+uint16_t storeDataFlash(){
+	memmove(rxdata, rxdata + 5, sizeof(rxdata));
+	uint32_t photosize=sizeof(rxdata);
+	// Flash_Write_Data(PHOTO_ADDR, rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
+	//Write_Flash(PHOTO_ADDR, &rxdata, (uint16_t) sizeof(rxdata)/8 + 1);
+	//Send_to_WFQueue(&rxdata, (uint16_t) sizeof(rxdata) + 1, PHOTO_ADDR, PAYLOADsender);
+	return (256U*txdata[12]+txdata[13]); 	//longitud
+}
+
+void storeInfo(uint8_t info){
+	infoBuffer[j] = info;
+	if(info == CAM_START){
+		memset(infoBuffer, 0, sizeof(infoBuffer));
+		infoBuffer[j] = info;
+		j = 0;
+	}
+	j++;
+}
+
 
 bool checkACK(UART_HandleTypeDef huart, uint8_t c1, uint8_t c2, uint8_t c3, uint8_t c4, uint8_t c5){
 	//All the ACKs are formed by these structure. If this does not work, it interrupts
@@ -363,7 +420,7 @@ bool errP(UART_HandleTypeDef huart){
 
 	uint8_t attempts = 0;
 	bool err;
-	HAL_Delay(2500);
+	vTaskDelay(2500);
 	anErrorHappened = true;
 
 	while(attempts <= REP_NUM){
@@ -398,4 +455,48 @@ bool errP(UART_HandleTypeDef huart){
 	//It is restored, besides the error persist.
 	anErrorHappened = false;
 	return false;
+}
+
+
+
+void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (isSizeRxed == 0)
+	{
+		indx = 0;
+		memcpy(auxrxdata,rxdata+5,2048);
+		store_flash_memory(PHOTO_ADDR+indx,  &auxrxdata, 2048);
+		//Send_to_WFQueue(&auxrxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy(FinalBuf+indx, rxdata+5, 500);  // copy the data into the main buffer/file
+		memset(rxdata, '\0', 2048);  // clear the RxData buffer
+		memset(auxrxdata, '\0', 2048);  // clear the auxrxdata buffer
+		indx += 2048;  // update the indx variable
+		isSizeRxed = 1;  // set the variable to 1 so that this loop does not enter again
+	}
+	else
+	{
+		store_flash_memory(PHOTO_ADDR+indx, &rxdata, 2048);
+		//Send_to_WFQueue(&rxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy(FinalBuf+indx, rxdata, 500);
+		memset(rxdata, '\0', 2048);
+		indx += 2048;
+	}
+	HTC=1;  // half transfer complete callback was called
+	FTC=0;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	  memcpy(auxrxdata,rxdata+2048,2048);
+	  store_flash_memory(PHOTO_ADDR+indx, &auxrxdata, 2048);
+	  //Send_to_WFQueue(&auxrxdata, 500, PHOTO_ADDR+indx, PAYLOADsender);//memcpy(FinalBuf+indx, rxdata+500, 500);
+	  memset(rxdata+2048, '\0', 2048);
+	  memset(auxrxdata, '\0', 2048);
+	  indx+=2048;
+	  HTC=0;
+	  FTC=1;
+}
+
+void WFSkip(uint8_t* pointer,uint32_t arrayLength,uint32_t addr)
+{
+	QueueData_t RxQueueSkip = {pointer,arrayLength,addr};
+	Write_Flash(RxQueueSkip.addr,RxQueueSkip.pointer,RxQueueSkip.arrayLength);
 }

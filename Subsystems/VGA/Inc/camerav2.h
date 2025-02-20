@@ -42,4 +42,6 @@ uint16_t storeDataFlash();
 
 bool getVersion(UART_HandleTypeDef huart);
 
+void WFSkip(uint8_t* pointer,uint32_t arrayLength,uint32_t addr);
+
 #endif /* INC_CAMERAV2_H_ */

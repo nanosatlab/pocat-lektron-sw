@@ -214,7 +214,7 @@ int main(void)
   /****TASK CREATION****/
   xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
   //xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   EPS_PRIORITY, &EPS_Handle  );
-  //xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
+  xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
   xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
@@ -231,10 +231,9 @@ int main(void)
   xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
   //xTimerAdcs = xTimerCreate("TIMER ADCS", pdMS_TO_TICKS(ADCS_ACTIVE_PERIOD), false, NULL, AdcsTimerCallback);
   //xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
-  //xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
+  xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
   //xTimerRF = xTimerCreate("TIMER RF", pdMS_TO_TICKS(1000), false, NULL, RFTimerCallback);
   xTimerBeacon = xTimerCreate("TIMER BEACON", pdMS_TO_TICKS(INIT_BEACON_PERIOD), true, NULL, BeaconTimerCallback);
-  xTimerStart(xTimerBeacon,0);
 
   /* The period of the timer that controls when the photo will be taken is now arbitrary.
    * It will be updated according to the data included in the telecommand TAKE PHOTO.
@@ -857,15 +856,11 @@ static void OBC_Task(void *params)
 
 static void COMMS_Task(void *params)
 {
-	//Send_to_WFQueue(photo_vect,sizeof(photo_vect),PHOTO_ADDR,COMMSsender);
-	//Send_to_WFQueue(config_vect,sizeof(config_vect),CONFIG_ADDR,COMMSsender);
-	//Send_to_WFQueue(telemetry_vect,sizeof(telemetry_vect),PHOTO_ADDR,COMMSsender);
-
+	xTimerStart(xTimerBeacon,0);
 	for(;;)
 	{
 		COMMS_StateMachine();
 	}
-
 }
 
 static void ADCS_Task(void *params)
@@ -1354,15 +1349,6 @@ void SystemClockConfig( void )
 
   HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(SPI2_IRQn);
-}
-
-void eighttosixfour (void){
-
-	//uint64_t dataVect[sizeof(photo_vect)/8+1];
-	//memcpy(&dataVect, photo_vect, sizeof(dataVect));
-	//uint64_t info_write;
-	//info_write=dataVect;
-	//Write_Flash(TEST_ADDRESS3, &info_write, (sizeof(photo_vect)/8+1));
 }
 
 

@@ -24,17 +24,6 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define         ID3                                 ( 0x1FF800E4 )
 
 /*!
- * LED GPIO pins objects
- */
-Gpio_t Led1;
-Gpio_t Led2;
-
-/*
- * MCU objects
- */
-Uart_t Uart2;
-
-/*!
  * Initializes the unused GPIO to a know status
  */
 static void BoardUnusedIoInit( void );
@@ -121,46 +110,8 @@ void BoardInitPeriph( void )
 
 void BoardInitMcu( void )
 {
-    Gpio_t ioPin;
-
-    if( McuInitialized == false )
-    {
-        HAL_Init( );
-
-        // LEDs
-        GpioInit( &Led1, LED_1, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
-        GpioInit( &Led2, LED_2, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
-
-        SystemClockConfig( );
-
-        UsbIsConnected = true;
-        GpioInit( &ioPin, UART_RX, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
-        FifoInit( &Uart2.FifoTx, Uart2TxBuffer, UART2_FIFO_TX_SIZE );
-        FifoInit( &Uart2.FifoRx, Uart2RxBuffer, UART2_FIFO_RX_SIZE );
-        // Configure your terminal for 8 Bits data (7 data bit + 1 parity bit), no parity and no flow ctrl
-        UartInit( &Uart2, UART_2, UART_TX, UART_RX );
-        UartConfig( &Uart2, RX_TX, 115200, UART_8_BIT, UART_1_STOP_BIT, NO_PARITY, NO_FLOW_CTRL );
-
-        RtcInit( );
-
-        BoardUnusedIoInit( );
-    }
-    else
-    {
-        SystemClockReConfig( );
-    }
-
     SpiInit( &SX126x.Spi, RADIO_MOSI, RADIO_MISO, RADIO_SCLK, NC );
     SX126xIoInit( );
-
-    if( McuInitialized == false )
-    {
-        McuInitialized = true;
-        if( GetBoardPowerSource( ) == BATTERY_POWER )
-        {
-            CalibrateSystemWakeupTime( );
-        }
-    }
 }
 
 void BoardDeInitMcu( void )
