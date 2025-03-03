@@ -1,10 +1,8 @@
 /*
- * comms2.c
- *
+ * comms.c
  *  Created on: Jul 10, 2024
  *      Author: Óscar Pavón
- *  This is a full rework of previous COMMS
- *  Previous work by Artur Cot & Julia Tribó
+ *  Previous work by Artur Cot, Julia Tribó & Daniel Herencia
  */
 
 #include <clock.h>
@@ -529,53 +527,50 @@ void process_telecommand(uint8_t tlc_data[]) {
 			TxConfig_Data_Flag=1;
 		  break;
 		case EPS_HEATER_ENABLE:
-		  printf("Executing: enable EPS heater TBD\n");
 		  //TBD
 		  break;
 		case EPS_HEATER_DISABLE:
-		  printf("Executing: disable EPS heater TBD\n");
 		  //TBD
 		  break;
 		case POL_PAYLOAD_SHUT:
-		  printf("Executing: shut down payload TBD\n");
+		  //TBD
 		  break;
 
 		case POL_ADCS_SHUT:
-		  printf("Executing: shut down ADCS TBD\n");
+			//TBD
 		  break;
 
 		case POL_BURNCOMMS_SHUT:
-		  printf("Executing: shut down burn comms TBD\n");
+			//TBD
 		  break;
 
 		case POL_HEATER_SHUT:
-		  printf("Executing: shut down heater TBD\n");
+			//TBD
 		  break;
 
 		case POL_PAYLOAD_ENABLE:
-		  printf("Executing: enable payload TBD\n");
+			//TBD
 		  break;
 
 		case POL_ADCS_ENABLE:
-		  printf("Executing: enable ADCS TBD\n");
+			//TBD
 		  break;
 
 		case POL_BURNCOMMS_ENABLE:
-		  printf("Executing: enable burn comms TBD\n");
+			//TBD
 		  break;
 
-		case POL_HEATER_ENABLE:
-		  printf("Executing: enable heater TBD\n");
+		case POL_HEATER_ENABLE://TBD
 		  break;
 
-		case CLEAR_PL_DATA:
+		case CLEAR_PL_DATA://TBD
 		  //
 		  break;
-		case CLEAR_FLASH:
+		case CLEAR_FLASH://TBD
 		  //
 		  break;
 
-		case CLEAR_HT:
+		case CLEAR_HT://TBD
 		  //
 		  break;
 
@@ -595,11 +590,10 @@ void process_telecommand(uint8_t tlc_data[]) {
 		break;
 
 		case COMMS_HT_DOWNLINK:
-
 		  //TBD
 		  break;
 
-		case PAYLOAD_SCHEDULE:
+		case PAYLOAD_SCHEDULE: //TBR
 			/*
 			//vTaskResume(PAYLOAD_Task); Should be a notification to OBC to enable the task
 			Send_to_WFQueue(&tlc_data[3], 4, PL_TIME_ADDR, COMMSsender);
@@ -687,12 +681,12 @@ void TxPrepare(uint8_t operation){
 			plsize=41;
 
 			TxPacket[6] = packet_number;
-			Read_Flash(PHOTO_ADDR + packet_number*plsize, (uint8_t *)payloadData, plsize); //Change to  payload_data_adress (pol( requena))
+			Read_Flash(PHOTO_ADDR + packet_number*plsize, (uint8_t *)payloadData, plsize); //Change to  payload_data_adress at some point
 			memmove(TxPacket+7,payloadData,plsize);
 			Wait_ACK_Flag=1;
 		break;
 
-		case DOWNLINK_CONFIG_OP: // Not finished revisit
+		case DOWNLINK_CONFIG_OP: // Not finished, revisit
 
 			totalpacketsize=30;
 			plsize=16;

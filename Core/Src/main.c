@@ -16,34 +16,15 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include "cmsis_os.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
 #include "camerav2.h"
 #include "comms.h"
-/* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
 
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
 DAC_HandleTypeDef hdac1;
@@ -63,20 +44,12 @@ UART_HandleTypeDef huart4;
 DMA_HandleTypeDef hdma_uart4_rx;
 
 osThreadId defaultTaskHandle;
-/* USER CODE BEGIN PV */
+
 uint8_t timer_counter = 0;		//TEST
 uint8_t beacon_counter = 0;		//COMMS BEACON
 uint8_t timeout_counter = 0; 	//COMMS TIMEOUT
 uint8_t start_timer = false;	//TO SKIP STARTING TIMER IRQ
 uint8_t stop_timer = false;		//TO SKIP STOPPING TIMER IRQ
-
-
-
-uint8_t config_vect[]={0x0A, 0x0A, 0x0A, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01,
-	  				0x00, 0x01, 0x00, 0x00, 0xFF, 0xE2, 0x02, 0x28, 0x49, 0x43, 0x43, 0x5F, 0x50, 0x52};
-
-uint8_t telemetry_vect[]={0x01, 0x01, 0x01, 0x02, 0x02, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01,
-			0x00, 0x01, 0x00, 0x00, 0xFF, 0xE2, 0x02, 0x28, 0x49, 0x43, 0x43, 0x5F, 0x50, 0x52};
 
 TaskHandle_t FLASH_Handle;
 TaskHandle_t OBC_Handle;
@@ -100,9 +73,6 @@ TimerHandle_t xTimerPhoto;
 TimerHandle_t xTimerRF;
 TimerHandle_t xTimerBeacon;
 
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
@@ -118,7 +88,6 @@ static void MX_TIM7_Init(void);
 static void MX_TIM5_Init(void);
 void StartDefaultTask(void const * argument);
 
-/* USER CODE BEGIN PFP */
 void SystemClockConfig( void );
 static void OBC_Task(void *params);
 static void COMMS_Task(void *params);
@@ -129,37 +98,20 @@ static void EPS_Task(void *params);
 static void sTIM_Task(void *params);
 static void RFI_Task(void *params);
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -174,60 +126,20 @@ int main(void)
   MX_TIM17_Init();
   MX_TIM7_Init();
   MX_TIM5_Init();
-  /* USER CODE BEGIN 2 */
 
-  /******RECOMMENDATIONS & WARNINGS********
-   *
-   * 1. STACK OVERFLOW I: Currently, the stack depth for each task
-   * have been set according to the CURRENT memory space they need. Nevertheless,
-   * this can change in the upcoming project updates. Then, the next question
-   * would arise: How do I know if a task needs more memory? Easy answer, if it
-   * fails :). Every time something fails and you do not know exactly what has failed
-   * or why; most of the times is due to something called STACK OVERFLOW (freeRTOS).
-   * I would recommend to play around trying to give more stack depth to the task
-   * failing and maybe erasing other tasks for test purposes. Next, the next scenario
-   * could potentially appear: you have solved the STACK OVERFLOW issue but you
-   * have given so much memory to a task while the rest have been ignored that
-   * when trying to include again the previously deleted tasks,nothing fits into the
-   * memory. Okay this is a fucked up situation :), because you have no other choice
-   * than try to optimize the high memory-consuming tasks and... good luck with that :).
-   *
-   * Some recommendations if the last situation is reached:
-   * 	a) Identifying the error. Usually stack overflow happens when calling a function
-   * 		because a whole stack frame concerning the function is added to the stack
-   * 		and it could potentially go beyond the limits determined by the stack depth.
-   * 		The size of this function can be reduced by following b) and c) suggestions.
-   * 	b) Data types. Keep the data types as short as possible while meeting the needs.
-   * 	c) Array length. Same thing as before.
-   *
-   *
-   * 2. STACK OVERFLOW II: PAYLOAD TASK refers to the task operating the VGA Camera
-   * while the RFI Task refers to the task operating the RFI payload.
-   * Thereby, only one of this tasks has to be created at once for the
-   * different PoCat PocketQubes, otherwise most probably a stack overflow
-   * error will be encountered.
-   *
-   * 3. ERASING TASKS: If it is desired to only work with some of the following tasks,
-   * the only thing that needs to be done is to comment the xTaskCreate lines
-   * corresponding to the task you want to ignore. However, if some other task
-   * attempts to send something like a task notification to a non-created task,
-   * an error would ocurr. In order to avoid that, comment as well every
-   * line that attempts to send a notification from other tasks to the task that
-   * you want to ignore during your debug session.
-   *
-   */
 
   /****TASK CREATION****/
-  //xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
+  xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
   //xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   EPS_PRIORITY, &EPS_Handle  );
-  xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
   xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
-  //xTaskCreate( sTIM_Task,     "TIM",   sTIM_STACK_SIZE, NULL,   sTIM_PRIORITY, &sTIM_Handle  );
+  xTaskCreate( sTIM_Task,     "TIM",   sTIM_STACK_SIZE, NULL,   sTIM_PRIORITY, &sTIM_Handle  );
+
+  xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
   //xTaskCreate( RFI_Task,     "RFI",   PAYLOAD_STACK_SIZE, NULL,   PAYLOAD_PRIORITY, &RFI_Handle  );
 
-  //FLASH_Queue = xQueueCreate(10,sizeof(QueueData_t)); // QUEUE : FIFO buffer for controlling the writing on the memory flash
+  FLASH_Queue = xQueueCreate(10,sizeof(QueueData_t)); // QUEUE : FIFO buffer for controlling the writing on the memory flash
 
   xEventGroup = xEventGroupCreate();                  // EVENT GROUP : communication object used for blocking events
 
@@ -237,59 +149,23 @@ int main(void)
   xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
   //xTimerAdcs = xTimerCreate("TIMER ADCS", pdMS_TO_TICKS(ADCS_ACTIVE_PERIOD), false, NULL, AdcsTimerCallback);
   //xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
+
   xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
   //xTimerRF = xTimerCreate("TIMER RF", pdMS_TO_TICKS(1000), false, NULL, RFTimerCallback);
   //xTimerBeacon = xTimerCreate("TIMER BEACON", pdMS_TO_TICKS(INIT_BEACON_PERIOD), true, NULL, BeaconTimerCallback);
 
-  /* The period of the timer that controls when the photo will be taken is now arbitrary.
-   * It will be updated according to the data included in the telecommand TAKE PHOTO.
-   */
-
-  //xTimerPhoto = xTimerCreate("TIMER PHOTO", pdMS_TO_TICKS(1000), false, NULL, PhotoTimerCallback);
-
 
   vTaskStartScheduler();
-
-  /* USER CODE END 2 */
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
   /* Start scheduler */
   osKernelStart();
 
-  /* We should never get here as control is now taken by the scheduler */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+  while (1){};
 }
 
 /**
@@ -348,16 +224,9 @@ void SystemClock_Config(void)
 static void MX_ADC1_Init(void)
 {
 
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
   ADC_MultiModeTypeDef multimode = {0};
   ADC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
   /** Common config
   */
   hadc1.Instance = ADC1;
@@ -398,9 +267,6 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN ADC1_Init 2 */
-
-  /* USER CODE END ADC1_Init 2 */
 
 }
 
@@ -412,15 +278,9 @@ static void MX_ADC1_Init(void)
 static void MX_DAC1_Init(void)
 {
 
-  /* USER CODE BEGIN DAC1_Init 0 */
-
-  /* USER CODE END DAC1_Init 0 */
 
   DAC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE BEGIN DAC1_Init 1 */
-
-  /* USER CODE END DAC1_Init 1 */
   /** DAC Initialization
   */
   hdac1.Instance = DAC1;
@@ -439,10 +299,6 @@ static void MX_DAC1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN DAC1_Init 2 */
-
-  /* USER CODE END DAC1_Init 2 */
-
 }
 
 /**
@@ -453,13 +309,6 @@ static void MX_DAC1_Init(void)
 static void MX_I2C1_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.Timing = 0x10909CEC;
   hi2c1.Init.OwnAddress1 = 0;
@@ -485,9 +334,6 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -499,16 +345,9 @@ static void MX_I2C1_Init(void)
 static void MX_RTC_Init(void)
 {
 
-  /* USER CODE BEGIN RTC_Init 0 */
-
-  /* USER CODE END RTC_Init 0 */
-
   RTC_TimeTypeDef sTime = {0};
   RTC_DateTypeDef sDate = {0};
 
-  /* USER CODE BEGIN RTC_Init 1 */
-
-  /* USER CODE END RTC_Init 1 */
   /** Initialize RTC Only
   */
   hrtc.Instance = RTC;
@@ -523,10 +362,6 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-
-  /* USER CODE BEGIN Check_RTC_BKUP */
-
-  /* USER CODE END Check_RTC_BKUP */
 
   /** Initialize RTC and set the Time and Date
   */
@@ -548,9 +383,6 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN RTC_Init 2 */
-
-  /* USER CODE END RTC_Init 2 */
 
 }
 
@@ -562,13 +394,6 @@ static void MX_RTC_Init(void)
 static void MX_SPI2_Init(void)
 {
 
-  /* USER CODE BEGIN SPI2_Init 0 */
-
-  /* USER CODE END SPI2_Init 0 */
-
-  /* USER CODE BEGIN SPI2_Init 1 */
-
-  /* USER CODE END SPI2_Init 1 */
   /* SPI2 parameter configuration*/
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
@@ -588,9 +413,6 @@ static void MX_SPI2_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI2_Init 2 */
-
-  /* USER CODE END SPI2_Init 2 */
 
 }
 
@@ -602,16 +424,9 @@ static void MX_SPI2_Init(void)
 static void MX_TIM5_Init(void)
 {
 
-  /* USER CODE BEGIN TIM5_Init 0 */
-
-  /* USER CODE END TIM5_Init 0 */
-
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM5_Init 1 */
-
-  /* USER CODE END TIM5_Init 1 */
   htim5.Instance = TIM5;
   htim5.Init.Prescaler = 0;
   htim5.Init.CounterMode = TIM_COUNTERMODE_DOWN;
@@ -633,9 +448,6 @@ static void MX_TIM5_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM5_Init 2 */
-
-  /* USER CODE END TIM5_Init 2 */
 
 }
 
@@ -647,15 +459,9 @@ static void MX_TIM5_Init(void)
 static void MX_TIM7_Init(void)
 {
 
-  /* USER CODE BEGIN TIM7_Init 0 */
-
-  /* USER CODE END TIM7_Init 0 */
 
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM7_Init 1 */
-
-  /* USER CODE END TIM7_Init 1 */
   htim7.Instance = TIM7;
   htim7.Init.Prescaler = 40000-1;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -671,9 +477,6 @@ static void MX_TIM7_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM7_Init 2 */
-
-  /* USER CODE END TIM7_Init 2 */
 
 }
 
@@ -685,13 +488,6 @@ static void MX_TIM7_Init(void)
 static void MX_TIM16_Init(void)
 {
 
-  /* USER CODE BEGIN TIM16_Init 0 */
-
-  /* USER CODE END TIM16_Init 0 */
-
-  /* USER CODE BEGIN TIM16_Init 1 */
-
-  /* USER CODE END TIM16_Init 1 */
   htim16.Instance = TIM16;
   htim16.Init.Prescaler = 8000 - 1;
   htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -703,9 +499,6 @@ static void MX_TIM16_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM16_Init 2 */
-
-  /* USER CODE END TIM16_Init 2 */
 
 }
 
@@ -717,13 +510,6 @@ static void MX_TIM16_Init(void)
 static void MX_TIM17_Init(void)
 {
 
-  /* USER CODE BEGIN TIM17_Init 0 */
-
-  /* USER CODE END TIM17_Init 0 */
-
-  /* USER CODE BEGIN TIM17_Init 1 */
-
-  /* USER CODE END TIM17_Init 1 */
   htim17.Instance = TIM17;
   htim17.Init.Prescaler = 48000-1;
   htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -735,9 +521,6 @@ static void MX_TIM17_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM17_Init 2 */
-
-  /* USER CODE END TIM17_Init 2 */
 
 }
 
@@ -749,13 +532,6 @@ static void MX_TIM17_Init(void)
 static void MX_UART4_Init(void)
 {
 
-  /* USER CODE BEGIN UART4_Init 0 */
-
-  /* USER CODE END UART4_Init 0 */
-
-  /* USER CODE BEGIN UART4_Init 1 */
-
-  /* USER CODE END UART4_Init 1 */
   huart4.Instance = UART4;
   huart4.Init.BaudRate = 115200;
   huart4.Init.WordLength = UART_WORDLENGTH_8B;
@@ -770,10 +546,6 @@ static void MX_UART4_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN UART4_Init 2 */
-
-  /* USER CODE END UART4_Init 2 */
-
 }
 
 /**
@@ -986,10 +758,8 @@ static void ADCS_Task(void *params)
 
 static void PAYLOAD_Task(void *params)
 {
-	xTimerStart(xTimerPayload,0);
 
-	uint32_t RX_PAYLOAD_NOTIS,dT;
-	EventBits_t EventBits;
+	uint32_t RX_PAYLOAD_NOTIS;
 
 	uint8_t resolution = 0x11;      //0x11 o 0x00
 	uint8_t compressibility = 0xFF; // 0x00 --- 0xFF
@@ -1000,47 +770,11 @@ static void PAYLOAD_Task(void *params)
 
 		if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_PAYLOAD_NOTIS, portMAX_DELAY) == pdPASS)
 			{
-
 				if((RX_PAYLOAD_NOTIS & ACTIVATE_PAYLOAD)==ACTIVATE_PAYLOAD)
 				{
 					initCam(huart4, resolution, compressibility, info);
-					uint16_t __attribute__((unused)) length = getPhoto(huart4, info);
-
+					getPhoto(huart4, info);
 					xTaskNotifyStateClear(PAYLOAD_Handle);
-
-					//Branch Stub
-
-					/*
-
-
-					 * The time for photo should be extracted from the telecommand ACTIVATE_PAYLOAD.
-					 * Additionally, we have to synchronize our RTC time to the one on ground.
-					 * The dT would be photo time - ground station current time.
-					 * The data format of the time is Unix given in the telecommands are
-
-
-					dT = 10000; // Arbitrary time for photo of 10.000 ms
-
-					xTimerChangePeriod(xTimerPhoto,pdMS_TO_TICKS(dT),0); // Update software timer controlling the photo time.
-					xTimerStart(xTimerPhoto,0); // Start counting.
-
-
-					 * The photo has to be taken when two events happen.
-					 * 		1. The time for photo has been reached.
-					 * 		2. ADCS has finished pointing to the location.
-					 * If only one condition is met the photo will NOT be taken.
-
-
-					EventBits = xEventGroupWaitBits(xEventGroup, PAYLOAD_TIMEFORPHOTO_EVENT | ADCS_POINTINGDONE_EVENT, 0, true, portMAX_DELAY);
-
-					if( ((EventBits & PAYLOAD_TIMEFORPHOTO_EVENT) == PAYLOAD_TIMEFORPHOTO_EVENT) && ((EventBits & ADCS_POINTINGDONE_EVENT) == ADCS_POINTINGDONE_EVENT) )
-					{
-
-
-						xEventGroupClearBits(xEventGroup, PAYLOAD_TIMEFORPHOTO_EVENT | ADCS_POINTINGDONE_EVENT); // Clean the risen flags.
-					}
-
-					xTimerStop(xTimerPayload,0); */
 				}
 			}
 	}
@@ -1049,8 +783,6 @@ static void PAYLOAD_Task(void *params)
 static void RFI_Task(void *params)
 {
 	uint32_t RX_PAYLOAD_NOTIS;
-	//uint32_t phototime, time, dT;
-	//EventBits_t EventBits;
 	for (;;)
 	{
 		if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_PAYLOAD_NOTIS, portMAX_DELAY) == pdPASS)
@@ -1438,18 +1170,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 			beacon_counter = beacon_counter + 1;
 		}
 	}
-	/*
-	else if (htim == &htim16){
-		if (start_timer){
-			start_timer = false;
-		} else if (stop_timer){
-			stop_timer = false;
-		} else{
-			comms_timmer();
-			//timeout_counter = 0;
-		}
-	}
-	*/
 }
 
 
@@ -1464,9 +1184,7 @@ void Start_timer_16(void){
 	HAL_TIM_Base_Start_IT(&htim16);
 	//manualDelayMS(1);
 }
-/* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
@@ -1475,13 +1193,12 @@ void Start_timer_16(void){
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* USER CODE BEGIN 5 */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END 5 */
+
 }
 
 
