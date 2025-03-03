@@ -159,6 +159,7 @@ void COMMS_StateMachine( void )
             	{
             		TXACK_Flag=0;
             		TxPrepare(ACK_OP);
+            		vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,6))); //Small delay due to GS conmutaiton time.
             		Radio.Send(Encoded_Packet,3);
                 	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,6)));
                 	COMMS_State=SLEEP;

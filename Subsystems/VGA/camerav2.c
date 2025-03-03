@@ -179,6 +179,8 @@ int getDataLength(UART_HandleTypeDef huart){
 }
 
 int getData(UART_HandleTypeDef huart){
+	txdataIM[12] = rxdataDL[7];
+	txdataIM[13] = rxdataDL[8];
 	state = CAM_GET_DATA;
 	storeInfo(CAM_GET_DATA);
 	imagelength=256U*rxdataDL[7]+rxdataDL[8]+8;
@@ -195,7 +197,6 @@ int getData(UART_HandleTypeDef huart){
 	      vTaskDelay(200);
 	      store_flash_memory(PHOTO_ADDR+indxVGA, (uint8_t *) auxrxdata, (imagelength-indxVGA));
 	      indxVGA = imagelength;
-	      memset(auxrxdata, '\0', 2048);
 	      isSizeRxed = 0;
 	      HTC = 0;
 	      HAL_UART_DMAStop(&huart);
@@ -204,7 +205,7 @@ int getData(UART_HandleTypeDef huart){
 
 	  else if (FTC==1)
 	  {
-		 vTaskDelay(50);
+		 vTaskDelay(200);
 	     store_flash_memory(PHOTO_ADDR+indxVGA, (uint8_t *) rxdataIM, (imagelength-indxVGA));
 	     indxVGA = imagelength;
 	     isSizeRxed = 0;
@@ -212,6 +213,16 @@ int getData(UART_HandleTypeDef huart){
 	     HAL_UART_DMAStop(&huart);
 	     doneTransfer=1;
 
+	  }
+	  else if (imagelength<2048)
+	  {
+	      vTaskDelay(200);
+	      store_flash_memory(PHOTO_ADDR, (uint8_t *) rxdataIM, imagelength);
+	      indxVGA = imagelength;
+	      memset(auxrxdata, '\0', 2048);
+	      isSizeRxed = 0;
+	      HAL_UART_DMAStop(&huart);
+	      doneTransfer=1;
 	  }
 	  }
 	  else if ((indxVGA == imagelength) && ((HTC==1)||(FTC==1)))
