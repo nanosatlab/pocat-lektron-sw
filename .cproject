@@ -101,7 +101,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="OBC"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="RFI"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Semtech"/>
-						<entry excluding="VGA|RFI|COMMS|ADCS|OBC" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems"/>
+						<entry excluding="EPS|VGA|RFI|COMMS|ADCS|OBC" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/ADCS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/COMMS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/OBC"/>
@@ -188,7 +188,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
-						<entry excluding="VGA|RFI|COMMS|ADCS|OBC" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems"/>
+						<entry excluding="EPS|VGA|RFI|COMMS|ADCS|OBC" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/ADCS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/COMMS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/OBC"/>

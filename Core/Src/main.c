@@ -648,8 +648,8 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* USER CODE BEGIN 4 */
-static void OBC_Task(void *params)
+
+static void OBC_Task(void *params) //To be reworked
 {
 	xTimerStart(xTimerObc,0);
 
@@ -696,7 +696,7 @@ static void COMMS_Task(void *params)
 	}
 }
 
-static void ADCS_Task(void *params)
+static void ADCS_Task(void *params) //To be merged with internal
 {
 	xTimerStart(xTimerAdcs,0);
 
@@ -780,7 +780,7 @@ static void PAYLOAD_Task(void *params)
 	}
 }
 
-static void RFI_Task(void *params)
+static void RFI_Task(void *params) //To be merged with internal
 {
 	uint32_t RX_PAYLOAD_NOTIS;
 	for (;;)
@@ -904,7 +904,7 @@ static void FLASH_Task(void *params) // GateKeeper Task of Writing on Flash Memo
 	}
 }
 
-static void EPS_Task(void *params)
+static void EPS_Task(void *params) //To be merged with internal
 {
 	xTimerStart(xTimerEps,0);
 

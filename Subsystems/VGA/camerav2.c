@@ -452,9 +452,3 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	  HTC=0;
 	  FTC=1;
 }
-
-void WFSkip(uint8_t* pointer,uint32_t arrayLength,uint32_t addr)
-{
-	QueueData_t RxQueueSkip = {pointer,arrayLength,addr};
-	Write_Flash(RxQueueSkip.addr,RxQueueSkip.pointer,RxQueueSkip.arrayLength);
-}
