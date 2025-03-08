@@ -1,0 +1,54 @@
+# .clang-format
+
+BasedOnStyle: LLVM
+IndentWidth: 2
+ColumnLimit: 79
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+SpacesBeforeParens: ControlStatements: 1
+SpacesAfterComma: 1
+SpaceBeforeParens: ControlStatements: true
+SpaceBeforeParens: FunctionDeclaration: true
+SpaceBeforeParens: FunctionDefinition: true
+SpaceBeforeParens: Namespace: true
+SpaceBeforeParens: If: true
+SpaceBeforeParens: While: true
+SpaceBeforeParens: For: true
+SpaceBeforeParens: Do: true
+SpaceBeforeParens: Switch: true
+SpaceBeforeParens: Try: true
+SpaceBeforeParens: Catch: true
+SpaceBeforeParens: Return: true
+SpaceBeforeParens: Throw: true
+SpaceBeforeParens: Using: true
+SpaceBeforeParens: Friend: true
+SpaceBeforeParens: Template: true
+SpaceBeforeParens: Class: true
+SpaceBeforeParens: Struct: true
+SpaceBeforeParens: Enum: true
+SpaceBeforeParens: Type: true
+SpaceBeforeParens: TypeAlias: true
+SpaceBeforeParens: TypeDef: true
+SpaceBeforeParens: FunctionStyle: true
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SortIncludes: false
+UseTab: Never
+TabWidth: 2
+CommentPragmas: true
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOfDeclarationOnNextLine: false
+BreakBeforeBraces: Attach
+AlwaysBreakAfterReturnType: All
+AlwaysBreakAfterDefinitionReturnType: All
+AlwaysBreakBeforeMultilineStrings: true

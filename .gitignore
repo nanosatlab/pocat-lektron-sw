@@ -73,5 +73,10 @@ ctrlp.root
 
 #Debug folder
 Debug
+
 #.resources
 .vscode
+.cache
+
+#build
+build
