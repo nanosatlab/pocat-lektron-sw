@@ -1079,7 +1079,7 @@ void RadioIrqProcess( void )
             TimerStop( &TxTimeoutTimer );
             if( ( RadioEvents != NULL ) && ( RadioEvents->TxDone != NULL ) )
             {
-                RadioEvents->TxDone( );
+            	OnTxDone();
             }
         }
 
@@ -1092,7 +1092,7 @@ void RadioIrqProcess( void )
             SX126xGetPacketStatus( &RadioPktStatus );
             if( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) )
             {
-                RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.SignalRssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
+            	OnRxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.SignalRssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
             }
         }
 
@@ -1100,7 +1100,7 @@ void RadioIrqProcess( void )
         {
             if( ( RadioEvents != NULL ) && ( RadioEvents->RxError ) )
             {
-                RadioEvents->RxError( );
+            	OnRxError();
             }
         }
 
@@ -1108,7 +1108,7 @@ void RadioIrqProcess( void )
         {
             if( ( RadioEvents != NULL ) && ( RadioEvents->CadDone != NULL ) )
             {
-                RadioEvents->CadDone( ( ( irqRegs & IRQ_CAD_ACTIVITY_DETECTED ) == IRQ_CAD_ACTIVITY_DETECTED ) );
+            	OnCadDone( ( ( irqRegs & IRQ_CAD_ACTIVITY_DETECTED ) == IRQ_CAD_ACTIVITY_DETECTED ) );
             }
         }
 
@@ -1119,7 +1119,7 @@ void RadioIrqProcess( void )
                 TimerStop( &TxTimeoutTimer );
                 if( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) )
                 {
-                    RadioEvents->TxTimeout( );
+                	OnTxTimeout();
                 }
             }
             else if( SX126xGetOperatingMode( ) == MODE_RX )
@@ -1127,7 +1127,7 @@ void RadioIrqProcess( void )
                 TimerStop( &RxTimeoutTimer );
                 if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
                 {
-                    RadioEvents->RxTimeout( );
+                	 OnRxTimeout( );
                 }
             }
         }
@@ -1152,7 +1152,7 @@ void RadioIrqProcess( void )
             TimerStop( &RxTimeoutTimer );
             if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
             {
-                RadioEvents->RxTimeout( );
+            	OnRxTimeout( );
             }
         }
     //}
