@@ -134,7 +134,7 @@ int main(void)
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
   xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
-  xTaskCreate( sTIM_Task,     "TIM",   sTIM_STACK_SIZE, NULL,   sTIM_PRIORITY, &sTIM_Handle  );
+  //xTaskCreate( sTIM_Task,     "TIM",   sTIM_STACK_SIZE, NULL,   sTIM_PRIORITY, &sTIM_Handle  );
 
   xTaskCreate( PAYLOAD_Task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &PAYLOAD_Handle);
   //xTaskCreate( RFI_Task,     "RFI",   PAYLOAD_STACK_SIZE, NULL,   PAYLOAD_PRIORITY, &RFI_Handle  );
