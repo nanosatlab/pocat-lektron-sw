@@ -21,7 +21,7 @@ set(CPU_PARAMETERS
 set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/cmake/startup_stm32l476rgtx.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/cmake/STM32L476RGTX_FLASH.ld)
 
-set(EXECUTABLE ${CMAKE_PROJECT_NAME})
+set(EXECUTABLE ${CMAKE_PROJECT_NAME}.elf)
 enable_language(C ASM)
 
 set(CMAKE_C_STANDARD 11)
@@ -93,16 +93,23 @@ target_include_directories(${EXECUTABLE} PRIVATE
     ${PROJECT_INCLUDE_DIRECTORIES}
 )
 
+# Ensure Debug build type is set
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
+# Compiler options
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
     -Wall
     -Wextra
     -Wpedantic
     -Wno-unused-parameter
-    $<$<CONFIG:Debug>:-Og -g3 -ggdb>
-    $<$<CONFIG:Release>:-Og -g0>
+    $<$<CONFIG:Debug>:-Og -g3 -ggdb>	# Ensure proper debugger flags
+    $<$<CONFIG:Release>:-O2 -g0>	# Optimize in release mode
 )
 
+# Ensure debugging symbols in the final executable
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
@@ -113,6 +120,7 @@ target_link_options(${EXECUTABLE} PRIVATE
     -lm
     -Wl,--end-group
     -Wl,--print-memory-usage
+    -g3 -ggdb  # Ensures GDB debugging info
 )
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
