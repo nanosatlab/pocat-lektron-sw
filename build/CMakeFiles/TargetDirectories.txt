@@ -1,0 +1,3 @@
+/home/dolz/development/nsl/pocat-lektron-sw/build/CMakeFiles/pocat_lektron_sw.elf.dir
+/home/dolz/development/nsl/pocat-lektron-sw/build/CMakeFiles/edit_cache.dir
+/home/dolz/development/nsl/pocat-lektron-sw/build/CMakeFiles/rebuild_cache.dir

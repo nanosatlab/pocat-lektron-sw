@@ -53,25 +53,35 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# cscope with Vim
-cscope.*
+### Custom Editions from the project ###
 
-#ctags with Vim
+# Vim files
+cscope.*
 tags
 types_c.taghl
+.swp
 
-#CtrlP
+# CtrlP
 ctrlp.root
 
-#html
+# Documentation
+*.tex
 *.html
 
-#metadata and settings
-
+# Project Settings & Metadata
 .settings
 .metadata
+.cproject
+.mxproject
+.project
 
-#Debug folder
+# Debug folder
 Debug
-#.resources
+*.launch
+
+#VSCode Settings (For VSCode/VSCodium Users)
 .vscode
+.cproject
+
+# Build folder
+buidl
