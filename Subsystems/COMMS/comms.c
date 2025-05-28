@@ -9,7 +9,6 @@
 #include "comms.h"
 
 
-
 typedef enum                        //Possible States of the State Machine
 {
 	STARTUP,
@@ -428,33 +427,46 @@ void COMMSTLCConfig(uint8_t config_data[])
 
 
 void process_telecommand(uint8_t tlc_data[]) {
+
+	//For every tlc, debug variable will be explained
+
 	TLCReceived=tlc_data[2];
 	switch (TLCReceived){
 
 		case PING:
 			TXACK_Flag=1; //ACK acts as a ping
-			GoTX_Flag=1;
+			GoTX_Flag=1; //Forces COMMS_States = Tx
 		break;
+		/*OperatingMode phases: MODE_RX -> MODE_FS -> MODE_TX
+		MODE_FS: The radio is in frequency synthesis mode, declared in sx126x.h
+		When GoTX_Flag = 1 -> RadioTransmit() is called (declared in sx126x.c). Changes the physical state of the radio
+		First turns the radio in MODE_FS to prepare the frequency,then goes to MODE_TX.*/
 
 		case TRANSIT_TO_NM:
+			currentState = _NOMINAL;
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;
 
 		case TRANSIT_TO_CM:
+			currentState = _CONTINGENCY;
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;
 
 		case TRANSIT_TO_SSM:
+			currentState = _SUNSAFE;
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;
 
 		case TRANSIT_TO_SM:
+			currentState = _SURVIVAL;
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;
+		/*For case TRANSIT_TO_NM/CM/SSM/SM, Prior to the transition,
+		a final beacon will be transmitted to inform about this event.*/
 
 		case UPLOAD_ADCS_CALIBRATION:
 			/* tbd
@@ -483,21 +495,33 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  break;
 
 		case UPLOAD_ADCS_TLE:
-		if ((TLE_counter==1 && tlc_data[2]==86) ||(TLE_counter==2 && tlc_data[2]==164) ){
+			if ((TLE_counter==1 && tlc_data[2]==86) ||(TLE_counter==2 && tlc_data[2]==164) ){ //tlc_data[2]  is ID telecommand
 
-			Send_to_WFQueue(&tlc_data[3],TLE_PACKET_SIZE,TLE_ADDR1+(TLE_counter-1)*TLE_PACKET_SIZE,COMMSsender);
-			TLE_counter++;
-			Wait_ACK_Flag=1;
-		}
-		else if (TLE_counter==3 && tlc_data[2]==255){
+				Send_to_WFQueue(&tlc_data[3],TLE_PACKET_SIZE,TLE_ADDR1+(TLE_counter-1)*TLE_PACKET_SIZE,COMMSsender);
+				TLE_counter++;
+				Wait_ACK_Flag=1; //Cuando Wait_ACK_Flag=1, llama a Radio.Rx(ACKTimeout);
+			}
+			else if (TLE_counter==3 && tlc_data[2]==255){
 
-			Send_to_WFQueue(&tlc_data[3],1,TLE_ADDR1+2*TLE_PACKET_SIZE,COMMSsender);
-			Send_to_WFQueue(&tlc_data[4],TLE_PACKET_SIZE-1,TLE_ADDR2,COMMSsender);
-			TLE_counter=1;
-			GoTX_Flag=1;
-			TXACK_Flag=1;
-		}
-		break;
+				Send_to_WFQueue(&tlc_data[3],1,TLE_ADDR1+2*TLE_PACKET_SIZE,COMMSsender);
+				Send_to_WFQueue(&tlc_data[4],TLE_PACKET_SIZE-1,TLE_ADDR2,COMMSsender); //2ª linia TLE, con sólo 33 bits + 1 bit que indica el final byte de la 1ª linia
+				TLE_counter++;
+				Wait_ACK_Flag = 1;
+			}
+			else if (TLE_counter == 4 && tlc_data[2] == 128) {
+				// Escribir los 35 B restantes de tlc_data[4]
+				Send_to_WFQueue(&tlc_data[4], TLE_PACKET_SIZE, TLE_ADDR2 + (TLE_PACKET_SIZE - 1), COMMSsender); //34
+				TLE_counter++;
+				Wait_ACK_Flag = 1;
+			}
+			else if (TLE_counter == 5 && tlc_data[2] == 241) { //67/69 bits
+				//Se escribe los último 2 bytes de la 2ª linia
+				Send_to_WFQueue(&tlc_data[4], 2,TLE_ADDR2 + (TLE_PACKET_SIZE - 1) + TLE_PACKET_SIZE,COMMSsender);
+				TLE_counter = 1;
+				GoTX_Flag = 1;   // ACK final
+				TXACK_Flag = 1;
+			}
+			break;
 
 
 		case UPLOAD_COMMS_CONFIG: //Transciever configuration
