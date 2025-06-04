@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Let's build the project
+rm -rf build
 mkdir build
 cd build
 cmake ..

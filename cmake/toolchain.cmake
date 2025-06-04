@@ -1,5 +1,5 @@
 set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR arm)
+set(CMAKE_SYSTEM_PROCESSOR cortex-m4)
 
 set(TOOLCHAIN_PREFIX arm-none-eabi-)
 

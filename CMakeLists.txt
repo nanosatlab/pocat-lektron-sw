@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
+# Load toolchain
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain.cmake)
 
 project(pocat_lektron_sw)
@@ -28,48 +29,44 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
-# Headers
+# Include folders
+
 set(CUBEMX_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/CMSIS/Include
 )
 
 set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Common
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/HAL
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Interrupts
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Subsystem
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Tasks
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Common
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Hal
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Interrupts
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Subsystem
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Tasks
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Utils
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/Semtech/Inc
+    #${CMAKE_CURRENT_SOURCE_DIR}/Drivers/Semtech/Inc
 )
 
 set(FREERTOS_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/CMSIS_RTOS
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/portable/GCC/ARM_CM4F
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/CMSIS_RTOS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/portable/GCC/ARM_CM4F
 )
-
-# Gather source files
+	
+# Gather sources #MIRAR
 file(GLOB_RECURSE STM32CUBEMX_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/*.c
 )
 
 file(GLOB_RECURSE PROJECT_SOURCES
-    ${PROJECT_DIR}/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Common/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Interrupts/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Subsystem/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Src/System/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Tasks/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Utils/*.c
 )
 
 file(GLOB_RECURSE FREERTOS_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/FreeRTOS/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/*.c
 )
 
 # Executable files
@@ -79,6 +76,7 @@ add_executable(${EXECUTABLE}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT}
 )
+
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -109,6 +107,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
     $<$<CONFIG:Release>:-O2 -g0>	# Optimize in release mode
 )
 
+
 # Ensure debugging symbols in the final executable
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
@@ -126,3 +125,4 @@ target_link_options(${EXECUTABLE} PRIVATE
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
 )
+
