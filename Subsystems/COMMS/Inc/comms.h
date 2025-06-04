@@ -110,6 +110,11 @@ extern EventGroupHandle_t xEventGroup;
 #define TLCOUNTER_MAX						146
 #define BEACON_PL_LEN						28
 
+//HEADER for all packets
+
+#define MISSION_ID   0x01   // PoCat-Lektron
+#define POCAT2_ID    0x02   // PoCat-4 (????)
+
 /*!
  *	CAD performance evaluation's parameters
  */

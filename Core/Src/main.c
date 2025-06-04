@@ -23,6 +23,7 @@
 #include "task.h"
 #include "camerav2.h"
 #include "comms.h"
+#include "core_cm4.h" // Ya que el L476 es Cortex-M4
 
 
 ADC_HandleTypeDef hadc1;
@@ -108,8 +109,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
 
+HAL_Init();
   /* Configure the system clock */
   SystemClock_Config();
 
@@ -1215,6 +1216,11 @@ void Error_Handler(void)
   {
   }
   /* USER CODE END Error_Handler_Debug */
+}
+int fputc(int ch, FILE *f)
+{
+    ITM_SendChar(ch);
+    return ch;
 }
 
 #ifdef  USE_FULL_ASSERT

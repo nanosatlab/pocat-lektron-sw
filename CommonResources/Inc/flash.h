@@ -21,9 +21,6 @@
 #include "semphr.h"
 
 #define PHOTO_ADDR 					0x08040000
-#define COMMS_CONFIG_ADDR
-#define COMMS_CONFIG_ADDR
-#define COMMS_CONFIG_ADDR
 
 //#define PAYLOAD_STATE_ADDR 		0x08008000
 //#define COMMS_STATE_ADDR 			0x08008001
@@ -38,7 +35,6 @@
 #define RTC_TIME_ADDR				0x0803000C	//4 bytes (RTC -> Unix) Get from the RTC
 
 //CONFIGURATION ADDRESSES
-#define CONFIG_ADDR 				0x08030010
 #define KP_ADDR 					0x08030010
 #define GYRO_RES_ADDR 				0x08030011
 #define SF_ADDR 					0x08030012
@@ -49,7 +45,7 @@
 #define F_MAX_ADDR 					0x08030018
 #define DELTA_F_ADDR 				0x0803001A
 #define INTEGRATION_TIME_ADDR 		0x0803001C
-
+#define CONFIG_ADDR 				0x08030010
 #define TLE_ADDR 					0x08030020 // 138 bytes
 //#define EXIT_LOW_POWER_FLAG_ADDR 	0x080080AA
 
@@ -66,7 +62,8 @@
 #define BATT_TEMP_ADDR 			    0x08030106		// 1
 #define MCU_TEMP_ADDR 			    0x08030107		// 1
 #define BATT_CAP_ADDR 			    0x08030108		// 3
-//      CURRENT_STATE_ADDR                             1
+
+//CURRENT_STATE_ADDR
 #define GYRO_ADDR 			        0x08030109		// 6
 #define MAGNETOMETER_ADDR 			0x0803010F      // 8
 #define PHOTODIODES_ADDR 			0x08030117      // 8
@@ -83,13 +80,20 @@
 #define COUNT_WINDOW_ADDR 			0x08030201
 #define COUNT_RTX_ADDR 				0x08030202
 
-#define TIMEOUT_ADDR 				0x08030204 // 2 bytes
+#define TIMEOUT_ADDR 				0x08030204 // 2 bytes reception timeout and sleep time
+#define CADMODE_ADDR				0x08030206
 
-#define ANTENNA_DEPLOYED_ADDR       0x08030205
+#define ANTENNA_DEPLOYED_ADDR       0x08030207
 
+//COMMS CONFIG PARAM ADDR
+#define FRF_ADDRR					0x08030208
+#define OUTPUT_POWER_ADDR			0x08030209
+
+#define RFI_CONFIG_ADDR				0x08030210 //12 bytes
 
 /**********OTHER ADDR****************************/
 #define DATA_ADDR					0x08030000
+#define UPLINK_ADDR 				0x08037000
 #define TLE_ADDR1 					0x08038020 // 138 bytes
 #define TLE_ADDR2 					0x08038065 // 138 bytes
 #define COMMS_TIME_ADDR				0x0803E860 // Time between packets
@@ -101,10 +105,10 @@
 
 
 //EPS
-#define NOMINAL_TH_ADDR             0x08030800  // 1
-#define CONTINGENCY_TH_ADDR         0x08030801  // 1
-#define SUNSAFE_TH_ADDR             0x08030802  // 1
-#define SURVIVAL_TH_ADDR            0x08030803  // 1
+#define EPS_TH_ADDR             0x08030800  // 3 bytes: Nominal, low & critical
+//#define CONTINGENCY_TH_ADDR         0x08030801  // 1
+//#define SUNSAFE_TH_ADDR             0x08030802  // 1
+//#define SURVIVAL_TH_ADDR            0x08030803  // 1
 
 #define RFI_CONFIG_ADDR             0x08031000  // 8
 

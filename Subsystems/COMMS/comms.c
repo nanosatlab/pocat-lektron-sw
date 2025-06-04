@@ -7,7 +7,7 @@
 
 #include <clock.h>
 #include "comms.h"
-
+#include "stm32l4xx_hal.h" // Cambia según tu familia STM32
 
 typedef enum                        //Possible States of the State Machine
 {
@@ -38,8 +38,9 @@ uint32_t unixTime32=0;
 
 
 uint8_t packet_to_send[48] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
-uint8_t eps_config_array[4];
-uint8_t pl_config_array[8];
+uint8_t comms_config_array[4];
+uint8_t eps_config_array[3];
+uint8_t pl_config_array[12];
 
 uint8_t totalpacketsize=0;
 
@@ -90,11 +91,10 @@ uint8_t CR=1; // 4/5
 
 
 uint8_t debugsize=0;
+uint8_t flash_check;
 
-
-//uint8_t comms_config_array[8]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100, sleepTime/100,CADMODE_Flag,COMMS_DEBUG_MODE};
-
-uint8_t comms_config_array[10]={}; //Figure out how to do this
+//uint8_t comms_config_array[9]={SF,CR,RF_F,TX_OUTPUT_POWER,LORA_BANDWIDTH,rxTime / 100,sleepTime / 100,CADMODE_Flag,COMMS_DEBUG_MODE};
+//uint8_t comms_config_array[10]={}; //Figure out how to do this
 
 
 void COMMS_StateMachine( void )
@@ -121,7 +121,7 @@ void COMMS_StateMachine( void )
     {
     	//COMMS_RX_OBCFlags(); // Function that checks the notifications sent by OBC to COMMS.
 
-    	Radio.IrqProcess();     //Checks the interruptions
+    	Radio.IrqProcess();		//Checks the interruptions
     	vTaskDelay(pdMS_TO_TICKS(200)); //Delay TBD
 
         switch(COMMS_State)
@@ -414,6 +414,8 @@ void SX1262TLCConfig(uint8_t config_data[])
                                        0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
 
 	}
+//uint8_t tle_debug_byte = 0;
+uint8_t tle_debug_array[138];
 
 void COMMSTLCConfig(uint8_t config_data[])
 	{
@@ -494,63 +496,139 @@ void process_telecommand(uint8_t tlc_data[]) {
 			*/
 		  break;
 
-		case UPLOAD_ADCS_TLE:
-			if ((TLE_counter==1 && tlc_data[2]==86) ||(TLE_counter==2 && tlc_data[2]==164) ){ //tlc_data[2]  is ID telecommand
+		case UPLOAD_ADCS_TLE: {
+
+			if ((TLE_counter==1) ||(TLE_counter==2) ){ //tlc_data[2]  is ID telecommand
 
 				Send_to_WFQueue(&tlc_data[3],TLE_PACKET_SIZE,TLE_ADDR1+(TLE_counter-1)*TLE_PACKET_SIZE,COMMSsender);
 				TLE_counter++;
-				Wait_ACK_Flag=1; //Cuando Wait_ACK_Flag=1, llama a Radio.Rx(ACKTimeout);
+				memcpy(tle_debug_array, &tlc_data[3], TLE_PACKET_SIZE*2);
 			}
-			else if (TLE_counter==3 && tlc_data[2]==255){
+			else if (TLE_counter==3){
 
 				Send_to_WFQueue(&tlc_data[3],1,TLE_ADDR1+2*TLE_PACKET_SIZE,COMMSsender);
 				Send_to_WFQueue(&tlc_data[4],TLE_PACKET_SIZE-1,TLE_ADDR2,COMMSsender); //2ª linia TLE, con sólo 33 bits + 1 bit que indica el final byte de la 1ª linia
 				TLE_counter++;
-				Wait_ACK_Flag = 1;
+				memcpy(tle_debug_array, &tlc_data[3], 1);
+				memcpy(tle_debug_array, &tlc_data[4], TLE_PACKET_SIZE-1);
+
 			}
-			else if (TLE_counter == 4 && tlc_data[2] == 128) {
+			else if (TLE_counter == 4) {
 				// Escribir los 35 B restantes de tlc_data[4]
 				Send_to_WFQueue(&tlc_data[4], TLE_PACKET_SIZE, TLE_ADDR2 + (TLE_PACKET_SIZE - 1), COMMSsender); //34
 				TLE_counter++;
-				Wait_ACK_Flag = 1;
+				memcpy(tle_debug_array, &tlc_data[4], 34);
 			}
-			else if (TLE_counter == 5 && tlc_data[2] == 241) { //67/69 bits
+			else if (TLE_counter == 5) { //67/69 bits
 				//Se escribe los último 2 bytes de la 2ª linia
 				Send_to_WFQueue(&tlc_data[4], 2,TLE_ADDR2 + (TLE_PACKET_SIZE - 1) + TLE_PACKET_SIZE,COMMSsender);
 				TLE_counter = 1;
 				GoTX_Flag = 1;   // ACK final
 				TXACK_Flag = 1;
+				memcpy(tle_debug_array, &tlc_data[4], 2);
 			}
 			break;
+		}
 
+		case UPLOAD_COMMS_CONFIG:{ //Transciever configuration
+			COMMS_State = STDBY;
 
-		case UPLOAD_COMMS_CONFIG: //Transciever configuration
-			COMMS_State=STDBY;
-		break;
+		    uint8_t output_power = tlc_data[3];
+			uint8_t rf_f = tlc_data[4];
+			uint8_t sf = tlc_data[5];
+		    uint8_t cr  = tlc_data[6];
 
-		case COMMS_UPLOAD_PARAMS: // COMMS Flags/Counters/etc config.
-			COMMS_State=STDBY;
-		break;
-		case UPLOAD_UNIX_TIME:
-			//Send_to_WFQueue((uint8_t*) tlc_data[3], 4 , SET_RTC_TIME_ADDR, COMMSsender); Pending Pol implementation of new adresses, then uncomment
+			if (tlc_data[3] == 10){
+				Send_to_WFQueue(&tlc_data[3], 1,OUTPUT_POWER_ADDR, COMMSsender);
+			}
+			if (tlc_data[4] == 128){
+				Send_to_WFQueue(&tlc_data[4], 1, FRF_ADDRR, COMMSsender);
+			}
+			if (tlc_data[5] == 11){
+				Send_to_WFQueue(&tlc_data[5], 1, SF_ADDR, COMMSsender);
+						}
+			if (tlc_data[6] == 1){
+				Send_to_WFQueue(&tlc_data[6], 1, CRC_ADDR, COMMSsender);
+						}
+		    TXACK_Flag = 1;
+
+		break;}
+
+		case COMMS_UPLOAD_PARAMS:{ // COMMS Flags/Counters/etc config.
+
+			//COMMS_State=STDBY;
+			COMMS_State=SLEEP;
+
+		    uint8_t rx_time   = tlc_data[3];
+		    uint8_t sleep_time= tlc_data[4];
+		    uint8_t cad_mode  = tlc_data[5];
+
+			Send_to_WFQueue(&tlc_data[3], 2, TIMEOUT_ADDR, COMMSsender);   // RX timeout & Sleep time
+			Send_to_WFQueue(&tlc_data[5], 1, CADMODE_ADDR, COMMSsender);   // CADMODE (ON/OFF)
+
+			if (tlc_data[5] == 128) {
+			    CADMODE_Flag = 1; // ON
+			} else if (tlc_data[5] == 255) {
+			    CADMODE_Flag = 0; // OFF
+			}
 			Beacon_Flag=1;
 			GoTX_Flag=1;
-		break;
-		case UPLOAD_EPS_TH:
-			//Send_to_WFQueue((uint8_t*) tlc_data[3], 4 , NOMINAL_TH_ADDR, COMMSsender); Pending Pol implementation of new adresses, then uncomment
+
+		break;}
+
+		case UPLOAD_UNIX_TIME:{
+		//Get UNIX timestamp (4B big-endian) from LSB-MSB to MSB-LSB
+			uint8_t unixTime_bytes[4];
+			unixTime_bytes[0] = tlc_data[3]; //MSB
+			unixTime_bytes[1] = tlc_data[4];
+			unixTime_bytes[2] = tlc_data[5];
+			unixTime_bytes[3] = tlc_data[6]; // LMB
+
+			Send_to_WFQueue(unixTime_bytes, 4, RTC_TIME_ADDR, COMMSsender);
+		//UPDATE THE RTC [year:day:hour:minute:second format]????
+		//responder al ground con un beacon
 			Beacon_Flag=1;
 			GoTX_Flag=1;
-		  //TBD
-		break;
-		case UPLOAD_PL_CONFIG:
-			//Send_to_WFQueue((uint8_t*) tlc_data[3], 8 , RFI_CONFIG_ADDR, COMMSsender); Pending Pol implementation of new adresses, then uncomment
-		  //TBD RFI_CONFIG_ADDR
-		  break;
-		case DOWNLINK_CONFIG:
-			plsize=19;
-			GoTX_Flag=1;
-			TxConfig_Data_Flag=1;
-		  break;
+		break;}
+
+		case UPLOAD_EPS_TH:{
+			// 3 bytes for the battery thresholds of the nominal, the low and the critical states.
+			uint8_t nominal_thr = tlc_data[3];
+			uint8_t low_thr = tlc_data[4];
+			uint8_t critical_thr = tlc_data[5];
+
+			// Send to flash memory
+			Send_to_WFQueue(&tlc_data[3], 3, EPS_TH_ADDR, COMMSsender);
+
+			//Confirm a Ground with a beacon
+			Beacon_Flag = 1;
+			GoTX_Flag = 1;
+		break;}
+
+		case UPLOAD_PL_CONFIG:{
+			//Which 12 P/L parameters??
+			//Send_to_WFQueue((uint8_t*) tlc_data[3], 12 , RFI_CONFIG_ADDR, COMMSsender);
+			Beacon_Flag = 1;
+			GoTX_Flag = 1;
+		  break;}
+
+		case DOWNLINK_CONFIG:{ //19 Bytes //UPLINK?
+			 // COMMS PARAM
+			uint8_t rx_time   = tlc_data[3];
+			uint8_t sleep_time= tlc_data[4];
+			uint8_t cad_mode  = tlc_data[5];
+			 // Battery threshold
+			uint8_t nominal_thr = tlc_data[6];
+			uint8_t low_thr = tlc_data[7];
+			uint8_t critical_thr = tlc_data[8];
+
+			 // PL config 12 bytes
+
+			 Send_to_WFQueue(&tlc_data[3], 188, UPLINK_ADDR, COMMSsender);
+
+			 GoTX_Flag=1;
+			 TxConfig_Data_Flag=1; //Lee la flash y sustituye los nuevos parametros obtenidos por los anteriores
+		  break;}
 		case EPS_HEATER_ENABLE:
 		  //TBD
 		  break;
@@ -689,7 +767,6 @@ void TxPrepare(uint8_t operation){
 
 	switch(operation)
 	{
-
 		case BEACON_OP:
 			totalpacketsize=48;
 			plsize=41;
@@ -711,17 +788,19 @@ void TxPrepare(uint8_t operation){
 			Wait_ACK_Flag=1;
 		break;
 
-		case DOWNLINK_CONFIG_OP: // Not finished, revisit
-
-			totalpacketsize=30;
-			plsize=16;
-
-			Read_Flash(NOMINAL_TH_ADDR, (uint8_t *)eps_config_array, 4); //To be tested
-			Read_Flash(RFI_CONFIG_ADDR, (uint8_t *)pl_config_array, 8);
-
-			memmove(TxPacket+6,comms_config_array,sizeof(comms_config_array));
-			memmove(TxPacket+6+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
-			memmove(TxPacket+6+sizeof(comms_config_array)+sizeof(eps_config_array),pl_config_array,sizeof(pl_config_array));
+		case DOWNLINK_CONFIG_OP:
+			//totalpacketsize=29;
+			plsize=18;
+			 // COMMS PARAM
+			Read_Flash(TIMEOUT_ADDR, (uint8_t *)comms_config_array, 3);
+			// EPS PARAM: Battery thresholds
+			Read_Flash(EPS_TH_ADDR, (uint8_t *)eps_config_array, 3);
+			// PL configuration 12 bytes
+			Read_Flash(RFI_CONFIG_ADDR, (uint8_t *)pl_config_array, 12);
+			// +3 pq |3B Header| |18B Data|
+			memmove(TxPacket+3,comms_config_array,sizeof(comms_config_array));
+			memmove(TxPacket+3+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
+			memmove(TxPacket+3+sizeof(comms_config_array)+sizeof(eps_config_array),pl_config_array,sizeof(pl_config_array));
 		break;
 
 		default:
@@ -860,4 +939,14 @@ void store_telemetry(){
 	Send_to_WFQueue(&telemetry_data,sizeof(telemetry_data),TELEMETRY_LEGACY_ADDR+telemetry_counter*(BEACON_PL_LEN+1)+TLCOUNTER_MAX,COMMSSender);
 	*/
 }
+
+extern UART_HandleTypeDef huart4; // O huart1, según tu configuración
+int _write(int file, char *ptr, int len)
+{
+    for (int i = 0; i < len; i++) {
+        HAL_UART_Transmit(&huart4, (uint8_t *)&ptr[i], 1, HAL_MAX_DELAY);
+    }
+    return len;
+}
+
 
