@@ -1,8 +1,6 @@
 #include <clock.h>
 #include "comms.h"
 
-
-
 typedef enum                        //Possible States of the State Machine
 {
 	STARTUP,
@@ -104,7 +102,7 @@ void COMMS_StateMachine(void)
             case STARTUP:
                 BoardInitMcu();
                 RadioInit();
-                COMMS_State = STDBY;
+                COMMS_State = RX; // Per fer testos de rebre el ack
                 break;
 
             case STDBY:
@@ -152,29 +150,25 @@ void COMMS_StateMachine(void)
     
 }
 
-void RadioInit(){
-
-    RadioEvents.TxDone = OnTxDone; // standby
-    RadioEvents.RxDone = OnRxDone; // standby
-    RadioEvents.TxTimeout = OnTxTimeout;
-    RadioEvents.RxTimeout = OnRxTimeout;
-    RadioEvents.RxError = OnRxError;
-    RadioEvents.CadDone = OnCadDone;
-    Radio.Init(&RadioEvents);    //Initializes the Radio
-    SX1262Config(11,1,RF_F);   //Configures the transceiver
-    COMMS_State = SLEEP; //Radio is already in STDBY
-    SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
-
-}
-
 void process_telecommand(uint8_t tlc_data[]) {
 	TLCReceived=tlc_data[2];
 	switch (TLCReceived){
 
 		case PING:
-			TXACK_Flag=1; //ACK acts as a ping
+			TXACK_Flag=1;
 			GoTX_Flag=1;
 		break;
+    }
+
+    if (TXStopped_Flag)
+	{
+		GoTX_Flag=0;
+	}
+	
+	if (GoTX_Flag)
+	{
+		GoTX_Flag=0;
+		COMMS_State=TX;
     }
 }
 
@@ -214,6 +208,20 @@ void TxPrepare(uint8_t operation){
 	free(TxData);
 }
 
+void RadioInit(){
+
+    RadioEvents.TxDone = OnTxDone; // standby
+    RadioEvents.RxDone = OnRxDone; // standby
+    RadioEvents.TxTimeout = OnTxTimeout;
+    RadioEvents.RxTimeout = OnRxTimeout;
+    RadioEvents.RxError = OnRxError;
+    RadioEvents.CadDone = OnCadDone;
+    Radio.Init(&RadioEvents);    //Initializes the Radio
+    SX1262Config(11,1,RF_F);   //Configures the transceiver
+    COMMS_State = SLEEP; //Radio is already in STDBY
+    SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
+
+}
 
 void interleave(uint8_t *inputarr, int size) {
     // Check that the size is a multiple of 6.
@@ -267,4 +275,166 @@ void deinterleave(uint8_t *inputarr, int size) {
 
     memcpy(inputarr, temp, size);
     free(temp);
+}
+
+
+
+//FUNCIONS DE CONFIGURACIÓ-----------------------------------------------------------------------------------------------------
+
+
+void SX126xConfigureCad(RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, uint8_t cadDetMin , uint32_t cadTimeout)
+{
+    SX126xSetDioIrqParams( 	IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED,
+                            IRQ_RADIO_NONE, IRQ_RADIO_NONE );
+    SX126xSetCadParams(cadSymbolNum, cadDetPeak, cadDetMin, LORA_CAD_RX, cadTimeout);
+    //THE TOTAL CAD TIMEOUT CAN BE EQUAL TO RX TIMEOUT (IT SHALL NOT BE HIGHER THAN 4 SECONDS)
+}
+
+void SX1262Config(uint8_t SF,uint8_t CR ,uint32_t RF_F){
+
+	/* Reads the SF, CR and time between packets variables from memory */
+
+	/* Configuration of the LoRa frequency and TX and RX parameters */
+    Radio.SetChannel(RF_F);
+
+    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH, SF, CR,
+                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+
+    Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, SF, CR, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
+
+}
+
+void SX1262TLCConfig(uint8_t config_data[])
+	{
+    if (config_data[4]==RF_ID1 && (RF_F/86800000)!=1) //128
+    {
+    	RF_F=86800000;
+    	Radio.SetChannel(RF_F);
+    }
+    else if (config_data[4]==RF_ID2  && (RF_F/91500000)!=1) //255
+    {
+    	RF_F=91500000;
+    	Radio.SetChannel(RF_F);
+    }
+
+    if ((10<=config_data[5]) | (config_data[5]<=14))
+    {
+    	SF=config_data[5]; //TBD
+    }
+
+    if ((1<=config_data[6]) | (config_data[6]<=4))
+    {
+    	CR=config_data[6]; //TBD
+    }
+
+    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH, SF, CR,
+                                       LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                       true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+
+    Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, SF, CR, 0, LORA_PREAMBLE_LENGTH,
+                                       LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                       0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
+
+	}
+
+void COMMSTLCConfig(uint8_t config_data[])
+	{
+	 if ((10000>(config_data[3]*100)) | ((config_data[3]*100)>1000)){rxTime=config_data[3];} //Thresholded in case of error rxTime
+	 if ((10000>(config_data[4]*100)) | ((config_data[4]*100)>1000)){sleepTime=config_data[4];} //Thresholded in case of error sleepTime
+	 if ((0<config_data[5] && config_data[5]<127)){CADMODE_Flag=1;} //CAD Mode (On/Off)
+	 if ((128<config_data[5] && config_data[5]<255)){CADMODE_Flag=0;}
+	 if ((0<config_data[6] && config_data[6]<255)){packet_window=config_data[6];}
+
+	}
+
+//FUNCIONS DE VARIABLES DE CONFIGURACIÓ-----------------------------------------------------------------------------------------------------
+
+void OnRxError()
+{
+    Radio.Standby();
+    COMMS_State = RX;
+    COMMSRxErrors++;
+}
+
+void OnRxTimeout( )
+{
+    COMMS_State = SLEEP;
+    COMMSRxTimeouts++;
+    ADCS_counter=1;
+    TLE_counter=1;
+}
+
+void OnTxTimeout()
+{
+    Radio.Standby();
+    COMMS_State = STDBY;
+}
+
+void OnCadDone(bool channelActivityDetected)
+{
+    if(channelActivityDetected == true)
+    {
+        COMMS_State=SLEEP;
+        CADRX_Flag=1;
+        BedTime_Flag=0;
+    }
+    else
+    {
+        Radio.Standby();
+        COMMS_State=SLEEP;
+    }
+}
+
+
+void OnTxDone()
+{
+	if (packet_number==packet_window)
+	{
+		Tx_PL_Data_Flag=0;
+		COMMS_State=RX;
+	}
+}
+
+void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
+{
+
+	memset(RxData,0,sizeof(RxData));
+    uint8_t *RxPacket =(uint8_t *) malloc(size);
+    if (RxPacket == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(RxPacket,payload,size);
+
+    deinterleave((uint8_t*) RxPacket,size);
+    memcpy(RxData,RxPacket,size);
+
+    free(RxPacket);
+
+    RssiValue = rssi;
+    SnrValue = snr;
+
+
+
+    //RssiMoy = (((RssiMoy*RxCorrectCnt)+RssiValue)/(RxCorrectCnt+1));
+    //SnrMoy = (((SnrMoy*RxCorrectCnt)+SnrValue)/(RxCorrectCnt+1));
+
+    //xEventGroupSetBits(xEventGroup, COMMS_RXIRQFlag_EVENT);
+
+    if (RxData[0]==0xC8 && RxData[1]==0x9D)
+    {
+        TLCReceived_Flag=1;
+        COMMS_State=RX;
+    }
+    else
+    {
+		memset(RxData,0,sizeof(RxData));
+		COMMS_State=STDBY;
+	    Radio.Standby();
+		COMMSNotUs++;
+    }
+
 }
