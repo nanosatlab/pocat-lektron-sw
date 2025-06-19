@@ -1,4 +1,4 @@
-#include <clock.h>
+//#include <clock.h>
 #include "comms.h"
 
 typedef enum                        //Possible States of the State Machine
@@ -86,7 +86,7 @@ uint8_t debugsize=0;
 
 //uint8_t comms_config_array[8]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100, sleepTime/100,CADMODE_Flag,COMMS_DEBUG_MODE};
 
-uint8_t comms_config_array[10]={}; //Flta implementar
+uint8_t comms_config_array[10]={}; //Falta implementar
 
 void COMMS_StateMachine(void)
 {
@@ -96,6 +96,8 @@ void COMMS_StateMachine(void)
     RadioInit();
 
     for(;;){
+
+        COMMS_RX_OBCFlags(); //Aquest funcio s'utilitza per comprovar si hi ha algun flag de l'OBC que s'hagi de processar
 
         switch(COMMS_State)
         {
@@ -147,7 +149,6 @@ void COMMS_StateMachine(void)
                 break;
         }
     }
-    
 }
 
 void process_telecommand(uint8_t tlc_data[]) {
@@ -172,56 +173,22 @@ void process_telecommand(uint8_t tlc_data[]) {
     }
 }
 
-void TxPrepare(uint8_t operation){
-	currentUnixTime = RtcGetTimerValue();
-	unixTime32 = (uint32_t)currentUnixTime;
+void COMMS_RX_OBCFlags() {
 
-	switch(operation)
-	{
-		case ACK_OP:
-			totalpacketsize=48;
-			plsize=41;
-		break;
+    uint32_t notifValue;
 
-		default:
-			Radio.Standby();
-			COMMS_State=STDBY;
-			memset(payloadData,0,sizeof(payloadData));
-		break;
-	}
-	TxPacket[0] = (unixTime32 >> 24) & 0xFF;
-	TxPacket[1] = (unixTime32 >> 16) & 0xFF;
-	TxPacket[2] = (unixTime32 >> 8) & 0xFF;
-	TxPacket[3] = unixTime32 & 0xFF;
-	TxPacket[4] = 0;
-	TxPacket[5] = operation;
-
-    uint8_t *TxData =(uint8_t *) malloc(totalpacketsize);
-    if (TxData == NULL) {
-        exit(EXIT_FAILURE);
+    if (xTaskNotifyWait(0, 0xFFFFFFFF, &notifValue, 0) == pdTRUE) { //Aqui agafem el valor de la notificació
+        if (notifValue & ANTENNA_DEPLOYMENT_NOTI) { //Aquest es un exemple de com es gestionaria
+            Beacon_Flag = 1;
+            GoTX_Flag = 1;
+            COMMS_State = TX;
+        }
     }
-
-    memcpy(TxData,TxPacket,totalpacketsize);
-	interleave((uint8_t*) TxData, totalpacketsize);
-	memcpy(Encoded_Packet,TxData,totalpacketsize);
-
-	free(TxData);
 }
 
-void RadioInit(){
 
-    RadioEvents.TxDone = OnTxDone; // standby
-    RadioEvents.RxDone = OnRxDone; // standby
-    RadioEvents.TxTimeout = OnTxTimeout;
-    RadioEvents.RxTimeout = OnRxTimeout;
-    RadioEvents.RxError = OnRxError;
-    RadioEvents.CadDone = OnCadDone;
-    Radio.Init(&RadioEvents);    //Initializes the Radio
-    SX1262Config(11,1,RF_F);   //Configures the transceiver
-    COMMS_State = SLEEP; //Radio is already in STDBY
-    SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
 
-}
+//FUNCIONS DE CODIFICACIÓ-----------------------------------------------------------------------------------------------------
 
 void interleave(uint8_t *inputarr, int size) {
     // Check that the size is a multiple of 6.
@@ -277,7 +244,41 @@ void deinterleave(uint8_t *inputarr, int size) {
     free(temp);
 }
 
+void TxPrepare(uint8_t operation){
+	currentUnixTime = RtcGetTimerValue();
+	unixTime32 = (uint32_t)currentUnixTime;
 
+	switch(operation)
+	{
+		case ACK_OP:
+			totalpacketsize=48;
+			plsize=41;
+		break;
+
+		default:
+			Radio.Standby();
+			COMMS_State=STDBY;
+			memset(payloadData,0,sizeof(payloadData));
+		break;
+	}
+	TxPacket[0] = (unixTime32 >> 24) & 0xFF;
+	TxPacket[1] = (unixTime32 >> 16) & 0xFF;
+	TxPacket[2] = (unixTime32 >> 8) & 0xFF;
+	TxPacket[3] = unixTime32 & 0xFF;
+	TxPacket[4] = 0;
+	TxPacket[5] = operation;
+
+    uint8_t *TxData =(uint8_t *) malloc(totalpacketsize);
+    if (TxData == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(TxData,TxPacket,totalpacketsize);
+	interleave((uint8_t*) TxData, totalpacketsize);
+	memcpy(Encoded_Packet,TxData,totalpacketsize);
+
+	free(TxData);
+}
 
 //FUNCIONS DE CONFIGURACIÓ-----------------------------------------------------------------------------------------------------
 
@@ -349,6 +350,21 @@ void COMMSTLCConfig(uint8_t config_data[])
 	 if ((0<config_data[6] && config_data[6]<255)){packet_window=config_data[6];}
 
 	}
+
+void RadioInit(){
+
+    RadioEvents.TxDone = OnTxDone; // standby
+    RadioEvents.RxDone = OnRxDone; // standby
+    RadioEvents.TxTimeout = OnTxTimeout;
+    RadioEvents.RxTimeout = OnRxTimeout;
+    RadioEvents.RxError = OnRxError;
+    RadioEvents.CadDone = OnCadDone;
+    Radio.Init(&RadioEvents);    //Initializes the Radio
+    SX1262Config(11,1,RF_F);   //Configures the transceiver
+    COMMS_State = SLEEP; //Radio is already in STDBY
+    SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
+
+}
 
 //FUNCIONS DE VARIABLES DE CONFIGURACIÓ-----------------------------------------------------------------------------------------------------
 
