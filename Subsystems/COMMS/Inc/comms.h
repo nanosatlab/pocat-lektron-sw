@@ -97,7 +97,7 @@ extern EventGroupHandle_t xEventGroup;
 
 #define TLE_PACKET_SIZE						34
 #define TELEMETRY_PACKET_SIZE				29
-#define CALIBRATION_PACKET_SIZE				33
+#define CALIBRATION_PACKET_SIZE				36
 #define CONFIG_PACKET_SIZE					18
 #define DATA_PACKET_SIZE                    39
 #define TIMEOUT_PACKET_SIZE                 2

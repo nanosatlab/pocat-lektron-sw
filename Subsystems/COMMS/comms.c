@@ -56,6 +56,7 @@ int Tx_PL_Data_Flag=0;
 int Beacon_Flag=0;
 int TXStopped_Flag=0;
 int TxConfig_Data_Flag=0;
+int Downlink_Flag=0;
 
 /***********  COUNTERS  ***********/
 
@@ -69,6 +70,9 @@ uint8_t ADCS_counter=1;
 uint16_t window_counter=1;
 uint8_t telemetry_counter[TLCOUNTER_MAX]={0};
 uint32_t current_telemetry_adress=TELEMETRY_LEGACY_ADDR;
+uint8_t DownlinkBeacon_Count = 0;
+uint8_t Downlink_Index = 0;
+uint8_t PL_packet_number = 0;
 
 /*************  SIGNAL  *************/
 
@@ -183,6 +187,26 @@ void COMMS_StateMachine( void )
                 	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,totalpacketsize+6)));
                 	COMMS_State=SLEEP;
             	}
+            	if (Downlink_Flag && DownlinkBeacon_Count > 0)
+            	{
+            		Downlink_Flag = 0;
+
+            		uint8_t telemetry_counter[TLCOUNTER_MAX] = {0};
+            		Read_Flash(TELEMETRY_LEGACY_ADDR, telemetry_counter, TLCOUNTER_MAX);
+
+            		uint8_t total = telemetry_counter[0];
+            		uint8_t to_send = (DownlinkBeacon_Count <= total) ? DownlinkBeacon_Count : total;
+            		//Si número de paquetes demandados es mayor al que hay almacenado en la Flash, se cambia el valor
+            		//de DownlinkBeacon_Count al del total.
+
+            		for (Downlink_Index = total - to_send; Downlink_Index < total; Downlink_Index++) {
+            			TxPrepare(DOWNLINK_OP);
+            		    Radio.Send(Encoded_Packet, 48);
+            		    vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA, 54)));
+            		}
+
+            		COMMS_State = SLEEP;
+            	}
             	break;
             case STDBY:
             	switch(TLCReceived)
@@ -290,6 +314,7 @@ void OnTxDone()
 	{
 		Tx_PL_Data_Flag=0;
 		COMMS_State=RX;
+		store_telemetry();
 	}
 }
 
@@ -471,6 +496,26 @@ void process_telecommand(uint8_t tlc_data[]) {
 		a final beacon will be transmitted to inform about this event.*/
 
 		case UPLOAD_ADCS_CALIBRATION:
+			if(ADCS_counter == 1 && tlc_data[4]==86){
+				Send_to_WFQueue(&tlc_data[4], CALIBRATION_PACKET_SIZE, MAGNETO_MATRIX_ADDR, COMMSsender);
+				Send_to_WFQueue(&tlc_data[40], 3, MAGNETO_OFFSET_ADDR, COMMSsender);
+				ADCS_counter++;
+				Wait_ACK_Flag=1;
+			}
+
+			if(ADCS_counter == 2 && tlc_data[4]==164){
+				Send_to_WFQueue(&tlc_data[4], 9, MAGNETO_OFFSET_ADDR+3, COMMSsender);
+				Send_to_WFQueue(&tlc_data[13], CALIBRATION_PACKET_SIZE-12, GYRO_POLYN_ADDR, COMMSsender);
+				Send_to_WFQueue(&tlc_data[37], 6, PHOTODIODES_OFFSET_ADDR, COMMSsender);
+				ADCS_counter++;
+				Wait_ACK_Flag=1;
+			}
+			if(ADCS_counter == 3 && tlc_data[4]==255){
+				Send_to_WFQueue(&tlc_data[4], 18, PHOTODIODES_OFFSET_ADDR, COMMSsender);
+				GoTX_Flag=1;
+				Beacon_Flag=1;
+				ADCS_counter=1;
+			}
 			/* tbd
 			if(ADCS_counter == 1 && tlc_data[2]==86){
 				Send_to_WFQueue(&tlc_data[3], CALIBRATION_PACKET_SIZE, MAGNETO_MATRIX_ADDR, COMMSsender);
@@ -494,7 +539,8 @@ void process_telecommand(uint8_t tlc_data[]) {
 				ADCS_counter=1;
 			}
 			*/
-		  break;
+
+		break;
 
 		case UPLOAD_ADCS_TLE: {
 
@@ -624,7 +670,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 
 			 // PL config 12 bytes
 
-			 Send_to_WFQueue(&tlc_data[3], 188, UPLINK_ADDR, COMMSsender);
+			 Send_to_WFQueue(&tlc_data[3], 18, UPLINK_ADDR, COMMSsender);
 
 			 GoTX_Flag=1;
 			 TxConfig_Data_Flag=1; //Lee la flash y sustituye los nuevos parametros obtenidos por los anteriores
@@ -666,16 +712,31 @@ void process_telecommand(uint8_t tlc_data[]) {
 		case POL_HEATER_ENABLE://TBD
 		  break;
 
-		case CLEAR_PL_DATA://TBD
-		  //
+		case CLEAR_PL_DATA:
+		//Erase every page reserved for payload data
+			erase_page(PL_TIME_ADDR);  // Page 95 0x0802F800
+			Beacon_Flag = 1;
+			GoTX_Flag   = 1;
 		  break;
-		case CLEAR_FLASH://TBD
-		  //
+		case CLEAR_FLASH://The flash memory is divided in two 512 KBytes
+			// Recorre todas las páginas de Bank1 y las borra de flash.c
+			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_BANK_SIZE; addr += FLASH_PAGE_SIZE) {
+			    erase_page(addr); //Borra la página donde cae 'addr'
+			}
+			 // Señal de confirmación al Ground Station
+			Beacon_Flag = 1;
+			GoTX_Flag = 1;
+
 		  break;
 
-		case CLEAR_HT://TBD
-		  //
-		  break;
+		case CLEAR_HT:{ //Clear all historic telemetry stored in the flash memory.
+	        for (uint32_t addr = TELEMETRY_LEGACY_ADDR; addr <= FLASH_END_ADDR; addr += FLASH_PAGE_SIZE) {
+	            erase_page(addr);
+	        }
+	        Beacon_Flag = 1;
+	        GoTX_Flag = 1;
+	    }
+		break;
 
 		case COMMS_STOP_TX:
 			xTimerStop(xTimerBeacon,0);
@@ -687,17 +748,19 @@ void process_telecommand(uint8_t tlc_data[]) {
 			TXStopped_Flag=0;
 		break;
 
-		case COMMS_IT_DOWNLINK:
-			Beacon_Flag=1;
-			GoTX_Flag=1;
-		break;
+		case COMMS_IT_DOWNLINK:{
+			DownlinkBeacon_Count = 1;
+			Downlink_Flag = 1;
+			Beacon_Flag = 1;
+		break;}
 
 		case COMMS_HT_DOWNLINK:
-		  //TBD
+			DownlinkBeacon_Count = tlc_data[4];
+			Downlink_Flag = 1;
+			Beacon_Flag = 1;
 		  break;
 
-		case PAYLOAD_SCHEDULE: //TBR
-			/*
+		case PAYLOAD_SCHEDULE:
 			//vTaskResume(PAYLOAD_Task); Should be a notification to OBC to enable the task
 			Send_to_WFQueue(&tlc_data[3], 4, PL_TIME_ADDR, COMMSsender);
 			Send_to_WFQueue(&tlc_data[7], 1, PHOTO_RESOL_ADDR, COMMSsender);
@@ -711,25 +774,28 @@ void process_telecommand(uint8_t tlc_data[]) {
 			Send_to_WFQueue(&tlc_data[20], 1, INTEGRATION_TIME_ADDR, COMMSsender);
 			GoTX_Flag=1;
 			TXACK_Flag=1;
-			*/
 			xTaskNotify( PAYLOAD_Handle, 0x1E, eSetValueWithOverwrite );
 		break;
 
 		case PAYLOAD_DEACTIVATE:
-			//vTaskSuspend(PAYLOAD_Task); Should be a notification to OBC to disable the task
+			vTaskSuspend(PAYLOAD_Task); //Notification to OBC to disable the task
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;
 
 		case PAYLOAD_SEND_DATA:
-			plsize=40;
-			packetwindow=5;
+			PL_packet_number = tlc_data[3];
 			GoTX_Flag=1;
 			Tx_PL_Data_Flag=1;
 		break;
 
 		case OBC_HARD_REBOOT:
-		  //
+		    // Borrar toda la flash (por ejemplo, todo el banco 1)
+			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_BANK_SIZE; addr += FLASH_PAGE_SIZE) {
+		        erase_page(addr);
+		    }
+		    // Reiniciar sistema
+		    HAL_NVIC_SystemReset();  // Esto hace un reset completo del micro
 		  break;
 		case OBC_SOFT_REBOOT:
 			HAL_NVIC_SystemReset();
@@ -737,7 +803,18 @@ void process_telecommand(uint8_t tlc_data[]) {
 			Beacon_Flag=1;
 		break;
 		case OBC_PERIPH_REBOOT:
-		  //TBD
+		// Reboot peripherals (UART, I2C, SPI)
+			HAL_UART_DeInit(&huart4);
+			HAL_UART_Init(&huart4);
+
+		    HAL_I2C_DeInit(&hi2c1);
+		    HAL_I2C_Init(&hi2c1);
+
+		    HAL_SPI_DeInit(&hspi2);
+		    HAL_SPI_Init(&hspi2);
+
+		    Beacon_Flag = 1;         // Opcional: enviar beacon confirmando
+		    GoTX_Flag = 1;
 		  break;
 		case OBC_DEBUG_MODE:
 		  //TBD
@@ -780,16 +857,16 @@ void TxPrepare(uint8_t operation){
 
 		case DATA_OP:
 			totalpacketsize=48;
-			plsize=41;
+			plsize=39;
 
-			TxPacket[6] = packet_number;
-			Read_Flash(PHOTO_ADDR + packet_number*plsize, (uint8_t *)payloadData, plsize); //Change to  payload_data_adress at some point
-			memmove(TxPacket+7,payloadData,plsize);
+			TxPacket[3] = PL_packet_number;
+			Read_Flash(PHOTO_ADDR + PL_packet_number*plsize, (uint8_t *)payloadData, plsize); //Change to  payload_data_adress at some point
+			memmove(TxPacket+4,payloadData,plsize); // payload starts at TxPacket[4]
 			Wait_ACK_Flag=1;
 		break;
 
 		case DOWNLINK_CONFIG_OP:
-			//totalpacketsize=29;
+			//totalpacketsize=28;
 			plsize=18;
 			 // COMMS PARAM
 			Read_Flash(TIMEOUT_ADDR, (uint8_t *)comms_config_array, 3);
@@ -801,6 +878,20 @@ void TxPrepare(uint8_t operation){
 			memmove(TxPacket+3,comms_config_array,sizeof(comms_config_array));
 			memmove(TxPacket+3+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
 			memmove(TxPacket+3+sizeof(comms_config_array)+sizeof(eps_config_array),pl_config_array,sizeof(pl_config_array));
+		break;
+		case DOWNLINK_OP:
+			 totalpacketsize = 48;
+			 plsize = BEACON_PL_LEN;
+			 uint8_t telemetry_counter[TLCOUNTER_MAX] = {0};
+			 Read_Flash(TELEMETRY_LEGACY_ADDR, telemetry_counter, TLCOUNTER_MAX);
+
+			 if (telemetry_counter[0] > 0 && Downlink_Index < telemetry_counter[0]) {
+				 uint32_t addr = TELEMETRY_LEGACY_ADDR + TLCOUNTER_MAX + Downlink_Index * BEACON_PL_LEN;
+			    Read_Flash(addr, TxPacket + 6, BEACON_PL_LEN);
+			     }
+			 else {
+			 memset(TxPacket + 6, 0, BEACON_PL_LEN); // En caso de error o índice fuera de rango
+			     }
 		break;
 
 		default:
