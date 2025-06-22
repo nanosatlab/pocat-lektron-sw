@@ -817,7 +817,13 @@ void process_telecommand(uint8_t tlc_data[]) {
 		    GoTX_Flag = 1;
 		  break;
 		case OBC_DEBUG_MODE:
-		  //TBD
+		// Disable automatic transmissions
+		    xTimerStop(xTimerBeacon, 0);
+		    TXStopped_Flag = 1;
+
+		// Display message via serial port (umbilical)
+		    printf("DEBUG MODE ACTIVATED\n");
+		    printf("COMMS DISABLED. PAYLOAD DISABLED.\n");
 		  break;
 		default:
 			COMMS_State=SLEEP;
