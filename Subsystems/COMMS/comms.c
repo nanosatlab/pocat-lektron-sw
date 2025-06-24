@@ -17,15 +17,8 @@ typedef enum                        //Possible States of the State Machine
     TX,
     SLEEP,
 }COMMS_States;
-
-typedef enum {
-    POL_PAYLOAD,
-    POL_ADCS,
-    POL_BURNCOMMS,
-    POL_HEATER
-} POL_type;
-
 COMMS_States COMMS_State=STARTUP;
+
 /************  PACKETS  ************/
 
 uint8_t RxData[48];        //Tx and Rx decoded
@@ -802,7 +795,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		break;
 
 		case PAYLOAD_DEACTIVATE:
-			vTaskSuspend(PAYLOAD_Task); //Notification to OBC to disable the task
+			vTaskSuspend(PAYLOAD_Handle); //Notification to OBC to disable the task
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;

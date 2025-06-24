@@ -68,6 +68,13 @@ typedef enum {
     OBC_DEBUG_MODE
 } telecommandIDS;
 
+typedef enum {
+    POL_PAYLOAD,
+    POL_ADCS,
+    POL_BURNCOMMS,
+    POL_HEATER
+} POL_type;
+
 extern TaskHandle_t OBC_Handle;
 extern EventGroupHandle_t xEventGroup;
 
@@ -106,6 +113,7 @@ extern EventGroupHandle_t xEventGroup;
 #define ACK_OP  							2
 #define DATA_OP 							3
 #define DOWNLINK_CONFIG_OP 					4
+#define DOWNLINK_OP							5
 
 #define TLCOUNTER_MAX						146
 #define BEACON_PL_LEN						28
@@ -140,6 +148,19 @@ TimerEvent_t RxAppTimeoutTimer;
 #define UPLINK_BUFFER_SIZE		100
 #define ACK_PAYLOAD_LENGTH		5			//ACK payload data length
 #define CONFIG_SIZE		        13
+
+//POL Control
+#define PAYLOAD_POL_GPIO_Port GPIOC
+#define PAYLOAD_POL_Pin GPIO_PIN_6
+
+#define ADCS_POL_GPIO_Port GPIOA
+#define ADCS_POL_Pin GPIO_PIN_7
+
+#define BURNCOMMS_POL_GPIO_Port GPIOB
+#define BURNCOMMS_POL_Pin GPIO_PIN_11
+
+#define HEATER_POL_GPIO_Port GPIOB
+#define HEATER_POL_Pin GPIO_PIN_10
 
 //OTHER
 //#define ML (TELEMETRY_PACKET_SIZE + 3 + NPAR)
@@ -347,6 +368,11 @@ void COMMSTLCConfig(uint8_t config_data[]);
  * @brief Beacon callback executed function.
  */
 void beacon_time();
+
+/**
+ * @brief Power on/Shut down the POL pin
+ */
+void POL_Control(POL_type type, uint8_t state);
 
 /**
  * @brief Stores telemetry data ito flash memory.
