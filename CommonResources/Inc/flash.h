@@ -129,7 +129,7 @@
 /*#define OBC_ADDR*/ //3 bytes
 #define OBC_PQ_ADDR					0x0808080C	// 1
 #define OBC_ERRORS_ADDR				0x0808080D	// 1
-#define MCU_TEMP_ADDR 			    0x0803010E	// 1
+#define MCU_TEMP_ADDR 			    0x0808080E	// 1
 
 /*#define ADCS_ADDR*/ //14 bytes
 #define GYRO_ADDR 			        0x08030115	// 6

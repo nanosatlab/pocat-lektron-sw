@@ -7,7 +7,7 @@
 
 #include <clock.h>
 #include "comms.h"
-#include "stm32l4xx_hal.h" // Cambia según tu familia STM32
+//#include "stm32l4xx_hal.h" // Cambia según tu familia STM32
 
 typedef enum                        //Possible States of the State Machine
 {
@@ -17,6 +17,13 @@ typedef enum                        //Possible States of the State Machine
     TX,
     SLEEP,
 }COMMS_States;
+
+typedef enum {
+    POL_PAYLOAD,
+    POL_ADCS,
+    POL_BURNCOMMS,
+    POL_HEATER
+} POL_type;
 
 COMMS_States COMMS_State=STARTUP;
 /************  PACKETS  ************/
@@ -682,34 +689,51 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  //TBD
 		  break;
 		case POL_PAYLOAD_SHUT:
-		  //TBD
+		    POL_Control(POL_PAYLOAD, 0); // 0: Shut Down
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case POL_ADCS_SHUT:
-			//TBD
+		    POL_Control(POL_ADCS, 1);
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case POL_BURNCOMMS_SHUT:
-			//TBD
+		    POL_Control(POL_BURNCOMMS, 0);
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case POL_HEATER_SHUT:
-			//TBD
+		    POL_Control(POL_HEATER, 0);
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case POL_PAYLOAD_ENABLE:
-			//TBD
+		    POL_Control(POL_PAYLOAD, 1); // 1: Power On
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case POL_ADCS_ENABLE:
-			//TBD
+		    POL_Control(POL_ADCS, 1);
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case POL_BURNCOMMS_ENABLE:
-			//TBD
+		    POL_Control(POL_BURNCOMMS, 1);
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
-		case POL_HEATER_ENABLE://TBD
+		case POL_HEATER_ENABLE:
+		    POL_Control(POL_HEATER, 1);
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 
 		case CLEAR_PL_DATA:
@@ -987,7 +1011,38 @@ void beacon_time(){
 	COMMS_State=TX;
 }
 
+void POL_Control(POL_type type, uint8_t state) {
+    GPIO_TypeDef* port;
+    uint16_t pin;
 
+    switch (type) {
+        case POL_PAYLOAD:
+            port = PAYLOAD_POL_GPIO_Port;
+            pin = PAYLOAD_POL_Pin;
+            break;
+        case POL_ADCS:
+            port = ADCS_POL_GPIO_Port;
+            pin = ADCS_POL_Pin;
+            break;
+        case POL_BURNCOMMS:
+            port = BURNCOMMS_POL_GPIO_Port;
+            pin = BURNCOMMS_POL_Pin;
+            break;
+        case POL_HEATER:
+            port = HEATER_POL_GPIO_Port;
+            pin = HEATER_POL_Pin;
+            break;
+        default:
+            return; // Si el subsistema no existe, salir de la función
+    }
+
+    if (state) { // If 1 -> Enable
+        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
+    }
+    else { // If 0 -> Shut Down
+        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
+    }
+}
 
 
 void store_telemetry(){
