@@ -2,7 +2,6 @@
 #include "stm32l4xx_hal.h"
 #include <stdio.h>
 
-
 /* Private variables ---------------------------------------------------------*/
 TaskHandle_t OBC_Handle;
 TaskHandle_t COMMS_Handle;
@@ -12,7 +11,7 @@ void SystemClockConfig(void);
 static void COMMS_Task(void *params);
 
 int main(void)
-{
+    {
     HAL_Init();
     
     // configure full system clock tree
@@ -29,12 +28,9 @@ int main(void)
 }
 
 static void COMMS_Task(void *params) {
-    for (;;) {
-        // Example task code
-        printf("COMMS Task running...\r\n");
-        vTaskDelay(pdMS_TO_TICKS(1000));  
-    }
+    COMMS_StateMachine();
 }
+
 
 void SystemClockConfig(void) {
 
