@@ -118,10 +118,8 @@ extern EventGroupHandle_t xEventGroup;
 #define TLCOUNTER_MAX						146
 #define BEACON_PL_LEN						28
 
-//HEADER for all packets
-
-#define MISSION_ID   0x01   // PoCat-Lektron
-#define POCAT2_ID    0x02   // PoCat-4 (????)
+#define HEATER_ON_THRESHOLD 10  // Temperatura mínima para encender el heater
+#define HEATER_OFF_THRESHOLD 15 // Temperatura máxima para apagar el heater
 
 /*!
  *	CAD performance evaluation's parameters
@@ -172,7 +170,7 @@ TimerEvent_t RxAppTimeoutTimer;
 #define PIN1	 				200	//Pin of the GS to avoid hacking telecommands
 #define PIN2					157	//Second byte of the PIN of the GS
 
-
+//HEADER for all packets
 #define MISSION_ID				0x74
 #define POCKETQUBE_ID			0x72
 #define POQUETQUBE_ID2			0x73

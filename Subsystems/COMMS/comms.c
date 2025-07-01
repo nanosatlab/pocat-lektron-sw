@@ -85,6 +85,8 @@ int8_t SnrMoy = 0;
 int CADMODE_Flag=0;
 int COMMS_DEBUG_MODE=1; // Debug mode: continuous reception, requires CADMode disabled,
 
+int EPS_Heater_Auto = 0; // 0: disabled, 1: enabled
+
 uint16_t packetwindow=1; //packets
 uint32_t rxTime=2000; //ms
 uint16_t ACKTimeout=4000; //ms
@@ -676,10 +678,14 @@ void process_telecommand(uint8_t tlc_data[]) {
 			 TxConfig_Data_Flag=1; //Lee la flash y sustituye los nuevos parametros obtenidos por los anteriores
 		  break;}
 		case EPS_HEATER_ENABLE:
-		  //TBD
+		    EPS_Heater_Auto = 1; // Enable heater automatic activation.
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 		case EPS_HEATER_DISABLE:
-		  //TBD
+		    EPS_Heater_Auto = 0; // Disable heater automatic activation.
+		    Beacon_Flag = 1;
+		    GoTX_Flag = 1;
 		  break;
 		case POL_PAYLOAD_SHUT:
 		    POL_Control(POL_PAYLOAD, 0); // 0: Shut Down
@@ -807,12 +813,12 @@ void process_telecommand(uint8_t tlc_data[]) {
 		break;
 
 		case OBC_HARD_REBOOT:
-		    // Borrar toda la flash (por ejemplo, todo el banco 1)
+		    // Borrar toda la flash
 			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_BANK_SIZE; addr += FLASH_PAGE_SIZE) {
 		        erase_page(addr);
 		    }
 		    // Reiniciar sistema
-		    HAL_NVIC_SystemReset();  // Esto hace un reset completo del micro
+		    HAL_NVIC_SystemReset();  // Reset completo del micro
 		  break;
 		case OBC_SOFT_REBOOT:
 			HAL_NVIC_SystemReset();
@@ -830,18 +836,15 @@ void process_telecommand(uint8_t tlc_data[]) {
 		    HAL_SPI_DeInit(&hspi2);
 		    HAL_SPI_Init(&hspi2);
 
-		    Beacon_Flag = 1;         // Opcional: enviar beacon confirmando
+		    Beacon_Flag = 1;         // Send beacon
 		    GoTX_Flag = 1;
 		  break;
 		case OBC_DEBUG_MODE:
 		// Disable automatic transmissions
 		    xTimerStop(xTimerBeacon, 0);
 		    TXStopped_Flag = 1;
-
-		// Display message via serial port (umbilical)
-		    printf("DEBUG MODE ACTIVATED\n");
-		    printf("COMMS DISABLED. PAYLOAD DISABLED.\n");
 		  break;
+
 		default:
 			COMMS_State=SLEEP;
 		break;

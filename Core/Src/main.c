@@ -131,7 +131,7 @@ HAL_Init();
 
   /****TASK CREATION****/
   xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
-  //xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   EPS_PRIORITY, &EPS_Handle  );
+  xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   EPS_PRIORITY, &EPS_Handle  );
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
   xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
@@ -976,7 +976,20 @@ static void EPS_Task(void *params) //To be merged with internal
 
 			if((RX_EPS_NOTIS & EPS_HEATER_NOTI) == EPS_HEATER_NOTI)
 			{
-				// If we are charging the battery
+				if (EPS_Heater_Auto){ // If we are charging the battery
+
+			        int battery_temp = 20; // Assumption
+			        //int battery_temp = Read_Battery_Temperature();
+
+			        if (battery_temp < HEATER_ON_THRESHOLD)
+			        {
+			            HAL_GPIO_WritePin(HEATER_POL_GPIO_Port, HEATER_POL_Pin, GPIO_PIN_SET); // Encender heater
+			        }
+			        else if (battery_temp > HEATER_OFF_THRESHOLD)
+			        {
+			            HAL_GPIO_WritePin(HEATER_POL_GPIO_Port, HEATER_POL_Pin, GPIO_PIN_RESET); // Apagar heater
+			        }
+				}
 					// Read the battery temperature sensor
 						// If (temp<threshold && Heater OFF) --> Heater ON
 						// Else IF (temp>threshold && Heater ON) --> Heater OFF
