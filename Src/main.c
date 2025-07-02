@@ -11,7 +11,7 @@ void SystemClockConfig(void);
 static void COMMS_Task(void *params);
 
 int main(void)
-    {
+{
     HAL_Init();
     
     // configure full system clock tree
@@ -27,9 +27,6 @@ int main(void)
     vTaskStartScheduler();
 }
 
-static void COMMS_Task(void *params) {
-    COMMS_StateMachine();
-}
 
 
 void SystemClockConfig(void) {

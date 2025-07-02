@@ -1,92 +1,92 @@
-//#include <clock.h>
-#include "comms.h"
+// //#include <clock.h>
+// #include "comms.h"
 
-typedef enum                        //Possible States of the State Machine
-{
-	STARTUP,
-    STDBY,
-    RX,
-    TX,
-    SLEEP,
-} COMMS_States;
+// typedef enum                        //Possible States of the State Machine
+// {
+// 	STARTUP,
+//     STDBY,
+//     RX,
+//     TX,
+//     SLEEP,
+// } COMMS_States;
 
-COMMS_States COMMS_State=STARTUP;
-/************  PACKETS  ************/
+// COMMS_States COMMS_State=STARTUP;
+// /************  PACKETS  ************/
 
-uint8_t RxData[48];        //Tx and Rx decoded
-uint8_t TxPacket[48];
+// uint8_t RxData[48];        //Tx and Rx decoded
+// uint8_t TxPacket[48];
 
-uint8_t payloadData[48];
-uint8_t Encoded_Packet[48];
+// uint8_t payloadData[48];
+// uint8_t Encoded_Packet[48];
 
-uint8_t packet_number=0;
-//uint8_t packet_start=1;
-uint8_t plsize=0;
-uint8_t packet_window=255;
-uint8_t TLCReceived=0;
+// uint8_t packet_number=1;
+// //uint8_t packet_start=1;
+// uint8_t plsize=0;   
+// uint8_t packet_window=0;
+// uint8_t TLCReceived=0;
 
-TimerTime_t currentUnixTime=0;
-uint32_t unixTime32=0;
-
-
-//uint8_t packet_to_send[48] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
-//uint8_t eps_config_array[4];
-//uint8_t pl_config_array[8];
-
-uint8_t totalpacketsize=0;
-
-/*************  FLAGS  *************/
-
-int TLCReceived_Flag=0;
-int CADRX_Flag=0;
-int BedTime_Flag=0;
-int Wait_ACK_Flag=1; //Per fer la primera prova aixi està
-int TXACK_Flag=1; //Per fer la primera prova aixi està
-int GoTX_Flag=0;
-int Tx_PL_Data_Flag=0;
-int Beacon_Flag=0;
-int TXStopped_Flag=0;
-//int TxConfig_Data_Flag=0;
-
-/***********  COUNTERS  ***********/
-
-//TimerHandle_t xTimerBeacon;
-
-uint16_t COMMSRxErrors=0;
-uint16_t COMMSRxTimeouts=0;
-uint16_t COMMSNotUs=0;
-uint8_t TLE_counter=1;
-uint8_t ADCS_counter=1;
-//uint16_t window_counter=1;
-//uint8_t telemetry_counter[TLCOUNTER_MAX]={0};
-//uint32_t current_telemetry_adress=TELEMETRY_LEGACY_ADDR;
-
-/*************  SIGNAL  *************/
-
-int8_t RssiValue = 0;
-int8_t SnrValue = 0;
-int16_t RssiMoy = 0;
-int8_t SnrMoy = 0;
-
-/*************  CONFIG  *************/
-int CADMODE_Flag=0;
-int COMMS_DEBUG_MODE=1; // Debug mode: continuous reception, requires CADMode disabled,
-
-uint16_t packetwindow=1; //packets
-uint32_t rxTime=2000; //ms
-uint16_t ACKTimeout=4000; //ms
-uint32_t sleepTime=1000; //ms
-uint32_t RF_F=868000000; // Hz
-uint8_t SF=11;
-uint8_t CR=1; // 4/5
+// TimerTime_t currentUnixTime=0;
+// uint32_t unixTime32=0;
 
 
-uint8_t debugsize=0;
+// //uint8_t packet_to_send[48] = {MISSION_ID,POCKETQUBE_ID,BEACON}; //Test packet
+// //uint8_t eps_config_array[4];
+// //uint8_t pl_config_array[8];
+
+// uint8_t totalpacketsize=0;
+
+// /*************  FLAGS  *************/
+
+// int TLCReceived_Flag=0;
+// int CADRX_Flag=0;
+// int BedTime_Flag=0;
+// int Wait_ACK_Flag=1; //Per fer la primera prova aixi està
+// int TXACK_Flag=1; //Per fer la primera prova aixi està
+// int GoTX_Flag=0;
+// int Tx_PL_Data_Flag=0;
+// int Beacon_Flag=0;
+// int TXStopped_Flag=0;
+// //int TxConfig_Data_Flag=0;
+
+// /***********  COUNTERS  ***********/
+
+// //TimerHandle_t xTimerBeacon;
+
+// uint16_t COMMSRxErrors=0;
+// uint16_t COMMSRxTimeouts=0;
+// uint16_t COMMSNotUs=0;
+// uint8_t TLE_counter=1;
+// uint8_t ADCS_counter=1;
+// //uint16_t window_counter=1;
+// //uint8_t telemetry_counter[TLCOUNTER_MAX]={0};
+// //uint32_t current_telemetry_adress=TELEMETRY_LEGACY_ADDR;
+
+// /*************  SIGNAL  *************/
+
+// int8_t RssiValue = 0;
+// int8_t SnrValue = 0;
+// int16_t RssiMoy = 0;
+// int8_t SnrMoy = 0;
+
+// /*************  CONFIG  *************/
+// int CADMODE_Flag=0;
+// int COMMS_DEBUG_MODE=1; // Debug mode: continuous reception, requires CADMode disabled,
+
+// uint16_t packetwindow=1; //packets
+// uint32_t rxTime=2000; //ms
+// uint16_t ACKTimeout=4000; //ms
+// uint32_t sleepTime=1000; //ms
+// uint32_t RF_F=868000000; // Hz
+// uint8_t SF=11;
+// uint8_t CR=1; // 4/5
 
 
-//uint8_t comms_config_array[8]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100, sleepTime/100,CADMODE_Flag,COMMS_DEBUG_MODE};
+// uint8_t debugsize=0;
 
-uint8_t comms_config_array[10]={}; //Falta implementar
+
+// //uint8_t comms_config_array[8]={SF,CR,((RF_F/86800000)!=1),LORA_BANDWIDTH,rxTime/100, sleepTime/100,CADMODE_Flag,COMMS_DEBUG_MODE};
+
+// uint8_t comms_config_array[10]={}; //Falta implementar
 
 void COMMS_StateMachine(void)
 {
