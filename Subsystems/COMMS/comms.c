@@ -8,7 +8,7 @@
 #include <clock.h>
 #include "comms.h"
 
-
+extern uint32_t imagelength;
 
 typedef enum                        //Possible States of the State Machine
 {
@@ -28,11 +28,12 @@ uint8_t TxPacket[48];
 uint8_t payloadData[48];
 uint8_t Encoded_Packet[48];
 
-uint8_t packet_number=0;
-uint8_t packet_start=1;
-uint8_t plsize=0;
-uint8_t packet_window=255;
+uint16_t packet_number=0;
+uint16_t packet_start=1;
+uint16_t plsize=0;
+uint16_t packet_window=255;
 uint8_t TLCReceived=0;
+uint16_t packets_to_send=0;
 
 TimerTime_t currentUnixTime=0;
 uint32_t unixTime32=0;
@@ -86,7 +87,7 @@ uint32_t rxTime=2000; //ms
 uint16_t ACKTimeout=4000; //ms
 uint32_t sleepTime=1000; //ms
 uint32_t RF_F=868000000; // Hz
-uint8_t SF=11;
+uint8_t SF=8;
 uint8_t CR=1; // 4/5
 
 
@@ -113,7 +114,7 @@ void COMMS_StateMachine( void )
     RadioEvents.RxError = OnRxError;
     RadioEvents.CadDone = OnCadDone;
     Radio.Init(&RadioEvents);    //Initializes the Radio
-    SX1262Config(11,1,RF_F);   //Configures the transceiver
+    SX1262Config(SF,1,RF_F);   //Configures the transceiver
     COMMS_State = SLEEP; //Radio is already in STDBY
     SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
 
@@ -166,13 +167,13 @@ void COMMS_StateMachine( void )
             	}
 
             	if (Tx_PL_Data_Flag)
+            	packets_to_send=imagelength/plsize+1;
             	{
-            		for (window_counter=1;window_counter<=packet_window;window_counter++)
+            		for (packet_number=0;packet_number<=packets_to_send;packet_number++)
             		{
 						TxPrepare(DATA_OP);
 						Radio.Send(Encoded_Packet,totalpacketsize);
 						vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,54)));
-						packet_number++;
             		}
             	Tx_PL_Data_Flag=0;
             	}
@@ -257,7 +258,7 @@ void COMMS_StateMachine( void )
                 RadioEvents.RxError = OnRxError;
                 RadioEvents.CadDone = OnCadDone;
                 Radio.Init(&RadioEvents);    //Initializes the Radio
-                SX1262Config(11,1,RF_F);   //Configures the transceiver
+                SX1262Config(SF,1,RF_F);   //Configures the transceiver
                 COMMS_State = SLEEP; //Radio is already in STDBY
                 SX126xConfigureCad( CAD_SYMBOL_NUM,CAD_DET_PEAK,CAD_DET_MIN,0);
             default:
@@ -287,7 +288,7 @@ void OnCadDone(bool channelActivityDetected)
 
 void OnTxDone()
 {
-	if (packet_number==packet_window)
+	if (packet_number==packets_to_send+1)
 	{
 		Tx_PL_Data_Flag=0;
 		COMMS_State=RX;

@@ -179,6 +179,9 @@ int getDataLength(UART_HandleTypeDef huart){
 }
 
 int getData(UART_HandleTypeDef huart){
+	doneTransfer=0;
+	imagelength=0;
+	indxVGA=0;
 	txdataIM[12] = rxdataDL[7];
 	txdataIM[13] = rxdataDL[8];
 	state = CAM_GET_DATA;
