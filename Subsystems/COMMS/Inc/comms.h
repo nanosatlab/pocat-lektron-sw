@@ -65,7 +65,9 @@ typedef enum {
     OBC_HARD_REBOOT,
     OBC_SOFT_REBOOT,
     OBC_PERIPH_REBOOT,
-    OBC_DEBUG_MODE
+    OBC_DEBUG_MODE,
+	EPS_SCHEDULE,
+	EPS_SEND_DATA
 } telecommandIDS;
 
 extern TaskHandle_t OBC_Handle;
@@ -106,6 +108,8 @@ extern EventGroupHandle_t xEventGroup;
 #define ACK_OP  							2
 #define DATA_OP 							3
 #define DOWNLINK_CONFIG_OP 					4
+#define EPS_DATA_OP							5
+
 
 #define TLCOUNTER_MAX						146
 #define BEACON_PL_LEN						28

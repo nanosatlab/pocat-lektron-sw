@@ -54,6 +54,7 @@ int Wait_ACK_Flag=0;
 int TXACK_Flag=0;
 int GoTX_Flag=0;
 int Tx_PL_Data_Flag=0;
+int Tx_EPS_Data_Flag=0;
 int Beacon_Flag=0;
 int TXStopped_Flag=0;
 int TxConfig_Data_Flag=0;
@@ -185,6 +186,21 @@ void COMMS_StateMachine( void )
                 	vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA,totalpacketsize+6)));
                 	COMMS_State=SLEEP;
             	}
+
+            	if (Tx_EPS_Data_Flag) //Es igual que el de PAYLOAD
+            	{
+            	    packets_to_send = 1; //No se quants son, suposo que despres es pot adaptar com el de Payload
+
+            	    for (packet_number = 0; packet_number <= packets_to_send; packet_number++)
+            	    {
+            	        TxPrepare(EPS_DATA_OP);
+            	        Radio.Send(Encoded_Packet, totalpacketsize);
+            	        vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA, totalpacketsize)));
+            	    }
+
+            	    Tx_EPS_Data_Flag = 0;
+            	}
+
             	break;
             case STDBY:
             	switch(TLCReceived)
@@ -641,6 +657,18 @@ void process_telecommand(uint8_t tlc_data[]) {
 		case OBC_DEBUG_MODE:
 		  //TBD
 		  break;
+
+		case EPS_SEND_DATA: //Valors com els de Payload perque no els se
+		    plsize = 40;
+		    packetwindow = 5;
+		    GoTX_Flag = 1;
+		    Tx_EPS_Data_Flag = 1;
+		    break;
+
+		case EPS_SCHEDULE:
+			xTaskNotify(EPS_Handle, ACTIVATE_EPS, eSetValueWithOverwrite);
+			break;
+
 		default:
 			COMMS_State=SLEEP;
 		break;
@@ -700,6 +728,17 @@ void TxPrepare(uint8_t operation){
 			memmove(TxPacket+6+sizeof(comms_config_array),eps_config_array,sizeof(eps_config_array));
 			memmove(TxPacket+6+sizeof(comms_config_array)+sizeof(eps_config_array),pl_config_array,sizeof(pl_config_array));
 		break;
+
+		case EPS_DATA_OP:
+		    totalpacketsize = 48; //No se de quan es, he posat el mateix que payload
+		    plsize = 12; // idem
+
+		    TxPacket[6] = packet_number;
+		    Read_Flash(EPS_DATA_ADDR + packet_number * plsize, payloadData, plsize); //No se on es guardarà lo de eps
+		    memcpy(TxPacket + 7, payloadData, plsize);
+
+		    Wait_ACK_Flag = 1;
+		    break;
 
 		default:
 			Radio.Standby();
