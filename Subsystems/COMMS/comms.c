@@ -167,8 +167,8 @@ void COMMS_StateMachine( void )
             	}
 
             	if (Tx_PL_Data_Flag)
-            	packets_to_send=imagelength/plsize+1;
             	{
+            	packets_to_send=imagelength/plsize+1;
             		for (packet_number=0;packet_number<=packets_to_send;packet_number++)
             		{
 						TxPrepare(DATA_OP);
