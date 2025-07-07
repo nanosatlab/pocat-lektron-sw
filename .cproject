@@ -104,6 +104,7 @@
 						<entry excluding="EPS|VGA|RFI|COMMS|ADCS|OBC" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/ADCS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/COMMS"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/EPS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/OBC"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/RFI"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/VGA"/>
@@ -191,6 +192,7 @@
 						<entry excluding="EPS|VGA|RFI|COMMS|ADCS|OBC" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/ADCS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/COMMS"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/EPS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/OBC"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/RFI"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Subsystems/VGA"/>

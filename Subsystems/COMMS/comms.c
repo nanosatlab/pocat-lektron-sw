@@ -666,7 +666,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		    break;
 
 		case EPS_SCHEDULE:
-			xTaskNotify(EPS_Handle, ACTIVATE_EPS, eSetValueWithOverwrite);
+			xTaskNotify(EPS_Handle, 0x1E, eSetValueWithOverwrite);
 			break;
 
 		default:
@@ -731,7 +731,7 @@ void TxPrepare(uint8_t operation){
 
 		case EPS_DATA_OP:
 		    totalpacketsize = 48; //No se de quan es, he posat el mateix que payload
-		    plsize = 12; // idem
+		    plsize = 18; // idem
 
 		    TxPacket[6] = packet_number;
 		    Read_Flash(EPS_DATA_ADDR + packet_number * plsize, payloadData, plsize); //No se on es guardarà lo de eps

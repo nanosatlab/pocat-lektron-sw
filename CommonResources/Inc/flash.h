@@ -105,6 +105,7 @@
 #define CONTINGENCY_TH_ADDR         0x08030801  // 1
 #define SUNSAFE_TH_ADDR             0x08030802  // 1
 #define SURVIVAL_TH_ADDR            0x08030803  // 1
+#define EPS_DATA_ADDR				0x08030804  // 18
 
 #define RFI_CONFIG_ADDR             0x08031000  // 8
 
