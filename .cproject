@@ -66,6 +66,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pocat-sw/CommonResources/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pocat-sw/Semtech/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pocat-sw/Subsystems/COMMS/Inc/correct}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/Subsystems/EPS/Inc&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1081259978" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

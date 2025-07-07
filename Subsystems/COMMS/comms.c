@@ -659,7 +659,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  break;
 
 		case EPS_SEND_DATA: //Valors com els de Payload perque no els se
-		    plsize = 40;
+		    plsize = 18;
 		    packetwindow = 5;
 		    GoTX_Flag = 1;
 		    Tx_EPS_Data_Flag = 1;
@@ -734,7 +734,7 @@ void TxPrepare(uint8_t operation){
 		    plsize = 18; // idem
 
 		    TxPacket[6] = packet_number;
-		    Read_Flash(EPS_DATA_ADDR + packet_number * plsize, payloadData, plsize); //No se on es guardarà lo de eps
+		    Read_Flash(EPS_DATA_ADDR + packet_number * plsize, payloadData, plsize); //En teoria la guardo aqui
 		    memcpy(TxPacket + 7, payloadData, plsize);
 
 		    Wait_ACK_Flag = 1;
