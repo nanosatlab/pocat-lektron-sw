@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "stm32l4xx_hal.h"
+#include "flash.h"
 //#include "stm32l4xx_it.h"
 
 HAL_StatusTypeDef readDS2782Volt(I2C_HandleTypeDef i2c, float *v);

@@ -904,90 +904,25 @@ static void FLASH_Task(void *params) // GateKeeper Task of Writing on Flash Memo
 	}
 }
 
-static void EPS_Task(void *params) //To be merged with internal
+static void EPS_Task(void *params)
 {
-	xTimerStart(xTimerEps,0);
+    xTimerStart(xTimerEps, 0);
 
-	uint32_t RX_EPS_NOTIS;
+    uint32_t RX_EPS_NOTIS;
 
-	for(;;)
-	{
-		if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_EPS_NOTIS, portMAX_DELAY)==pdPASS)
-		{
-			if((RX_EPS_NOTIS & EPS_BATTERY_NOTI) == EPS_BATTERY_NOTI)
-			{
-				uint8_t state, prev_state, batt, nom, low, crit;
-
-				// Read Battery Capacity
-
-				batt = 95; // arbitrary value by now
-
-				Read_Flash(CURRENT_STATE_ADDR, &state, 1);
-				Read_Flash(PREVIOUS_STATE_ADDR, &prev_state, 1);
-				//Read_Flash(NOMINAL_ADDR, &nom, 1);
-				//Read_Flash(LOW_ADDR, &low, 1);
-				//Read_Flash(CRITICAL_ADDR, &crit, 1);
-
-				Send_to_WFQueue(&state, 1, PREVIOUS_STATE_ADDR, EPSsender); // store the current state as previous
-
-				switch(state)
-				{
-					case _INIT :
-					{
-						if(batt>=nom){state = _NOMINAL;}
-						else{state = _CONTINGENCY;}
-					}
-
-					case _NOMINAL :
-						{
-							if(batt>=nom){state = _NOMINAL;}
-							else{state = _CONTINGENCY;}
-						}
-
-					case _CONTINGENCY :
-						{
-							if(batt>=nom){state = _NOMINAL;}
-							else if(batt<low){state = _SUNSAFE;}
-							else{state = _CONTINGENCY;}
-						}
-					case _SUNSAFE :
-						{
-							if(batt>=low){state = _CONTINGENCY;}
-							else if(batt<crit){state = _SURVIVAL;}
-							else{state = _SUNSAFE;}
-						}
-					case _SURVIVAL :
-						{
-							if(batt>=crit){state = _SUNSAFE;} // Through telecommands (SURVIVAL-->SUNSAFE)
-																		// Hear after sleep
-							else{state = _SURVIVAL;}
-						}
-					default:{state = prev_state;}
-				}
-
-				Send_to_WFQueue(&state, 1, CURRENT_STATE_ADDR, EPSsender);
-			}
-
-			if((RX_EPS_NOTIS & EPS_HEATER_NOTI) == EPS_HEATER_NOTI)
-			{
-				// If we are charging the battery
-					// Read the battery temperature sensor
-						// If (temp<threshold && Heater OFF) --> Heater ON
-						// Else IF (temp>threshold && Heater ON) --> Heater OFF
-			}
-
-			if((RX_EPS_NOTIS & EPS_TELEMETRY_NOTI) == EPS_TELEMETRY_NOTI)
-			{
-				// Read battery temperature sensor
-				// Store battery temperature sensor on memory flash at BATT_TEMP_ADDR
-
-				// Read battery capacity
-				// Store battery capacity on memory flash at BATT_CAP_ADDR
-
-			}
-		}
-	}
+    for (;;)
+    {
+        if (xTaskNotifyWait(0, 0xFFFFFFFF, &RX_EPS_NOTIS, portMAX_DELAY) == pdPASS)
+        {
+            if ((RX_EPS_NOTIS & ACTIVATE_PAYLOAD) == ACTIVATE_PAYLOAD)
+            {
+                getAllResultData();
+                xTaskNotifyStateClear(EPS_Handle);
+            }
+        }
+    }
 }
+
 
 static void sTIM_Task(void *params)
 {

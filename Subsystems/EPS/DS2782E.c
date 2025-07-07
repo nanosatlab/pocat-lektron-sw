@@ -358,7 +358,4 @@ void getAllResultData(){
 
 	store_flash_memory(EPS_DATA_ADDR, (uint8_t *)&data, sizeof(DS2782_Data_t));
 
-
-
-
 }
