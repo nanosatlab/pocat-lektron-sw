@@ -28,6 +28,10 @@ uint8_t DS2782_RSRC_REG = 0x07;	// Remaining Standby Relative Capacity Register
 
 float Rsns = 15e-3;	// Resistencia (ohms) per calcular corrent
 
+float temptest=0;
+float volttest=0;
+float amptest=0;
+
 typedef struct {
 	/*
 	uint8_t T;
@@ -109,7 +113,7 @@ HAL_StatusTypeDef readDS2782Temp(I2C_HandleTypeDef i2c, float *t){
 	temp = temp >> 5;
 	*t = (float)temp * 0.125 * sign; // Precisió de 0.125 => 1ºC / 0.125 = 8
 
-	printf("Temperatura: %.2fC\r\n", *t);
+	//printf("Temperatura: %.2fC\r\n", *t);
 	return ret;
 }
 
@@ -336,26 +340,29 @@ HAL_StatusTypeDef readDS2782RSRC(I2C_HandleTypeDef i2c, int *rsrc){	// Remaining
 
 void getAllResultData(){
 
-	uint16_t RAAC, RSAC, AVG_I, T, V, I, ACR_I, ACRL_I;
+	float RAAC, RSAC, AVG_I, T, V, I, ACR_I, ACRL_I;
 	uint8_t RARC, RSRC;
 	HAL_StatusTypeDef ret;
-	I2C_HandleTypeDef hi2c1;
 
 	ret = readDS2782Temp(hi2c1, &T);
+	vTaskDelay(200);
 	ret = readDS2782Volt(hi2c1, &V);
+	vTaskDelay(200);
 	ret = readDS2782Amp(hi2c1, &I);
-	ret = readDS2782AVGAmp(hi2c1, &AVG_I);
-	ret = readDS2782ACRAmp(hi2c1, &ACR_I);
-	ret = readDS2782ACRLAmp(hi2c1, &ACRL_I);
-	ret = readDS2782RAAC(hi2c1, &RAAC);
-	ret = readDS2782RSAC(hi2c1, &RSAC);
-	ret = readDS2782RARC(hi2c1, &RARC);
-	ret = readDS2782RSRC(hi2c1, &RSRC);
+//	ret = readDS2782AVGAmp(hi2c1, &AVG_I);
+//	ret = readDS2782ACRAmp(hi2c1, &ACR_I);
+//	ret = readDS2782ACRLAmp(hi2c1, &ACRL_I);
+//	ret = readDS2782RAAC(hi2c1, &RAAC);
+//	ret = readDS2782RSAC(hi2c1, &RSAC);
+//	ret = readDS2782RARC(hi2c1, &RARC);
+//	ret = readDS2782RSRC(hi2c1, &RSRC);
 
 	DS2782_Data_t data;
 
 	data.Prova = 0x00;
-
-	store_flash_memory(EPS_DATA_ADDR, (uint8_t *)&data, sizeof(DS2782_Data_t));
+	temptest=T;
+	volttest=V;
+	amptest=I;
+	//store_flash_memory(EPS_DATA_ADDR, (uint8_t *)&data, sizeof(DS2782_Data_t));
 
 }

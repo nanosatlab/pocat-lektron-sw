@@ -130,7 +130,7 @@ int main(void)
 
   /****TASK CREATION****/
   xTaskCreate( FLASH_Task,     "FLASH",   FLASH_STACK_SIZE, NULL,   FLASH_PRIORITY, &FLASH_Handle);
-  //xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   EPS_PRIORITY, &EPS_Handle  );
+  xTaskCreate( EPS_Task,         "EPS",     EPS_STACK_SIZE, NULL,   PAYLOAD_PRIORITY, &EPS_Handle  ); //P/L Prio
   //xTaskCreate( ADCS_Task,       "ADCS",    ADCS_STACK_SIZE, NULL,    ADCS_PRIORITY, &ADCS_Handle   );
   //xTaskCreate( OBC_Task,         "OBC",     OBC_STACK_SIZE, NULL,     OBC_PRIORITY, &OBC_Handle);
   xTaskCreate( COMMS_Task,     "COMMS",   COMMS_STACK_SIZE, NULL,   COMMS_PRIORITY, &COMMS_Handle  );
@@ -148,7 +148,7 @@ int main(void)
   //xTimerObc = xTimerCreate("TIMER OBC", pdMS_TO_TICKS(OBC_ACTIVE_PERIOD), false, NULL, ObcTimerCallback);
   xTimerComms = xTimerCreate("TIMER COMMS", pdMS_TO_TICKS(COMMS_ACTIVE_PERIOD), false, NULL, CommsTimerCallback);
   //xTimerAdcs = xTimerCreate("TIMER ADCS", pdMS_TO_TICKS(ADCS_ACTIVE_PERIOD), false, NULL, AdcsTimerCallback);
-  //xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
+  xTimerEps = xTimerCreate("TIMER EPS", pdMS_TO_TICKS(EPS_ACTIVE_PERIOD), false, NULL, EpsTimerCallback);
 
   xTimerPayload = xTimerCreate("TIMER PAYLOAD", pdMS_TO_TICKS(PAYLOAD_ACTIVE_PERIOD), false, NULL, PayloadTimerCallback);
   //xTimerRF = xTimerCreate("TIMER RF", pdMS_TO_TICKS(1000), false, NULL, RFTimerCallback);
