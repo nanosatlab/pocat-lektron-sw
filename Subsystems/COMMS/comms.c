@@ -543,7 +543,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  break;
 
 		case POL_BURNCOMMS_SHUT:
-			//TBD
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 		  break;
 
 		case POL_HEATER_SHUT:
@@ -559,7 +559,9 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  break;
 
 		case POL_BURNCOMMS_ENABLE:
-			//TBD
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+			vTaskDelay(15000);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 		  break;
 
 		case POL_HEATER_ENABLE://TBD
