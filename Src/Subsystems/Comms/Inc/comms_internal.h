@@ -21,6 +21,9 @@
 #define LORA_FIX_LENGTH_PAYLOAD_ON          false
 #define LORA_IQ_INVERSION_ON                false
 
+// Transmit options 
+#define ACK_OP  							2
+
 //CAD parameters
 #define CAD_SYMBOL_NUM          LORA_CAD_02_SYMBOL
 #define CAD_DET_PEAK            23
@@ -31,37 +34,54 @@
  * @brief Possible states of the communications state machine.
  */
 typedef enum {
-    STARTUP,
-    STDBY,
-    RX,
-    TX,
-    SLEEP
-} COMMS_States;
+        STARTUP,
+        TRANSMIT,
+        RECEIVE,
+        PROCESS,
+        SLEEP,
+        STANDBY,
+} CommsState_t;
+
+typedef enum {
+    OBC_SOFT_REBOOT,
+    UPLOAD_COMMS_CONFIG,
+    PING,
+} telecommandId_t;
 
 typedef struct {
-    uint8_t RxData[48];        // Tx and Rx decoded
-} COMMS_Packets_t;
+    uint8_t RxData[48];
+    uint8_t TxData[48];
+    uint8_t TlcReceived;     
+} CommsPackets_t;
 
 /**
  * @brief Flags used in the COMMS state machine.
  */
 typedef struct {
-    bool TLCReceived; // Hz
-} COMMS_Flags_t;
+    bool tlcReceived; // Hz
+    bool cadMode;
+    bool callbackFinished;
+    bool cadRx;
+    bool txAck;
+} CommsFlags_t;
 
 /**
  * @brief Configuration settings
  */
 typedef struct {
     uint32_t RF_F; // Hz
-} COMMS_Settings_t;
-
+    uint32_t sleepTime
+} CommsSettings_t;
 
 /*!
  * \brief Function to initialize the Radio and its parameters
  */
 
-void InitializeRadio(void);
+CommsState_t Startup(void);
+
+// EXPLANATION
+
+CommsState_t Sleep(void);
 
 /*!
  * \brief Function to be executed on Radio Rx Done event
@@ -90,5 +110,8 @@ void SX1262Config(uint8_t SF, uint8_t CR, uint32_t RF_F);
  */
 void SX126xConfigureCad( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, uint8_t cadDetMin , uint32_t cadTimeout);
 
+
+// Description to do
+bool IsCallbackFinished(void);
 
 #endif /* COMMS_INTERNAL_H_ */

@@ -14,6 +14,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "log.h"
+#include "comms.h"
 
 
 void Error_Handler(void); // s'ha d'implementar

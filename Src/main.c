@@ -2,13 +2,13 @@
 #include "stm32l4xx_hal.h"
 #include <stdio.h>
 
-/* Private variables ---------------------------------------------------------*/
-TaskHandle_t OBC_Handle;
-TaskHandle_t COMMS_Handle;
+// global variables
+EventGroupHandle_t xObcEventGroup;
+TaskHandle_t ObcHandle;
+TaskHandle_t CommsHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClockConfig(void);
-static void COMMS_Task(void *params);
 
 int main(void)
 {
@@ -22,7 +22,9 @@ int main(void)
 
     printf("Booted.\r\n");
 
-    xTaskCreate(COMMS_Task, "COMMS", 3000, NULL, 1, &COMMS_Handle); 
+    xObcEventGroup = xEventGroupCreate();
+
+    xTaskCreate(CommsTask, "COMMS", COMMS_STACK_SIZE, NULL, COMMS_PRIORITY, &CommsHandle); 
 
     vTaskStartScheduler();
 }
