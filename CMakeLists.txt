@@ -50,6 +50,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Semtech/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Subsystems/Comms/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Subsystems/Obc/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Subsystems/Payload/Inc
 )
 
 set(FREERTOS_INCLUDE_DIRECTORIES

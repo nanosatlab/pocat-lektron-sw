@@ -21,8 +21,9 @@
 #define LORA_FIX_LENGTH_PAYLOAD_ON          false
 #define LORA_IQ_INVERSION_ON                false
 
-// Transmit options 
-#define ACK_OP  							2
+// Transmit message types 
+#define ACK_M     							2
+#define DATA_M  							3
 
 //CAD parameters
 #define CAD_SYMBOL_NUM          LORA_CAD_02_SYMBOL
@@ -37,32 +38,30 @@ typedef enum {
         STARTUP,
         TRANSMIT,
         RECEIVE,
-        PROCESS,
         SLEEP,
         STANDBY,
 } CommsState_t;
 
 typedef enum {
-    OBC_SOFT_REBOOT,
-    UPLOAD_COMMS_CONFIG,
     PING,
+    PAYLOAD_SEND_DATA,
 } telecommandId_t;
 
 typedef struct {
     uint8_t RxData[48];
     uint8_t TxData[48];
-    uint8_t TlcReceived;     
+    uint8_t packetWindow;
 } CommsPackets_t;
 
 /**
  * @brief Flags used in the COMMS state machine.
  */
 typedef struct {
-    bool tlcReceived; // Hz
     bool cadMode;
     bool callbackFinished;
     bool cadRx;
     bool txAck;
+    bool txPayload;
 } CommsFlags_t;
 
 /**
@@ -70,23 +69,63 @@ typedef struct {
  */
 typedef struct {
     uint32_t RF_F; // Hz
-    uint32_t sleepTime
+    uint32_t sleepTime;
+    uint32_t rxTime;
+    uint16_t ackTime;
 } CommsSettings_t;
 
+void NextState(void);
+
+void ProcessRadioCallbacks(void);
+
 /*!
+
  * \brief Function to initialize the Radio and its parameters
  */
 
-CommsState_t Startup(void);
+void Startup(void);
 
 // EXPLANATION
 
-CommsState_t Sleep(void);
+void Sleep(void);
+
+void Receive(void);
+
+void Transmit(void);
+
+void StandBy(void);
 
 /*!
  * \brief Function to be executed on Radio Rx Done event
  */
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr ); 
+
+/*!
+ * \brief Function to be executed on Radio Tx Done event
+ */
+void OnTxDone( void );
+
+
+/*!
+ * \brief Function executed on Radio Tx Timeout event
+ */
+void OnTxTimeout( void );
+
+/*!
+ * \brief Function executed on Radio Rx Timeout event
+ */
+void OnRxTimeout( void );
+
+/*!
+ * \brief Function executed on Radio Rx Error event
+ */
+void OnRxError( void );
+
+/*!
+ * \brief Function executed on Radio CAD Done event
+ */
+void OnCadDone( bool channelActivityDetected);
+
 
 /**
  * @brief Configures the SX1262 module with specified parameters.
@@ -110,8 +149,12 @@ void SX1262Config(uint8_t SF, uint8_t CR, uint32_t RF_F);
  */
 void SX126xConfigureCad( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, uint8_t cadDetMin , uint32_t cadTimeout);
 
+CommsState_t ProcessTelecommand();
 
-// Description to do
-bool IsCallbackFinished(void);
+void TxPrepare(uint8_t messageType);
+
+void Interleave(uint8_t *inputarr, int size);
+
+void Deinterleave(uint8_t *inputarr, int size);
 
 #endif /* COMMS_INTERNAL_H_ */

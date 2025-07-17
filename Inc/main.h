@@ -14,7 +14,19 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "log.h"
-#include "comms.h"
+   
+
+// OBC event group bits
+#define OBC_PHOTO_CAPTURE (1 << 0) // bit 0
+
+// PAYLOAD event group bits
+#define PAYLOAD_PHOTO_CAPTURE (1 << 0) // bit 0
+
+
+// Task variables
+extern TaskHandle_t xObcTaskHandle;
+extern TaskHandle_t xCommsTaskHandle;
+extern TaskHandle_t xPayloadTaskHandle;
 
 
 void Error_Handler(void); // s'ha d'implementar
