@@ -135,6 +135,9 @@
 #define GYRO_ADDR 			        0x08030115	// 6
 #define MAGNETOMETER_ADDR 			0x08030116  // 8
 #define PHOTODIODES_ADDR 			0x0803011D  // 8 (?)
+
+/*#define Satellite orientation*/
+#define ORIENT_ADDR					0x0803010E	// 8
 /*******************************************************/
 
 

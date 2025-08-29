@@ -85,8 +85,6 @@ int8_t SnrMoy = 0;
 int CADMODE_Flag=0;
 int COMMS_DEBUG_MODE=1; // Debug mode: continuous reception, requires CADMode disabled,
 
-int EPS_Heater_Auto = 0; // 0: disabled, 1: enabled
-
 uint16_t packetwindow=1; //packets
 uint32_t rxTime=2000; //ms
 uint16_t ACKTimeout=4000; //ms
@@ -200,12 +198,19 @@ void COMMS_StateMachine( void )
             		uint8_t to_send = (DownlinkBeacon_Count <= total) ? DownlinkBeacon_Count : total;
             		//Si número de paquetes demandados es mayor al que hay almacenado en la Flash, se cambia el valor
             		//de DownlinkBeacon_Count al del total.
+            		 if (to_send == 1) { //For instant telemetry
+            		        Downlink_Index = total - 1;
+            		        TxPrepare(DOWNLINK_OP);
+            		        Radio.Send(Encoded_Packet, 48);
+            		    }
+            		 else {
+            			 for (Downlink_Index = total - to_send; Downlink_Index < total; Downlink_Index++) {
+            				 TxPrepare(DOWNLINK_OP);
+            			     Radio.Send(Encoded_Packet, 48);
+            			     vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA, 54)));
+            			 }
+            		 }
 
-            		for (Downlink_Index = total - to_send; Downlink_Index < total; Downlink_Index++) {
-            			TxPrepare(DOWNLINK_OP);
-            		    Radio.Send(Encoded_Packet, 48);
-            		    vTaskDelay(pdMS_TO_TICKS(Radio.TimeOnAir(MODEM_LORA, 54)));
-            		}
 
             		COMMS_State = SLEEP;
             	}
@@ -457,8 +462,6 @@ void COMMSTLCConfig(uint8_t config_data[])
 
 void process_telecommand(uint8_t tlc_data[]) {
 
-	//For every tlc, debug variable will be explained
-
 	TLCReceived=tlc_data[2];
 	switch (TLCReceived){
 
@@ -494,8 +497,6 @@ void process_telecommand(uint8_t tlc_data[]) {
 			Beacon_Flag=1;
 			GoTX_Flag=1;
 		break;
-		/*For case TRANSIT_TO_NM/CM/SSM/SM, Prior to the transition,
-		a final beacon will be transmitted to inform about this event.*/
 
 		case UPLOAD_ADCS_CALIBRATION:
 			if(ADCS_counter == 1 && tlc_data[4]==86){
@@ -559,7 +560,6 @@ void process_telecommand(uint8_t tlc_data[]) {
 				TLE_counter++;
 				memcpy(tle_debug_array, &tlc_data[3], 1);
 				memcpy(tle_debug_array, &tlc_data[4], TLE_PACKET_SIZE-1);
-
 			}
 			else if (TLE_counter == 4) {
 				// Escribir los 35 B restantes de tlc_data[4]
@@ -602,7 +602,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 
 		break;}
 
-		case COMMS_UPLOAD_PARAMS:{ // COMMS Flags/Counters/etc config.
+		case COMMS_UPLOAD_PARAMS:{
 
 			//COMMS_State=STDBY;
 			COMMS_State=SLEEP;
@@ -675,62 +675,65 @@ void process_telecommand(uint8_t tlc_data[]) {
 			 Send_to_WFQueue(&tlc_data[3], 18, UPLINK_ADDR, COMMSsender);
 
 			 GoTX_Flag=1;
-			 TxConfig_Data_Flag=1; //Lee la flash y sustituye los nuevos parametros obtenidos por los anteriores
+			 TxConfig_Data_Flag=1; //Reads flash and replaces new parameters with the previous
 		  break;}
+
 		case EPS_HEATER_ENABLE:
-		    EPS_Heater_Auto = 1; // Enable heater automatic activation.
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
+
 		case EPS_HEATER_DISABLE:
-		    EPS_Heater_Auto = 0; // Disable heater automatic activation.
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
+
 		case POL_PAYLOAD_SHUT:
-		    POL_Control(POL_PAYLOAD, 0); // 0: Shut Down
+		    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_ADCS_SHUT:
-		    POL_Control(POL_ADCS, 1);
+		    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_BURNCOMMS_SHUT:
-		    POL_Control(POL_BURNCOMMS, 0);
+		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_HEATER_SHUT:
-		    POL_Control(POL_HEATER, 0);
+		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_17, GPIO_PIN_RESET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_PAYLOAD_ENABLE:
-		    POL_Control(POL_PAYLOAD, 1); // 1: Power On
+		    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_ADCS_ENABLE:
-		    POL_Control(POL_ADCS, 1);
+		    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_BURNCOMMS_ENABLE:
-		    POL_Control(POL_BURNCOMMS, 1);
+		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
 
 		case POL_HEATER_ENABLE:
-		    POL_Control(POL_HEATER, 1);
+		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_17, GPIO_PIN_SET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
@@ -742,8 +745,8 @@ void process_telecommand(uint8_t tlc_data[]) {
 			GoTX_Flag   = 1;
 		  break;
 		case CLEAR_FLASH://The flash memory is divided in two 512 KBytes
-			// Recorre todas las páginas de Bank1 y las borra de flash.c
-			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_BANK_SIZE; addr += FLASH_PAGE_SIZE) {
+			// Recorre todas las páginas de Bank1 y Bank2 y las borra de flash.c
+			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_END_ADDR; addr += FLASH_PAGE_SIZE) {
 			    erase_page(addr); //Borra la página donde cae 'addr'
 			}
 			 // Señal de confirmación al Ground Station
@@ -814,7 +817,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 
 		case OBC_HARD_REBOOT:
 		    // Borrar toda la flash
-			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_BANK_SIZE; addr += FLASH_PAGE_SIZE) {
+			for (uint32_t addr = FLASH_BASE; addr < FLASH_BASE + FLASH_END_ADDR; addr += FLASH_PAGE_SIZE) {
 		        erase_page(addr);
 		    }
 		    // Reiniciar sistema
@@ -1005,39 +1008,6 @@ void deinterleave(uint8_t *inputarr, int size) {
 void beacon_time(){
 	Beacon_Flag=1;
 	COMMS_State=TX;
-}
-
-void POL_Control(POL_type type, uint8_t state) {
-    GPIO_TypeDef* port;
-    uint16_t pin;
-
-    switch (type) {
-        case POL_PAYLOAD:
-            port = PAYLOAD_POL_GPIO_Port;
-            pin = PAYLOAD_POL_Pin;
-            break;
-        case POL_ADCS:
-            port = ADCS_POL_GPIO_Port;
-            pin = ADCS_POL_Pin;
-            break;
-        case POL_BURNCOMMS:
-            port = BURNCOMMS_POL_GPIO_Port;
-            pin = BURNCOMMS_POL_Pin;
-            break;
-        case POL_HEATER:
-            port = HEATER_POL_GPIO_Port;
-            pin = HEATER_POL_Pin;
-            break;
-        default:
-            return; // Si el subsistema no existe, salir de la función
-    }
-
-    if (state) { // If 1 -> Enable
-        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
-    }
-    else { // If 0 -> Shut Down
-        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
-    }
 }
 
 
