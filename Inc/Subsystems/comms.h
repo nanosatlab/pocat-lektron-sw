@@ -4,6 +4,6 @@
 /**
  * @brief Communications task function, it runs the COMMS state machine.
  */
-void CommsTask(void);
+void comms_task(void *pv_parameters);
 
 #endif /* INC_COMMS_H_ */

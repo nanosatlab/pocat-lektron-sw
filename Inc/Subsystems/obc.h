@@ -4,6 +4,6 @@
 /**
  * @brief Communications task function, it runs the OBC state machine.
  */
-void ObcTask(void);
+void obc_task(void *pv_parameters);
 
 #endif /* INC_OBC_H_ */

@@ -2,7 +2,7 @@
 #define INC_PAYLOAD_H_
 
 
-void PayloadTask(void);
+void payload_task(void *pv_parameters);
 
 
 #endif /* INC_PAYLOAD_H_ */

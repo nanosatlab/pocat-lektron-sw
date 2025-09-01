@@ -1,54 +1,40 @@
 #include "main.h"
 #include "stm32l4xx_hal.h"
 #include <stdio.h>
-#include "comms.h"
 #include "obc.h"
-#include "payload.h" 
 
-// task related values
-#define PAYLOAD_STACK_SIZE		4000
-#define OBC_STACK_SIZE			1000
-#define COMMS_STACK_SIZE		3000
+/* ---- Macros and constants ---- */
 
-#define OBC_PRIORITY			2
-#define COMMS_PRIORITY			1
-#define PAYLOAD_PRIORITY		3
+/* ---- Module-level variables ---- */
+TaskHandle_t obc_task_handle;
 
-/* Private function prototypes -----------------------------------------------*/
-void SystemClockConfig(void);
-void SystemClockConfig(void);
+/* ---- Private function prototypes ---- */
+void SystemClock_Config(void);
 void SystemInit(void);
 
-TaskHandle_t xCommsTaskHandle = NULL;
-TaskHandle_t xObcTaskHandle = NULL;
-TaskHandle_t xPayloadTaskHandle = NULL;
 
 int main(void)
 {
-    InitSystem();
-
-    printf("Booted.\r\n");
-
-    xTaskCreate(CommsTask, "COMMS", COMMS_STACK_SIZE, NULL, COMMS_PRIORITY, &xCommsTaskHandle); 
-    xTaskCreate(ObcTask, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &xObcTaskHandle);
-    xTaskCreate(PayloadTask, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &xPayloadTaskHandle);
-    
-    vTaskStartScheduler();
-}
-
-void InitSystem(void) {
 
     HAL_Init();
-    
-    // configure full system clock tree
-    SystemClockConfig();
+    SystemClock_Config();
+    MX_USART2_UART_Init();  // Initialized for printf usage
 
-    // For logging purposes
-    MX_USART2_UART_Init(); 
+    printf("********************************\n\r");
+    printf(" PoCat FLIGHT SOFTWARE \n\r");
+    printf("*********************************\n\r");
+
+    xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &xObcTaskHandle);
+
+    vTaskStartScheduler();
+
+    // Include error handling here, infinite loop...?
+ 
+    return 0;
 
 }
 
-void SystemClockConfig(void) {
+void SystemClock_Config(void) {
 
     RCC_OscInitTypeDef RCC_OscInitStruct;
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
