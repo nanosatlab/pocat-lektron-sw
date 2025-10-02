@@ -4,10 +4,14 @@
 // alignment with targets, and consistent communication.
 
 /* ---- Includes ---- */
+#include <stdint.h>
+#include "FreeRTOS.h"
+#include "task.h"
 #include "adcs.h"
 
 /* ---- Macros and constants ---- */
-// ..
+#define ADCS_DETUMBLING_MODE (1 << 0)
+#define ADCS_NADIR_POINTING_MODE (1 << 1)
 
 /* ---- Type definitions ---- */
 // ..

@@ -5,7 +5,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "comms.h"
-#include "comms_internal.h"
 #include "radio.h"
 
 

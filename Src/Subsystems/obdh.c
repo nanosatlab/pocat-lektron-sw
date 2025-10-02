@@ -4,6 +4,7 @@
 
 /* ---- Includes ---- */
 #include "obdh.h"
+#include <stdio.h>
 
 /* ---- Macros and constants ---- */
 // ..
@@ -36,14 +37,14 @@ void obdh_task(void *pv_parameters) {
 
 void setup_obdh(void) {
 
-    print("Setting up OBDH...");
+    printf("Setting up OBDH...\n");
     // Apply the default configuration
 
 }
 
 void process_obdh(void) {
 
-    print("Processing OBDH...");
+    printf("Processing OBDH...\n");
 
     // Gestión de la flash:
     // Leemos datos de la cola de la tarea (donde habran peticiones de read o write de otras tareas

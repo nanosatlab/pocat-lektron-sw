@@ -3,10 +3,15 @@
 // power control, and essential satellite checkups.
 
 /* ---- Includes ---- */
+#include <stdint.h> //mirar
 #include "obc.h"
-#include "FreeRTOS.h"
+#include "FreeRTOS.h" // mirar
+#include "task.h" // mirar
 #include "main.h"
 #include "eps.h"
+#include "comms.h"
+#include "obdh.h"
+#include "payload.h"
 
 /* ---- Macros and constants ---- */
 #define COMMS_STACK_SIZE 3000
@@ -18,16 +23,22 @@ typedef enum {
 } ObcState_t;
 
 /* ---- Module-level variables ---- */
+static TaskHandle_t payload_task_handle;
 static TaskHandle_t eps_task_handle;
 static TaskHandle_t comms_task_handle;
+static TaskHandle_t obdh_task_handle;
 // ...
 
 /* ---- Private function prototypes ---- */
 static void setup_obc(void);
-static void process_obc(void);
-static void create_queues(void);
+static void process_obc(ObcState_t *currentState);
+// static void create_queues(void);  // TODO: implement this function
 static void create_tasks(void);
 static void suspend_and_resume_tasks_depending_on_state(ObcState_t *currentState);
+static void check_notifications(void);
+static void change_state_if_needed(void);
+static uint32_t waitForNotification(void);
+static void handlePayloadCapture(void);
 
 // a considerar/eliminar:
 static ObcState_t currentState;
@@ -50,7 +61,7 @@ static void setup_obc(void) {
 
     printf("Setting up OBC...\n");
     // 1. Create queues
-    create_queues();
+    // create_queues();  // TODO: implement this function
 
     // 2. Create tasks
     create_tasks();
@@ -67,7 +78,15 @@ static void create_tasks(void) {
     
 }
 
-static static void process_obc(ObcState_t *currentState) {
+static void check_notifications(void) {
+    // TODO: implement notification checking
+}
+
+static void change_state_if_needed(void) {
+    // TODO: implement state change logic
+}
+
+static void process_obc(ObcState_t *currentState) {
 
     printf("Processing OBC...\n");
 
@@ -99,9 +118,26 @@ static void suspend_and_resume_tasks_depending_on_state(ObcState_t *currentState
 
 }
 
-static void obc_does_nominal(void) {
-    // 
+static uint32_t waitForNotification(void) {
+    uint32_t notificationValue;
+    xTaskNotifyWait( 0,          // don't clear on entry
+                    0xFFFFFFFF, // clear all bits on exit
+                    &notificationValue,
+                    portMAX_DELAY );
+    return notificationValue;
 }
+
+static void handlePayloadCapture(void) {
+    xTaskNotify(payload_task_handle,  // Fixed: was xPayloadTaskHandle
+            PAYLOAD_PHOTO_CAPTURE,
+            eSetBits);
+    // ...
+}
+
+// TODO: implement or remove this function
+// static void obc_does_nominal(void) {
+//     // 
+// }
 
 // implemented until here at the moment:
 
@@ -117,21 +153,6 @@ ObcState_t Nominal(void) {
 	}
 }
 
-uint32_t waitForNotification(void) {
-    uint32_t notificationValue;
-    xTaskNotifyWait( 0,          // don’t clear on entry
-                    0xFFFFFFFF, // clear all bits on exit
-                    &notificationValue,
-                    portMAX_DELAY );
-    return notificationValue;
-}
-
-void handlePayloadCapture(void) {
-    xTaskNotify(xPayloadTaskHandle,
-            PAYLOAD_PHOTO_CAPTURE,
-            eSetBits);
-    // ...
-}
 
 // REVISAR!!
     // The obc task / manager task is the only one that is in charge of changing satellite modes

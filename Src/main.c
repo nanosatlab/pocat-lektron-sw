@@ -24,7 +24,7 @@ int main(void)
     printf(" PoCat FLIGHT SOFTWARE \n\r");
     printf("*********************************\n\r");
 
-    xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &xObcTaskHandle);
+    xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &obc_task_handle);
 
     vTaskStartScheduler();
 
