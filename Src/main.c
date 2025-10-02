@@ -2,6 +2,7 @@
 #include "stm32l4xx_hal.h"
 #include <stdio.h>
 #include "obc.h"
+#include "wrapper.h"
 
 /* ---- Macros and constants ---- */
 
@@ -20,9 +21,14 @@ int main(void)
     SystemClock_Config();
     MX_USART2_UART_Init();  // Initialized for printf usage
 
-    printf("********************************\n\r");
-    printf(" PoCat FLIGHT SOFTWARE \n\r");
-    printf("*********************************\n\r");
+    int res = prova();
+    if(res == 0) {
+        prova_send("Hola nanosat!");
+    }
+
+    //printf("1234567891011121314151617181920\r\n");
+    //printf(" PoCat FLIGHT SOFTWARE\r\n");
+    //printf("*********************************\r\n");
 
     xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &obc_task_handle);
 

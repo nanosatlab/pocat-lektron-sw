@@ -1,4 +1,5 @@
 #include "log.h"
+#include <string.h>
 
 static UART_HandleTypeDef huart2;
 
