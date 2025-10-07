@@ -3,12 +3,12 @@
 extern "C" {
 
     int prova(void) {
-        printf("Ha entrat a la primera\n");
+        printf("1\n");
         return 0;   // 0 = OK
     }
 
     int prova_send(const char* msg) {
-        printf("segoooona");
+        printf("2");
         return 0;   // 0 = OK
     }
 

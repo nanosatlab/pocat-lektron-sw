@@ -26,9 +26,9 @@ int main(void)
         prova_send("Hola nanosat!");
     }
 
-    //printf("1234567891011121314151617181920\r\n");
-    //printf(" PoCat FLIGHT SOFTWARE\r\n");
-    //printf("*********************************\r\n");
+    printf("*********************************\r\n");
+    printf(" PoCat FLIGHT SOFTWARE\r\n");
+    printf("*********************************\r\n");
 
     xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &obc_task_handle);
 
