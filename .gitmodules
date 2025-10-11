@@ -1,0 +1,3 @@
+[submodule "Inc/RadioLib"]
+	path = Inc/RadioLib
+	url = https://github.com/jgromes/RadioLib.git

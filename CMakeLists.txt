@@ -56,6 +56,10 @@ set(FREERTOS_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/CMSIS_RTOS
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/portable/GCC/ARM_CM4F
 )
+
+set(RADIOLIB_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src
+)
 	
 # Gather sources #MIRAR
 file(GLOB_RECURSE STM32CUBEMX_SOURCES
@@ -72,6 +76,12 @@ file(GLOB_RECURSE PROJECT_SOURCES
 
 file(GLOB_RECURSE FREERTOS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/*.c
+)
+
+file(GLOB_RECURSE RADIOLIB_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/modules/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/protocols/*.cpp
+    # Add other needed source directories
 )
 
 # Executable files
@@ -94,6 +104,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
     ${CUBEMX_INCLUDE_DIRECTORIES}
     ${FREERTOS_INCLUDE_DIRECTORIES}
     ${PROJECT_INCLUDE_DIRECTORIES}
+    ${RADIOLIB_INCLUDE_DIRECTORIES}
 )
 
 # Ensure Debug build type is set
