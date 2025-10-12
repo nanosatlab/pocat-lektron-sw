@@ -1,7 +1,9 @@
 #include <stdio.h>
-#include "RadioLib.h"
+#include "radiolib_wrapper.h"
 
 extern "C" {
+
+    SX1262 radio = new Module(10, 2, 3, 9);
 
     int prova(void) {
         printf("1\n");
