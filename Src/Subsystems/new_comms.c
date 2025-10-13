@@ -1,41 +1,40 @@
-#include "radioLibWrapper.h"
+#include "radiolib_wrapper.h"
+#include "new_comms.h"
 
-SX1262 radio = new Module(1, 2, 3, 4); // TODO: change pins to actual ones (these are made up)
-
-void comms_task(void *pv_parameters)
+void new_comms_task(void *pv_parameters)
 {
 
 }
 
-void setup_comms(void)
+void new_setup_comms(void)
 {
     // Apply the default configuration
 }
 
-static void process_comms(void)
+static void new_process_comms(void)
 {
 
 }
 
 
-#include <RadioLib.h>
+// #include <RadioLib.h>
 
-SX1262 radio = new Module(10, 2, 3, 9);
+// SX1262 radio = new Module(10, 2, 3, 9);
 
-void setup() {
-  radio.begin();
-}
+// void setup() {
+//   radio.begin();
+// }
 
-void loop() {
-  // Perform CAD
-  int result = radio.scanChannel();
+// void loop() {
+//   // Perform CAD
+//   int result = radio.scanChannel();
 
-  if (result == RADIOLIB_LORA_DETECTED) {
-    Serial.println("Activity detected, switching to RX...");
-    radio.startReceive();   // Enter receive mode
-  } else {
-    Serial.println("No activity.");
-  }
+//   if (result == RADIOLIB_LORA_DETECTED) {
+//     // "Activity detected, switching to RX...";
+//     radio.startReceive();   // Enter receive mode
+//   } else {
+//     // "No activity";
+//   }
 
-  delay(5000);  // Sleep/duty cycle
-}
+//   delay(5000);  // Sleep/duty cycle
+// }

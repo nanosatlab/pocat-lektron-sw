@@ -23,10 +23,8 @@
 #define PAYLOAD_PHOTO_CAPTURE (1 << 0) // bit 0
 
 
-// Task variables
-extern TaskHandle_t xObcTaskHandle;
-extern TaskHandle_t xCommsTaskHandle;
-extern TaskHandle_t xPayloadTaskHandle;
+// Peripheral handles
+extern SPI_HandleTypeDef hspi2;
 
 
 void Error_Handler(void); // s'ha d'implementar

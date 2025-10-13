@@ -28,7 +28,8 @@ enable_language(C ASM CXX)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
-set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20) # changed from 17 to 20 (radiolib is in c++20)
 
 # Include folders
 
@@ -47,6 +48,7 @@ set(PROJECT_INCLUDE_DIRECTORIES
     # ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Subsystem
     # ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Tasks
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Utils/Radiolib
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Subsystems
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Semtech/Inc
 )
@@ -71,6 +73,7 @@ file(GLOB_RECURSE PROJECT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Semtech/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Utils/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Utils/Radiolib/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Subsystems/*.c
 )
 
@@ -80,6 +83,7 @@ file(GLOB_RECURSE FREERTOS_SOURCES
 
 file(GLOB_RECURSE RADIOLIB_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/modules/*.cpp
+    ${CMAKE_SOURCE_DIR}/Inc/RadioLib/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/protocols/*.cpp
     # Add other needed source directories
 )
@@ -89,6 +93,7 @@ add_executable(${EXECUTABLE}
     ${STM32CUBEMX_SOURCES}
     ${FREERTOS_SOURCES}
     ${PROJECT_SOURCES}
+    ${RADIOLIB_SOURCES}
     ${STARTUP_SCRIPT}
 )
 
