@@ -1,30 +1,79 @@
 #include "stm32_radiolib_hal.h"
 
-// random values for now - to be changed to actual STM32 values
-#define RADIOLIB_HAL_PIN_MODE_INPUT      0x01
-#define RADIOLIB_HAL_PIN_MODE_OUTPUT     0x02
-#define RADIOLIB_HAL_PIN_STATUS_LOW      0x00
-#define RADIOLIB_HAL_PIN_STATUS_HIGH     0xFF
-#define RADIOLIB_HAL_INTERRUPT_RISING    0x10
-#define RADIOLIB_HAL_INTERRUPT_FALLING   0x20
+// ----------------Helper private functions ---------------------
+
+// Extract the GPIO port from a combined pin ID (upper 16 bits = port)
+
+GPIO_TypeDef* stm32RadioLibHal::getPort(uint32_t pin) {
+    uint32_t portIndex = (pin >> 16) & 0xFF;
+    switch (portIndex) {
+        case 0: return GPIOA;
+        case 1: return GPIOB;
+        case 2: return GPIOC;
+        case 3: return GPIOD;
+        case 4: return GPIOE;
+        case 5: return GPIOF;
+        default: return GPIOA; // fallback
+    }
+}
+
+// Extract the pin mask (lower 16 bits)
+uint16_t stm32RadioLibHal::getPinMask(uint32_t pin) {
+    return (uint16_t)(pin & 0xFFFF);
+}
+
+void stm32RadioLibHal::enablePortClock(GPIO_TypeDef* port) {
+    if (port == GPIOA)      __HAL_RCC_GPIOA_CLK_ENABLE();
+    else if (port == GPIOB) __HAL_RCC_GPIOB_CLK_ENABLE();
+    else if (port == GPIOC) __HAL_RCC_GPIOC_CLK_ENABLE();
+    else if (port == GPIOD) __HAL_RCC_GPIOD_CLK_ENABLE();
+    else if (port == GPIOE) __HAL_RCC_GPIOE_CLK_ENABLE();
+    else if (port == GPIOF) __HAL_RCC_GPIOF_CLK_ENABLE();
+}
 
 
+// ---------------- stm32RadioLibHal implementation ---------------------
 
 stm32RadioLibHal::stm32RadioLibHal(SPI_HandleTypeDef* spi) 
     : RadioLibHal(
-        RADIOLIB_HAL_PIN_MODE_INPUT,
-        RADIOLIB_HAL_PIN_MODE_OUTPUT,
-        RADIOLIB_HAL_PIN_STATUS_LOW,
-        RADIOLIB_HAL_PIN_STATUS_HIGH,
-        RADIOLIB_HAL_INTERRUPT_RISING,
-        RADIOLIB_HAL_INTERRUPT_FALLING
+        GPIO_MODE_INPUT,
+        GPIO_MODE_OUTPUT_PP, // push-pull output
+        GPIO_PIN_RESET,
+        GPIO_PIN_SET,
+        GPIO_MODE_IT_RISING,
+        GPIO_MODE_IT_FALLING
       ),
       _spi(spi),
       _startMillis(0) {
 }
 
+// para utilitzar esta fucion vamos a tener que codificar el pin y el port en el primer parametero "pin"
 void stm32RadioLibHal::pinMode(uint32_t pin, uint32_t mode) {
-    // Empty
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // recogemos puerto y pin:
+    GPIO_TypeDef* port = getPort(pin);
+    uint16_t pinMask = getPinMask(pin);
+
+    /* GPIO Ports Clock Enable */
+    enablePortClock(port);
+
+    /*Configure GPIO pin Output Level */
+    // Do I have to use HAL_GPIO_WritePin???
+
+    /*Configure GPIO pin :  */
+    GPIO_InitStruct.Pin = pinMask;
+    GPIO_InitStruct.Pull = GPIO_NOPULL; 
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Mode = mode;
+    HAL_GPIO_Init(port, &GPIO_InitStruct);
+
+    // What about this here?? Look into it:
+    // HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+    // HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+    // HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+    
 }
 
 void stm32RadioLibHal::digitalWrite(uint32_t pin, uint32_t value) {

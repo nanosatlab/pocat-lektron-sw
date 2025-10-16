@@ -37,6 +37,10 @@ public:
 private:
     SPI_HandleTypeDef* _spi;
     uint32_t _startMillis;
+
+    GPIO_TypeDef* getPort(uint32_t pin);
+    uint16_t getPinMask(uint32_t pin);
+    void enablePortClock(GPIO_TypeDef* port) ;
 };
 
 #endif
