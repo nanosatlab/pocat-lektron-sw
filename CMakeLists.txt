@@ -81,11 +81,9 @@ file(GLOB_RECURSE FREERTOS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Inc/Drivers/FreeRTOS/*.c
 )
 
+# --- RadioLib sources ---
 file(GLOB_RECURSE RADIOLIB_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/modules/*.cpp
-    ${CMAKE_SOURCE_DIR}/Inc/RadioLib/src/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/protocols/*.cpp
-    # Add other needed source directories
+    ${CMAKE_CURRENT_SOURCE_DIR}/Inc/RadioLib/src/*.cpp
 )
 
 # Executable files
