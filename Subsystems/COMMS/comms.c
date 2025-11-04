@@ -87,7 +87,7 @@ uint32_t rxTime=2000; //ms
 uint16_t ACKTimeout=4000; //ms
 uint32_t sleepTime=1000; //ms
 uint32_t RF_F=868000000; // Hz
-uint8_t SF=8;
+uint8_t SF=11;
 uint8_t CR=1; // 4/5
 
 
@@ -124,7 +124,7 @@ void COMMS_StateMachine( void )
     	//COMMS_RX_OBCFlags(); // Function that checks the notifications sent by OBC to COMMS.
 
     	Radio.IrqProcess();     //Checks the interruptions
-    	vTaskDelay(pdMS_TO_TICKS(200)); //Delay TBD
+    	vTaskDelay(pdMS_TO_TICKS(100)); //Delay TBD
 
         switch(COMMS_State)
         {
@@ -166,9 +166,8 @@ void COMMS_StateMachine( void )
                 	COMMS_State=SLEEP;
             	}
 
-            	if (Tx_PL_Data_Flag)
-            	packets_to_send=imagelength/plsize+1;
-            	{
+            	if (Tx_PL_Data_Flag){
+            		packets_to_send=imagelength/plsize+1;
             		for (packet_number=0;packet_number<=packets_to_send;packet_number++)
             		{
 						TxPrepare(DATA_OP);
