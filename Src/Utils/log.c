@@ -1,7 +1,7 @@
 #include "log.h"
 #include <string.h>
 
-static UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart2;//MODIFICACIÓ.--static UART_HandleTypeDef huart2;
 
 int _write(int file, char *ptr, int len)
 {
