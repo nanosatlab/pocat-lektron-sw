@@ -7,7 +7,7 @@
 #define OBC_STACK_SIZE			1000 // ??
 #define PAYLOAD_STACK_SIZE		4000 // ??
 #define EPS_STACK_SIZE		    250 // ??
-#define OBDH_STACK_SIZE        1000 // ??
+#define OBDH_STACK_SIZE        5000 // Augmentem la mida
 
 // Task priorities
 #define OBC_PRIORITY             7 // ??

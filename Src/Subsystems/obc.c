@@ -44,7 +44,7 @@ static void change_state_if_needed(void);
 static uint32_t waitForNotification(void);
 static void handlePayloadCapture(void);
 
-void test_obdh_sequence(void); // <--- AFEGEIX AQUESTA LÍNIA
+void test_obdh_sequence(void); 
 
 // a considerar/eliminar:
 static ObcState_t currentState;
@@ -57,8 +57,8 @@ void obc_task(void *pv_parameters) {
 
     printf("Esperant sistema...\n");//
     vTaskDelay(pdMS_TO_TICKS(2000));//
-    test_obdh_sequence();
-
+    //test_obdh_sequence();
+    
     for (;;) {
         process_obc(&currentState);
     }
@@ -181,7 +181,7 @@ ObcState_t Nominal(void) {
     // Can't 2 not be merged into three? Or the other way around?
 
     /* ================= TEST OBDH ================= */
-// Adreça de memòria segura (meitat de la Flash) per no trencar el programa
+
 #define TEST_FLASH_ADDR 0x08080000 
 
 void test_obdh_sequence(void) {
@@ -236,3 +236,4 @@ void test_obdh_sequence(void) {
     }
     printf("--- FI DEL TEST ---\n\n");
 }
+
