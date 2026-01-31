@@ -25,8 +25,8 @@
 #define THRESHOLD 3
 
 
-uint8_t currentState;
-uint8_t previousState;
+extern uint8_t currentState;
+extern uint8_t previousState;
 
 /*Total of 8bytes -> 8bytes·1uit64_t/8bytes = 1 uit64_t*/
 typedef union __attribute__ ((__packed__)) Temperatures {

@@ -10,6 +10,7 @@
 #include <string.h>
 #include "main.h"
 #include "queue.h"
+#include "flash.h"
 /* ---- Macros and constants ---- */
 /* ---- Module-level variables ---- */
 QueueHandle_t obdh_queue_handle;
@@ -60,7 +61,7 @@ void process_obdh(void) {
                
             }
             if(request.client != NULL) {
-                xTaskNotifyGive(request.client);//We send a notification to the task
+                xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);//We send a notification to the task
                 //vTaskDelay(100/portTICK_PERIOD_MS);
             }
         }
@@ -73,7 +74,7 @@ void process_obdh(void) {
 
                 // Avisem al client que hem acabat
                 if(request.client != NULL) {
-                    xTaskNotifyGive(request.client);
+                    xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);
                 }
             }
         }

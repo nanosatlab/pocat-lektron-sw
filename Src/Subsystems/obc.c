@@ -57,7 +57,7 @@ void obc_task(void *pv_parameters) {
 
     printf("Esperant sistema...\n");//
     vTaskDelay(pdMS_TO_TICKS(2000));//
-    //test_obdh_sequence();
+    test_obdh_sequence();
     
     for (;;) {
         process_obc(&currentState);
@@ -190,7 +190,7 @@ void test_obdh_sequence(void) {
     // 1. Dades de prova
     char missatge_a_escriure[] = "Hola NanosatLabAA";
     char buffer_de_lectura[50]; 
-    
+    uint32_t recived_events=0;
     // Netejem el buffer per seguretat
     memset(buffer_de_lectura, 0, sizeof(buffer_de_lectura));
 
@@ -205,7 +205,8 @@ void test_obdh_sequence(void) {
     printf("Enviant petició d'ESCRIPTURA...\n");
     // Enviem a la cua i esperem confirmació
     if (xQueueSend(obdh_queue_handle, &write_req, 100) == pdPASS) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Esperem aquí fins que OBDH acabi
+        xTaskNotifyWait(0,OBC_EVENT_OBDH_DONE,&recived_events,portMAX_DELAY);
+        //ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Esperem aquí fins que OBDH acabi
         printf("Escriptura completada");
     } else {
         printf("Error: La cua esta plena o no existeix");
@@ -221,7 +222,9 @@ void test_obdh_sequence(void) {
 
     printf("Enviant petició de LECTURA...\n");
     if (xQueueSend(obdh_queue_handle, &read_req, 100) == pdPASS) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Esperem aquí fins que OBDH acabi
+        xTaskNotifyWait(0,OBC_EVENT_OBDH_DONE,&recived_events,portMAX_DELAY);
+
+        //ulTaskNotifyTake(pdTRUE, portMAX_DELAY); // Esperem aquí fins que OBDH acabi
         printf("Lectura completada!\n");
     }
 

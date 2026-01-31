@@ -15,6 +15,8 @@
 #define EPS_PRIORITY             2 // ?? 
 #define OBDH_PRIORITY            5 // ??
 
+
+
 /**
  * @brief Communications task function, it runs the OBC state machine.
  */
