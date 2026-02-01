@@ -44,7 +44,7 @@ void setup_obdh(void) {
 
 void process_obdh(void) {
     obdh_request request;
-    HAL_StatusTypeDef status;
+    HAL_StatusTypeDef status=HAL_OK;
     printf("Processing OBDH...\n");
 
 
@@ -60,23 +60,39 @@ void process_obdh(void) {
 		request.len);
                
             }
-            if(request.client != NULL) {
+            /*if(request.client != NULL) {
                 xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);//We send a notification to the task
                 //vTaskDelay(100/portTICK_PERIOD_MS);
-            }
+            }*/
+            status=HAL_OK;
         }
         else if(request.op == FLASH_WRITE)
         {
             if(request.buf != NULL)
             {
                 Write_Flash(request.addr, request.buf, request.len);
-                
+                status=HAL_OK;
 
-                // Avisem al client que hem acabat
+               /*
                 if(request.client != NULL) {
                     xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);
                 }
+                */
             }
+            else
+            {
+                status=HAL_ERROR;
+
+            }
+        }
+
+        if (request.res != NULL)
+        {
+            *(request.res)=status;
+        }
+        if (request.client!=NULL)
+        {
+            xTaskNotify(request.client,OBC_EVENT_OBDH_DONE,eSetBits);
         }
         
     }

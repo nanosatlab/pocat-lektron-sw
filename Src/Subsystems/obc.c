@@ -12,6 +12,7 @@
 #include "comms.h"
 #include "obdh.h"
 #include "payload.h"
+#include "flash.h"
 
 #include <string.h> //MODIFICACIÓ
 
@@ -57,10 +58,11 @@ void obc_task(void *pv_parameters) {
 
     printf("Esperant sistema...\n");//
     vTaskDelay(pdMS_TO_TICKS(2000));//
-    test_obdh_sequence();
+    //test_obdh_sequence();
     
     for (;;) {
         process_obc(&currentState);
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
 }
@@ -88,7 +90,7 @@ static void setup_obc(void) {
 static void create_tasks(void) {
 
     //xTaskCreate(payload_task, "PAYLOAD", PAYLOAD_STACK_SIZE, NULL, PAYLOAD_PRIORITY, &payload_task_handle);
-    //xTaskCreate(eps_task, "EPS", EPS_STACK_SIZE, NULL, EPS_PRIORITY, &eps_task_handle);
+    xTaskCreate(eps_task, "EPS", EPS_STACK_SIZE, NULL, EPS_PRIORITY, &eps_task_handle);
     //xTaskCreate(comms_task, "COMMS", COMMS_STACK_SIZE, NULL, COMMS_PRIORITY, &comms_task_handle);
     xTaskCreate(obdh_task, "OBDH", OBDH_STACK_SIZE, NULL, OBDH_PRIORITY, &obdh_task_handle);
     // ..

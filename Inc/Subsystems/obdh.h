@@ -21,6 +21,7 @@ typedef struct {
     size_t len;          // Longitud en bytes
     uint8_t *buf;        // Punter al buffer de dades
     TaskHandle_t client; // Tarea que demana l'operació (per notificar-la)
+    HAL_StatusTypeDef *res; //Punter que retorna l'estatus de la escriptura/lectura
 } obdh_request;
 
 /* ---- Module-level variables (Exposed) ---- */

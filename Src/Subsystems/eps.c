@@ -1,5 +1,6 @@
 #include "eps.h"
 #include <stdio.h>
+#include "flash.h"
 
 // The main functionality of the EPS task is providing the OBC with battery readings on 
 // it's voltage, current generated, capacity, temperature and charging status. The task 
@@ -34,6 +35,27 @@ static void process_eps(void)
 {
 
     printf("Processing EPS...\n");
+//Test for writing
+
+uint8_t data_eps[]={0xAA, 0xBB, 0xCC, 0xDD};
+uint32_t adress_eps=0x08030800;
+
+HAL_StatusTypeDef result=OBDH_Write_Request(adress_eps,data_eps,sizeof(data_eps));
+
+if (result == HAL_OK) {
+        printf("OK_SUCCESS\n");
+    } 
+    else if (result == HAL_TIMEOUT) {
+        printf("Timeout error\n");
+    } 
+    else if (result == HAL_BUSY) {
+        printf("Queue full\n");
+    }
+    else {
+        printf("( %d)\n", result);
+    }
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    
     // 1. Checks EPS notifications (DOESN'T BLOCK) to see whether to perform notification actions
             
     // If there are actions to be taken, process them accordingly.
