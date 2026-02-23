@@ -1,6 +1,7 @@
 #include "eps.h"
 #include <stdio.h>
 #include "flash.h"
+#include <string.h>
 
 // The main functionality of the EPS task is providing the OBC with battery readings on 
 // it's voltage, current generated, capacity, temperature and charging status. The task 
@@ -38,22 +39,44 @@ static void process_eps(void)
 //Test for writing
 
 uint8_t data_eps[]={0xAA, 0xBB, 0xCC, 0xDD};
+uint8_t read_data_eps[4];
 uint32_t adress_eps=0x08030800;
 
-HAL_StatusTypeDef result=OBDH_Write_Request(adress_eps,data_eps,sizeof(data_eps));
+HAL_StatusTypeDef result1=OBDH_Write_Request(adress_eps,data_eps,sizeof(data_eps));
 
-if (result == HAL_OK) {
+if (result1 == HAL_OK) {
         printf("OK_SUCCESS\n");
     } 
-    else if (result == HAL_TIMEOUT) {
+else if (result1 == HAL_TIMEOUT) {
         printf("Timeout error\n");
     } 
-    else if (result == HAL_BUSY) {
+else if (result1 == HAL_BUSY) {
         printf("Queue full\n");
     }
-    else {
-        printf("( %d)\n", result);
+else {
+        printf("( %d)\n", result1);
     }
+HAL_StatusTypeDef result2=OBDH_Read_Request(adress_eps,read_data_eps,sizeof(read_data_eps));
+if (result2 == HAL_OK) {
+           
+          
+    printf("Dades Originals: %X %X %X %X\n", data_eps[0], data_eps[1], data_eps[2], data_eps[3]);
+    printf("Dades Llegides : %X %X %X %X\n", read_data_eps[0], read_data_eps[1], read_data_eps[2], read_data_eps[3]);
+
+            
+    if (memcmp(data_eps, read_data_eps, sizeof(data_eps)) == 0) 
+    {
+        printf("OK\n");
+    } else 
+    {
+        printf("ERROR\n");
+        }
+    } 
+    else 
+    {
+        printf("ERROR (%d)\n", result2);
+    }
+
     vTaskDelay(pdMS_TO_TICKS(2000));
     
     // 1. Checks EPS notifications (DOESN'T BLOCK) to see whether to perform notification actions

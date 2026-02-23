@@ -256,3 +256,35 @@ HAL_StatusTypeDef OBDH_Write_Request(uint32_t address, uint8_t *data, size_t len
 
     //HAL_BUSY
 }
+
+HAL_StatusTypeDef OBDH_Read_Request(uint32_t address, uint8_t *data, size_t len)
+{
+    obdh_request request;
+    HAL_StatusTypeDef operation_status = HAL_ERROR; //Variable that indicates the feedback
+    uint32_t received_events =0;
+    request.op=FLASH_READ;
+    request.addr=address;
+    request.buf=data;
+    request.len=len;
+    request.client=xTaskGetCurrentTaskHandle();
+    request.res=&operation_status;
+//Timeout 100ms
+    if(xQueueSend(obdh_queue_handle,&request,pdMS_TO_TICKS(100))!=pdPASS)
+    {
+        return HAL_BUSY; //Queue full
+    }
+    
+    //Block and return result. Timeout of 2 seconds
+    
+    BaseType_t result_wait= xTaskNotifyWait(0,OBC_EVENT_OBDH_DONE,&received_events,pdMS_TO_TICKS(2000));
+    if (result_wait == pdPASS)
+    {
+        if (received_events & OBC_EVENT_OBDH_DONE)
+        {
+            return operation_status;
+        }
+    }
+    return HAL_TIMEOUT; //If after 2 seconds nothing is recieved, timeout. 
+
+    //HAL_BUSY
+}
