@@ -126,7 +126,26 @@ void Send_to_WFQueue(uint8_t* pointer, uint32_t arrayLength, uint32_t addr, Data
 
 void erase_page(uint32_t data_addr);
 void store_flash_memory(uint32_t memory_address, uint8_t *data, uint16_t data_length);
+
+/**
+ * @brief This functions allows any task at any moment to perform a writing on the flash
+ * 
+ * @param address Adress where the memory aims to be written
+ * @param data Data to be written
+ * @param length Length of the data to be written
+ * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
+ * has happened)
+ */
 HAL_StatusTypeDef OBDH_Write_Request(uint32_t address,uint8_t *data, size_t length);
+/**
+ * @brief This function allows any task to perform a reading on the flash
+ * 
+ * @param address Adress of what we want to write
+ * @param data Where the data that we want to read will be alocated
+ * @param length Length of the data that has to be read. 
+ * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
+ * has happened)
+ */
 HAL_StatusTypeDef OBDH_Read_Request(uint32_t address,uint8_t *data, size_t length);
 
 

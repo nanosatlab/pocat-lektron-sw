@@ -41,7 +41,14 @@ void setup_obdh(void) {
 
 }
 
-
+/**
+ * @brief This process waits for an element of the queue to be recived,
+ * a request. The request can be to read flash or to write flash.
+ * When operations are done, then a notification(with flags) is
+ * given to the OBC with an event. 
+ * 
+ * 
+ */
 void process_obdh(void) {
     obdh_request request;
     HAL_StatusTypeDef status=HAL_OK;
