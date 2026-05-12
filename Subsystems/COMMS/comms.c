@@ -81,6 +81,7 @@ int8_t SnrValue = 0;
 int16_t RssiMoy = 0;
 int8_t SnrMoy = 0;
 
+
 /*************  CONFIG  *************/
 int CADMODE_Flag=0;
 int COMMS_DEBUG_MODE=1; // Debug mode: continuous reception, requires CADMode disabled,
@@ -93,6 +94,15 @@ uint32_t RF_F=868000000; // Hz
 uint8_t SF=11;
 uint8_t CR=1; // 4/5
 
+/*************  ARQ Variables  *************/
+#define MAX_ARQ_DATA 48
+
+uint8_t tlc_size = 0;
+
+uint8_t ARQ_Buffer[MAX_ARQ_DATA];   // Buffer de datos recibidos (tlc_data)
+uint8_t ARQ_DataLength = 0;         // Número de bytes reales
+uint8_t ARQ_Received = 0;           // Flag para indicar recepción correcta
+uint8_t ARQ_TC_ID = 0;              // Identifica el TC al que se le aplicará el protocolo
 
 uint8_t debugsize=0;
 uint8_t flash_check;
@@ -141,6 +151,99 @@ void COMMS_StateMachine( void )
             	{
                 	process_telecommand(RxData);
                 	TLCReceived_Flag=0;
+                	if (ARQ_Received)
+                	{
+                	    switch (ARQ_TC_ID)
+                	    {
+
+                	        case UPLOAD_ADCS_CALIBRATION:
+                	        	if(ADCS_counter == 1 && tlc_data[4]==86){
+                	        		Send_to_WFQueue(&tlc_data[4], CALIBRATION_PACKET_SIZE, MAGNETO_MATRIX_ADDR, COMMSsender);
+                	        		Send_to_WFQueue(&tlc_data[40], 3, MAGNETO_OFFSET_ADDR, COMMSsender);
+                	        		ADCS_counter++;
+                	        		Wait_ACK_Flag=1;}
+
+                	        	if(ADCS_counter == 2 && tlc_data[4]==164){
+                	        		Send_to_WFQueue(&tlc_data[4], 9, MAGNETO_OFFSET_ADDR+3, COMMSsender);
+                	        		Send_to_WFQueue(&tlc_data[13], CALIBRATION_PACKET_SIZE-12, GYRO_POLYN_ADDR, COMMSsender);
+                	        		Send_to_WFQueue(&tlc_data[37], 6, PHOTODIODES_OFFSET_ADDR, COMMSsender);
+                	        		ADCS_counter++;
+                	        		Wait_ACK_Flag=1;}
+
+                	        	if(ADCS_counter == 3 && tlc_data[4]==255){
+                	        		Send_to_WFQueue(&tlc_data[4], 18, PHOTODIODES_OFFSET_ADDR, COMMSsender);
+                	        	GoTX_Flag=1;
+                	        	Beacon_Flag=1;
+                	        	ADCS_counter=1;}
+
+                	        	Beacon_Flag = 1;
+                	        	GoTX_Flag = 1;
+                	        	break;
+                	        case UPLOAD_ADCS_TLE:
+
+                	        case UPLOAD_COMMS_CONFIG:
+                				if (tlc_data[3] == 10){
+                					Send_to_WFQueue(&tlc_data[3], 1,OUTPUT_POWER_ADDR, COMMSsender);
+                				}
+                				if (tlc_data[4] == 128){
+                					Send_to_WFQueue(&tlc_data[4], 1, FRF_ADDRR, COMMSsender);
+                				}
+                				if (tlc_data[5] == 11){
+                					Send_to_WFQueue(&tlc_data[5], 1, SF_ADDR, COMMSsender);
+                							}
+                				if (tlc_data[6] == 1){
+                					Send_to_WFQueue(&tlc_data[6], 1, CRC_ADDR, COMMSsender);
+                				}
+
+                			    Beacon_Flag = 1;
+                			    GoTX_Flag = 1;
+                			    break;
+                	        case COMMS_UPLOAD_PARAMS:
+                	            // rx_time y sleep_time van juntos a TIMEOUT_ADDR (2 bytes)
+                	            Send_to_WFQueue(&ARQ_Buffer[0], 2, TIMEOUT_ADDR, COMMSsender);
+
+                	            // cad_mode (ON/OFF) por separado
+                	            Send_to_WFQueue(&ARQ_Buffer[2], 1, CADMODE_ADDR, COMMSsender);
+
+                				if (tlc_data[5] == 128) {
+                				    CADMODE_Flag = 1; // ON
+                				} else if (tlc_data[5] == 255) {
+                				    CADMODE_Flag = 0; // OFF
+                				}
+                	            Beacon_Flag = 1;
+                	            GoTX_Flag = 1;
+                	            break;
+                	        case UPLOAD_UNIX_TIME:
+                	            Send_to_WFQueue(ARQ_Buffer, 4, RTC_TIME_ADDR, COMMSsender);
+                	            Beacon_Flag = 1;
+                	            GoTX_Flag = 1;
+                	            break;
+                	        case UPLOAD_EPS_TH: //Send to flash memory
+                	            Send_to_WFQueue(ARQ_Buffer, ARQ_DataLength, EPS_TH_ADDR, COMMSsender);
+                	            Beacon_Flag = 1;
+                	            GoTX_Flag = 1;
+                	            break;
+                	        case UPLOAD_PL_CONFIG:
+
+                	            Send_to_WFQueue(&ARQ_Buffer[0], 12, RFI_CONFIG_ADDR, COMMSsender);
+
+                	            Beacon_Flag = 1;
+                	            GoTX_Flag = 1;
+                	            break;
+
+                	        case DOWNLINK_CONFIG:
+                	            Send_to_WFQueue(&ARQ_Buffer[0], 18, UPLINK_ADDR, COMMSsender);
+
+                	            TxConfig_Data_Flag = 1;  // Activar lectura de config desde flash
+                	            Beacon_Flag = 1;
+                	            GoTX_Flag = 1;
+
+                	            break;
+                	    }
+
+                	    ARQ_Received = 0;
+                	    ARQ_TC_ID = 0;
+                	}
             	}
             	else
             	{
@@ -355,6 +458,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     {
         TLCReceived_Flag=1;
         COMMS_State=RX;
+        tlc_size = size;
     }
     else
     {
@@ -499,26 +603,18 @@ void process_telecommand(uint8_t tlc_data[]) {
 		break;
 
 		case UPLOAD_ADCS_CALIBRATION:
-			if(ADCS_counter == 1 && tlc_data[4]==86){
-				Send_to_WFQueue(&tlc_data[4], CALIBRATION_PACKET_SIZE, MAGNETO_MATRIX_ADDR, COMMSsender);
-				Send_to_WFQueue(&tlc_data[40], 3, MAGNETO_OFFSET_ADDR, COMMSsender);
-				ADCS_counter++;
-				Wait_ACK_Flag=1;
-			}
+			if (tlc_size < 46) break;  // 9 floats = 36B + 3 floats = 12B + header
 
-			if(ADCS_counter == 2 && tlc_data[4]==164){
-				Send_to_WFQueue(&tlc_data[4], 9, MAGNETO_OFFSET_ADDR+3, COMMSsender);
-				Send_to_WFQueue(&tlc_data[13], CALIBRATION_PACKET_SIZE-12, GYRO_POLYN_ADDR, COMMSsender);
-				Send_to_WFQueue(&tlc_data[37], 6, PHOTODIODES_OFFSET_ADDR, COMMSsender);
-				ADCS_counter++;
-				Wait_ACK_Flag=1;
-			}
-			if(ADCS_counter == 3 && tlc_data[4]==255){
-				Send_to_WFQueue(&tlc_data[4], 18, PHOTODIODES_OFFSET_ADDR, COMMSsender);
-				GoTX_Flag=1;
-				Beacon_Flag=1;
-				ADCS_counter=1;
-			}
+			// Guardar en buffer ARQ
+			memcpy(ARQ_Buffer, &tlc_data[3], 45);  // 36 + 9 bytes = 45
+
+			ARQ_DataLength = 45;
+			ARQ_Received = 1;
+			ARQ_TC_ID = UPLOAD_ADCS_CALIBRATION;
+
+			TXACK_Flag = 1;
+			GoTX_Flag = 1;
+			break;
 			/* tbd
 			if(ADCS_counter == 1 && tlc_data[2]==86){
 				Send_to_WFQueue(&tlc_data[3], CALIBRATION_PACKET_SIZE, MAGNETO_MATRIX_ADDR, COMMSsender);
@@ -540,10 +636,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 				GoTX_Flag=1;
 				Beacon_Flag=1;
 				ADCS_counter=1;
-			}
-			*/
-
-		break;
+			}*/
 
 		case UPLOAD_ADCS_TLE: {
 
@@ -580,103 +673,115 @@ void process_telecommand(uint8_t tlc_data[]) {
 
 		case UPLOAD_COMMS_CONFIG:{ //Transciever configuration
 			COMMS_State = STDBY;
+        	if (tlc_size < 7) break; // Primer break: si los datos no son suficientes, salir del case
+        	// Si llegó aquí, el paquete está completo
+        	ARQ_Buffer[0] = tlc_data[3];  // output_power
+        	ARQ_Buffer[1] = tlc_data[4];  // rf_f
+        	ARQ_Buffer[2] = tlc_data[5];  // sf
+        	ARQ_Buffer[3] = tlc_data[6];  // cr
 
-		    uint8_t output_power = tlc_data[3];
-			uint8_t rf_f = tlc_data[4];
-			uint8_t sf = tlc_data[5];
-		    uint8_t cr  = tlc_data[6];
+        	ARQ_DataLength = 4;
+        	ARQ_Received = 1;
+        	ARQ_TC_ID = UPLOAD_COMMS_CONFIG;
 
-			if (tlc_data[3] == 10){
-				Send_to_WFQueue(&tlc_data[3], 1,OUTPUT_POWER_ADDR, COMMSsender);
-			}
-			if (tlc_data[4] == 128){
-				Send_to_WFQueue(&tlc_data[4], 1, FRF_ADDRR, COMMSsender);
-			}
-			if (tlc_data[5] == 11){
-				Send_to_WFQueue(&tlc_data[5], 1, SF_ADDR, COMMSsender);
-						}
-			if (tlc_data[6] == 1){
-				Send_to_WFQueue(&tlc_data[6], 1, CRC_ADDR, COMMSsender);
-						}
-		    TXACK_Flag = 1;
+        	TXACK_Flag = 1;
+        	GoTX_Flag = 1;
+        	break;
 
 		break;}
 
 		case COMMS_UPLOAD_PARAMS:{
-
 			//COMMS_State=STDBY;
-			COMMS_State=SLEEP;
+			COMMS_State=STDBY;
 
-		    uint8_t rx_time   = tlc_data[3];
-		    uint8_t sleep_time= tlc_data[4];
-		    uint8_t cad_mode  = tlc_data[5];
+			if (tlc_size < 6) break;  // 3 datos + encabezado
 
-			Send_to_WFQueue(&tlc_data[3], 2, TIMEOUT_ADDR, COMMSsender);   // RX timeout & Sleep time
-			Send_to_WFQueue(&tlc_data[5], 1, CADMODE_ADDR, COMMSsender);   // CADMODE (ON/OFF)
+			    ARQ_Buffer[0] = tlc_data[3];  // rx_time
+			    ARQ_Buffer[1] = tlc_data[4];  // sleep_time
+			    ARQ_Buffer[2] = tlc_data[5];  // cad_mode
 
-			if (tlc_data[5] == 128) {
-			    CADMODE_Flag = 1; // ON
-			} else if (tlc_data[5] == 255) {
-			    CADMODE_Flag = 0; // OFF
-			}
-			Beacon_Flag=1;
-			GoTX_Flag=1;
+			    ARQ_DataLength = 3;
+			    ARQ_Received = 1;
+			    ARQ_TC_ID = COMMS_UPLOAD_PARAMS;
 
-		break;}
+			    TXACK_Flag = 1;  // Marca que se recibió correctamente
+			    GoTX_Flag = 1;
+			break;}
 
 		case UPLOAD_UNIX_TIME:{
+			if (tlc_size < 7) break;
 		//Get UNIX timestamp (4B big-endian) from LSB-MSB to MSB-LSB
-			uint8_t unixTime_bytes[4];
-			unixTime_bytes[0] = tlc_data[3]; //MSB
-			unixTime_bytes[1] = tlc_data[4];
-			unixTime_bytes[2] = tlc_data[5];
-			unixTime_bytes[3] = tlc_data[6]; // LMB
 
-			Send_to_WFQueue(unixTime_bytes, 4, RTC_TIME_ADDR, COMMSsender);
-		//UPDATE THE RTC [year:day:hour:minute:second format]????
-		//responder al ground con un beacon
-			Beacon_Flag=1;
-			GoTX_Flag=1;
+		    ARQ_Buffer[0] = tlc_data[3]; // MSB
+		    ARQ_Buffer[1] = tlc_data[4];
+		    ARQ_Buffer[2] = tlc_data[5];
+		    ARQ_Buffer[3] = tlc_data[6]; // LSB
+
+		    ARQ_DataLength = 4;
+		    ARQ_Received = 1;
+		    ARQ_TC_ID = UPLOAD_UNIX_TIME; 		//UPDATE THE RTC [year:day:hour:minute:second format]????
+
+		    TXACK_Flag = 1;
+		    GoTX_Flag = 1;
 		break;}
 
 		case UPLOAD_EPS_TH:{
-			// 3 bytes for the battery thresholds of the nominal, the low and the critical states.
-			uint8_t nominal_thr = tlc_data[3];
-			uint8_t low_thr = tlc_data[4];
-			uint8_t critical_thr = tlc_data[5];
+			if (tlc_size < 6) break;
 
-			// Send to flash memory
-			Send_to_WFQueue(&tlc_data[3], 3, EPS_TH_ADDR, COMMSsender);
+			// Save in buffer ARQ
+			ARQ_Buffer[0] = tlc_data[3]; // nominal
+			ARQ_Buffer[1] = tlc_data[4]; // sunsafe
+			ARQ_Buffer[2] = tlc_data[5]; // survival
 
-			//Confirm a Ground with a beacon
-			Beacon_Flag = 1;
+			ARQ_DataLength = 3;
+			ARQ_Received = 1;
+			ARQ_TC_ID = UPLOAD_EPS_TH;
+
+			TXACK_Flag = 1;
 			GoTX_Flag = 1;
+			break;
+
 		break;}
 
 		case UPLOAD_PL_CONFIG:{
 			//Which 12 P/L parameters??
 			//Send_to_WFQueue((uint8_t*) tlc_data[3], 12 , RFI_CONFIG_ADDR, COMMSsender);
-			Beacon_Flag = 1;
-			GoTX_Flag = 1;
+		    if (tlc_size < 15) break;  // 12 parámetros + header (3)
+
+		    //memcpy(ARQ_Buffer, &tlc_data[3], 12);  // copiar los 12 parámetros
+
+		    ARQ_DataLength = 12;
+		    ARQ_Received = 1;
+		    ARQ_TC_ID = UPLOAD_PL_CONFIG;
+
+		    TXACK_Flag = 1;
+		    GoTX_Flag = 1;
+		    break;
 		  break;}
 
-		case DOWNLINK_CONFIG:{ //19 Bytes //UPLINK?
+		case DOWNLINK_CONFIG:{ //19 Bytes //UPLINK
 			 // COMMS PARAM
-			uint8_t rx_time   = tlc_data[3];
-			uint8_t sleep_time= tlc_data[4];
-			uint8_t cad_mode  = tlc_data[5];
-			 // Battery threshold
-			uint8_t nominal_thr = tlc_data[6];
-			uint8_t low_thr = tlc_data[7];
-			uint8_t critical_thr = tlc_data[8];
+		    if (tlc_size < 21) break;  // 18 datos + 3 header
 
-			 // PL config 12 bytes
+		   //O probar de hacer un memcpy
+		   //memcpy(ARQ_Buffer, &tlc_data[3], 18);  // Guardar los 18 parámetros
+		    uint8_t rx_time   = tlc_data[3];
+		    uint8_t sleep_time= tlc_data[4];
+		    uint8_t cad_mode  = tlc_data[5];
+		    // Battery threshold
+		    uint8_t nominal_thr = tlc_data[6];
+		    uint8_t low_thr = tlc_data[7];
+		    uint8_t critical_thr = tlc_data[8];
 
-			 Send_to_WFQueue(&tlc_data[3], 18, UPLINK_ADDR, COMMSsender);
+		    // PL config 12 bytes
 
-			 GoTX_Flag=1;
-			 TxConfig_Data_Flag=1; //Reads flash and replaces new parameters with the previous
-		  break;}
+		    ARQ_DataLength = 18;
+		    ARQ_Received = 1;
+		    ARQ_TC_ID = DOWNLINK_CONFIG;
+
+		    TXACK_Flag = 1;
+		    GoTX_Flag = 1;
+		    break;}
 
 		case EPS_HEATER_ENABLE:
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
@@ -709,7 +814,7 @@ void process_telecommand(uint8_t tlc_data[]) {
 		  break;
 
 		case POL_HEATER_SHUT:
-		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_17, GPIO_PIN_RESET);
+		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
 		    Beacon_Flag = 1;
 		    GoTX_Flag = 1;
 		  break;
@@ -778,12 +883,21 @@ void process_telecommand(uint8_t tlc_data[]) {
 			DownlinkBeacon_Count = 1;
 			Downlink_Flag = 1;
 			Beacon_Flag = 1;
+
+		    TXACK_Flag = 1;  // Confirmación implícita a GS
+		    GoTX_Flag = 1;
 		break;}
 
 		case COMMS_HT_DOWNLINK:
-			DownlinkBeacon_Count = tlc_data[4];
-			Downlink_Flag = 1;
-			Beacon_Flag = 1;
+			if (tlc_size < 5) break;               // Se necesita al menos tlc_data[4]
+
+			if (tlc_data[4] > 0) {                 // No tiene sentido pedir 0 beacons
+				DownlinkBeacon_Count = tlc_data[4];
+			    Downlink_Flag = 1;
+			    Beacon_Flag = 1;
+
+			    TXACK_Flag = 1;
+			    GoTX_Flag = 1;}
 		  break;
 
 		case PAYLOAD_SCHEDULE:
@@ -810,9 +924,14 @@ void process_telecommand(uint8_t tlc_data[]) {
 		break;
 
 		case PAYLOAD_SEND_DATA:
-			PL_packet_number = tlc_data[3];
-			GoTX_Flag=1;
-			Tx_PL_Data_Flag=1;
+			if (tlc_size < 5) break;               // Se necesita al menos tlc_data[4]
+
+			if (tlc_data[4] > 0) {                 // No tiene sentido pedir 0 beacons
+				PL_packet_number = tlc_data[3];
+				GoTX_Flag=1;
+				Tx_PL_Data_Flag=1;
+
+				TXACK_Flag = 1;}
 		break;
 
 		case OBC_HARD_REBOOT:
