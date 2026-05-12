@@ -18,3 +18,4 @@ UART_HandleTypeDef huart2;
 IWDG_HandleTypeDef hiwdg;
 RTC_HandleTypeDef hrtc;
 ADC_HandleTypeDef hadc1;
+I2C_HandleTypeDef hi2c1;

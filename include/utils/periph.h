@@ -34,3 +34,6 @@ extern RTC_HandleTypeDef hrtc;
 
 /** @brief Global ADC1 handle. Used for internal temperature sensor. */
 extern ADC_HandleTypeDef hadc1;
+
+/** @brief Global I2C1 handle. Used for DS2872 battery sensor. */
+extern I2C_HandleTypeDef hi2c1;

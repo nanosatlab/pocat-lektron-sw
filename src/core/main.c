@@ -40,6 +40,7 @@ static void MX_IWDG_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2C1_Init(void);
 
 /**
  * @brief Main function
@@ -65,6 +66,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   MX_ADC1_Init();
+  MX_I2C1_Init();
 
   log_init();
   time_init();
@@ -467,6 +469,35 @@ static void MX_ADC1_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN MX_I2C_Init */
+
+/**
+  * @brief I2C1 Initialization Function
+  * @details Configures I2C1 at 100kHz for the DS2782 Battery Sensor.
+  */
+static void MX_I2C1_Init(void)
+{
+  hi2c1.Instance = I2C1;
+  
+  // Timing value for 100kHz based on the 80MHz System Clock
+  hi2c1.Init.Timing = 0x10909CEC; 
+  
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE; 
+  
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/* USER CODE END MX_I2C_Init */
 
 /**
   * @brief  This function is executed in case of error occurrence.
