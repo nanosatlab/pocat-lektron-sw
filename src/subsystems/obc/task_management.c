@@ -133,7 +133,9 @@ void tm_handle_health_faults(EventBits_t faults)
 
 bool tm_check_pause(uint32_t notif, uint32_t *deferred)
 {
-    uint32_t idx = uxTaskGetTaskNumber(NULL);
+    /* uxTaskGetTaskNumber(NULL) returns 0 unconditionally, not the caller's
+     * number — unlike most FreeRTOS APIs where NULL means "current task". */
+    uint32_t idx = uxTaskGetTaskNumber(xTaskGetCurrentTaskHandle());
     if (idx >= TASK_TABLE_SIZE)
         return false;
 
@@ -146,6 +148,8 @@ bool tm_check_pause(uint32_t notif, uint32_t *deferred)
 
         if (notif & N_TASK_RESUME) {
             entry->paused = false;
+            /* Re-include in health monitoring now that the task will kick. */
+            health_set_expected(health_get_expected() | entry->health_bit);
             xEventGroupSetBits(task_event_group_handle, entry->ack_bit);
             return false;
         }
@@ -157,6 +161,8 @@ bool tm_check_pause(uint32_t notif, uint32_t *deferred)
             *deferred |= other_bits;
 
         entry->paused = true;
+        /* Exclude from health monitoring; paused tasks won't reach health_kick. */
+        health_set_expected(health_get_expected() & ~entry->health_bit);
         xEventGroupSetBits(task_event_group_handle, entry->ack_bit);
         return true;
     }
@@ -198,7 +204,12 @@ static BaseType_t create_single_task(uint32_t idx)
     if (ok == pdPASS)
     {
         vTaskSetTaskNumber(entry->handle, idx);
-        health_set_expected(health_get_expected() | entry->health_bit);
+        /* Only monitor health for running tasks. Paused tasks never reach
+         * health_kick(), so including them guarantees a fault every period. */
+        if (!entry->paused)
+        {
+            health_set_expected(health_get_expected() | entry->health_bit);
+        }
     }
     return ok;
 }
