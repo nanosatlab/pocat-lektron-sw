@@ -14,7 +14,8 @@
 /* ---- Macros and constants ---- */
 /* ---- Module-level variables ---- */
 QueueHandle_t obdh_queue_handle;
-//extern QueueHandle_t obdh_queue_handle;//Extern queue declared in obc
+CircularFlashHandler telemetry_handler;
+
 
 /* ---- Private function prototypes ---- */
 void setup_obdh(void);
@@ -28,14 +29,68 @@ void obdh_task(void *pv_parameters) {
     }
 }
 
+void obdh_save_pointers_flash(void)
+{
+    Write_Flash(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
+}
+
 /* ---- Private function definitions ---- */
 
 
 void setup_obdh(void) {
 
+    /*
+    //mirem on ens haviem quedat en memoria. 
+    ht_count=0;
+    ht_head=0;
+    uint32_t prev_epoch=0;
+    uint8_t buf[4]; // First 4 bytes are epoch
+
+    for (uint8_t i=0;i<MAX_HT_BEACONS;i++)
+    {
+        uint32_t addr=HT_BASE_ADDR+(i*HT_BEACON_SIZE);
+        
+        Read_Flash(addr,buf,4);
+        uint32_t curr_epoch=buf[0]<<24 |buf[1]<<16| buf[2]<<8| buf[3] ;
+        if(curr_epoch==0xFFFFFFFF || curr_epoch==0)
+        {
+            ht_head=i;
+            break;//Posició on acaba la cua
+        }
+        else if (curr_epoch < prev_epoch) {
+            
+            ht_head = i;
+            ht_count = MAX_HT_BEACONS; //Hem fet la volta
+            break;
+        }
+
+        else
+        {
+            ht_count++;
+            prev_epoch=curr_epoch;
+        }
+
+    }
+
+*/
 
     printf("Setting up OBDH...\n");
-    // Apply the default configuration
+    Read_Flash(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
+    if(telemetry_handler.flag==telemetry_circular_flag)
+    {
+        printf("telemetria circular creada\n");
+    }
+    else    
+    {
+        printf("telemetria circular no creada\n");
+        telemetry_handler.flag=telemetry_circular_flag;
+        telemetry_handler.current_ht_count=0;
+        telemetry_handler.reading_pointer=0;
+        telemetry_handler.writing_pointer=0;
+        obdh_save_pointers_flash();
+        
+
+    }
     
 
 
@@ -55,7 +110,7 @@ void process_obdh(void) {
     printf("Processing OBDH...\n");
 
 
-    if (xQueueReceive(obdh_queue_handle,&request,portMAX_DELAY)== pdPASS)
+    if (xQueueReceive(obdh_queue_handle,&request,pdMS_TO_TICKS(OBDH_TELEMETRY_PERIOD_MS))== pdPASS)
     {
         if(request.op==FLASH_READ)
         {
@@ -74,6 +129,7 @@ void process_obdh(void) {
             status=HAL_OK;
         }
         else if(request.op == FLASH_WRITE)
+        
         {
             if(request.buf != NULL)
             {
@@ -103,91 +159,49 @@ void process_obdh(void) {
         }
         
     }
-    /*else
+    
+ } 
+/*
+HAL_StatusTypeDef obdh_get_telemetry(uint8_t *buffer)
+{
+    uint8_t index;
+    uint32_t address;
+    HAL_StatusTypeDef read_state;
+
+    if(ht_count==0)
     {
-        vTaskDelay(1000/portTICK_PERIOD_MS);
+        return HAL_ERROR;
+        
     }
-  */  
-    //
-    // Gestión de la flash:
-    // Leemos datos de la cola de la tarea (donde habran peticiones de read o write de otras tareas
-    // que quieran acceder a la memoria flash)
-    // La información de cada elemento en la cola será el siguiente struct:
-    //  *   - op      : FLASH_READ o FLASH_WRITE
-    //  *   - addr    : dirección en flash
-    //  *   - len     : número de bytes
-    //  *   - buf     : puntero al buffer (src en WRITE, dst en READ)
-    //  *   - client  : TaskHandle_t de la tarea solicitante (para notificación de fin)
-    // A partir de esto si es FLASH_READ leemos la flash y ponemos la info en buf, si es FLASH_WRITE
-    // escribimos la info de buf en la flash
-    // Si es FLASH_READ notificamos a la tarea solicitante que la información esta disponible en la
-    // posición que nos ha pasado con buf (aquí suponemos que la tarea solicitante sabe cuanto ocupa la
-    // información que pide de flash).
+    index=(ht_head+MAX_HT_BEACONS-ht_count)%MAX_HT_BEACONS;
+    address=HT_BASE_ADDR+(index*HT_BEACON_SIZE);
+    read_state=OBDH_Read_Request(address,buffer,HT_BEACON_SIZE);
+    if(read_state==HAL_OK)
+    {
+        ht_count--;
+    }
+    return read_state;
+}
+*/
+/*
+HAL_StatusTypeDef obdh_insert_telemetry(uint8_t *buffer)
+{ 
+    uint32_t address;
+    HAL_StatusTypeDef write_state;
+
+    address=HT_BASE_ADDR+(ht_head*HT_BEACON_SIZE);
+    write_state=OBDH_Write_Request(address,buffer,HT_BEACON_SIZE);
+    if (write_state==HAL_OK)
+    {
+        ht_head=(ht_head+1)%HT_BEACON_SIZE;
+        if(ht_head<HT_BEACON_SIZE)
+        {
+            ht_count++;
+        }
+    }
+    return write_state;  
 
 
 }
 
-/*
-                HAL_FLASH_Unlock(); // Desbloquegem la flash
-
-                // 1. NETEJAR FLAGS D'ERROR 
-                __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
-              
-                //Esborrem tot el que hi ha a la flash per evitar errors per testejar el codi
-                FLASH_EraseInitTypeDef EraseInitStruct;
-                uint32_t PageError;
-                
-                // Calculem la pàgina (STM32L4 té pàgines de 2KB)
-                uint32_t page = (request.addr - FLASH_BASE) / FLASH_PAGE_SIZE;
-               
-                EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
-                EraseInitStruct.Banks       = FLASH_BANK_2; // 0x08080000 cau al Banc 2 normalment
-                EraseInitStruct.Page        = page;
-                EraseInitStruct.NbPages     = 1;
-
-                if (HAL_FLASHEx_Erase(&EraseInitStruct, &PageError) != HAL_OK) {
-                    printf("Error esborrant la Flash: %lu\n", HAL_FLASH_GetError());
-                }
-                 else {
-                    
-                   
-                    size_t bytes_left = request.len;
-                    uint64_t data_to_write;
-                    size_t temporal_size_bytes;
-                    uint32_t temporal_adress = request.addr;
-                    uint8_t *temporal_pointer = request.buf;
-                    
-                    while (bytes_left > 0)
-                    {
-                        data_to_write = 0xFFFFFFFFFFFFFFFF; 
-
-                        if (bytes_left >= 8) {
-                            temporal_size_bytes = 8;
-                        } else {
-                            temporal_size_bytes = bytes_left;
-                        }
-
-                        memcpy(&data_to_write, temporal_pointer, temporal_size_bytes);
-                        
-                        status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, temporal_adress, data_to_write);
-                    
-                        if (status != HAL_OK)
-                        {
-                            
-                            printf("Hal error: %lu\n", HAL_FLASH_GetError());
-                            break;
-                        }
-                    
-                        if(bytes_left >= 8){
-                            bytes_left = bytes_left - 8;
-                        } else {
-                            bytes_left = 0;
-                        }
-                        
-                        temporal_adress += 8;
-                        temporal_pointer += 8;
-                    }
-                }
-         
-                HAL_FLASH_Lock(); // Bloquegem la flash
-                */
+*/
