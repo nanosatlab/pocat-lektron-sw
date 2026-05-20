@@ -4,7 +4,8 @@
 
 #define AIR_FRAME_HDR    5u
 #define AIR_FRAME_MAX    255u
-#define AIR_PAYLOAD_MAX  250u
+/* Maximum payload bytes when AUTH_TAG is present (§4.7): 255 - 5 hdr - 8 tag. */
+#define AIR_PAYLOAD_MAX  242u
 
 typedef struct {
     uint8_t ver;
