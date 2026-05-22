@@ -6,6 +6,7 @@
 #include "dedup.h"
 #include "cad.h"
 #include "saw.h"
+#include "lora_cfg.h"
 #include "radiolib_wrapper.h"
 #include "health.h"
 #include "notifications.h"
@@ -44,6 +45,7 @@ void transceiver_task(void *pv_parameters)
     QueueHandle_t tx_q = comms_get_tx_queue();
 
     dedup_init(&s_dedup);
+    lora_cfg_init();
 
     if (RadioLib_Init() != 0) {
         printf("TRX: radio init failed\r\n");
@@ -101,6 +103,10 @@ void transceiver_task(void *pv_parameters)
                 if (st == RADIOLIB_ERR_NONE && raw_len >= AIR_FRAME_HDR) {
                     AirFrame_t frame;
                     if (air_decode(raw_buf, (uint8_t)raw_len, &frame) == 0) {
+                        /* §9.1: a valid RX at new params confirms the link
+                         * and disarms any pending revert. */
+                        lora_cfg_notify_rx();
+
                         if (frame.flags & AIR_FLAG_REQUIRES_ACK) {
                             const uint8_t *cached_ack = NULL;
                             uint8_t cached_len = 0;
@@ -111,7 +117,7 @@ void transceiver_task(void *pv_parameters)
                                 uint8_t ack_buf[AIR_FRAME_MAX];
                                 memcpy(ack_buf, cached_ack, cached_len);
                                 transmit_and_wait(ack_buf, cached_len);
-                                RadioLib_StartReceive(LORA_PRE_DEFAULT);
+                                RadioLib_StartReceive(lora_cfg_active_preamble());
                                 goto next_event;
                             }
 
@@ -160,7 +166,12 @@ next_event:
             }
         }
 
-        RadioLib_StartReceive(LORA_PRE_DEFAULT);
+        /* §9.1: between RX/TX cycles, apply any pending LoRa config commit
+         * or auto-revert. lora_cfg_tick() owns the SPI swap so we just
+         * re-arm RX with the (potentially new) preamble. */
+        (void)lora_cfg_tick();
+
+        RadioLib_StartReceive(lora_cfg_active_preamble());
         health_kick(HEALTH_BIT_TRANSCEIVER);
     }
 }

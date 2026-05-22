@@ -2,6 +2,7 @@
 #include "timing.h"
 #include "frame.h"
 #include "cad.h"
+#include "lora_cfg.h"
 #include "radiolib_wrapper.h"
 #include "notifications.h"
 #include "comms.h"
@@ -31,6 +32,7 @@ saw_result_t saw_send(const uint8_t *frame, uint8_t frame_len,
         /* Mark retransmissions */
         if (attempt > 0) {
             tmp_frame[2] |= AIR_FLAG_IS_RETX;
+            printf("SAW: retransmission attempt %u\r\n", (unsigned)attempt);
         }
 
         RadioLib_Standby();
@@ -42,7 +44,7 @@ saw_result_t saw_send(const uint8_t *frame, uint8_t frame_len,
                         pdMS_TO_TICKS(TX_DONE_TIMEOUT_MS));
         RadioLib_ClearIrqFlags(RADIOLIB_SX126X_IRQ_ALL);
 
-        RadioLib_StartReceive(LORA_PRE_DEFAULT);
+        RadioLib_StartReceive(lora_cfg_active_preamble());
 
         TickType_t deadline = xTaskGetTickCount() + pdMS_TO_TICKS(timeout_ms);
 
@@ -77,13 +79,13 @@ saw_result_t saw_send(const uint8_t *frame, uint8_t frame_len,
             int8_t  snr  = 0;
             int16_t st = RadioLib_ReadRxData(raw_buf, AIR_FRAME_MAX, &raw_len, &rssi, &snr);
             if (st != RADIOLIB_ERR_NONE || raw_len == 0) {
-                RadioLib_StartReceive(LORA_PRE_DEFAULT);
+                RadioLib_StartReceive(lora_cfg_active_preamble());
                 continue;
             }
 
             AirFrame_t decoded;
             if (air_decode(raw_buf, (uint8_t)raw_len, &decoded) != 0) {
-                RadioLib_StartReceive(LORA_PRE_DEFAULT);
+                RadioLib_StartReceive(lora_cfg_active_preamble());
                 continue;
             }
 
@@ -105,7 +107,7 @@ saw_result_t saw_send(const uint8_t *frame, uint8_t frame_len,
                 pkt.snr  = snr;
                 xQueueSend(rx_q, &pkt, 0);
             }
-            RadioLib_StartReceive(LORA_PRE_DEFAULT);
+            RadioLib_StartReceive(lora_cfg_active_preamble());
         }
         /* Timeout on this attempt — loop for retransmit if attempts remain */
     }

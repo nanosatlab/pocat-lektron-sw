@@ -1,13 +1,16 @@
 #include "timing.h"
+#include "lora_cfg.h"
 
-/* All intermediate values in microseconds using integer arithmetic. */
+/* All intermediate values in microseconds using integer arithmetic.
+ * Reads from the active runtime LoRa config (§9) so timeouts track
+ * SF / BW / CR / preamble changes after a TC_LORA_CONFIG commit. */
 uint32_t lora_toa_ms(uint16_t payload_bytes)
 {
-    const uint32_t sf       = LORA_SF_DEFAULT;
-    const uint32_t bw_hz    = LORA_BW_DEFAULT;
-    const uint32_t cr       = LORA_CR_DEFAULT;
-    const uint32_t pre_sym  = LORA_PRE_DEFAULT;
-    const uint32_t crc_en   = LORA_CRC_DEFAULT;
+    const uint32_t sf       = lora_cfg_active_sf();
+    const uint32_t bw_hz    = lora_cfg_active_bw_hz();
+    const uint32_t cr       = lora_cfg_active_cr();
+    const uint32_t pre_sym  = lora_cfg_active_preamble();
+    const uint32_t crc_en   = lora_cfg_active_crc();
     const uint32_t he       = 0u;
     const uint32_t n        = payload_bytes;
 

@@ -1,6 +1,7 @@
 #include "beacon.h"
 #include "frame.h"
 #include "comms.h"
+#include "lora_cfg.h"
 #include "notifications.h"
 #include "obc.h"
 #include "time.h"
@@ -52,7 +53,7 @@ static uint8_t build_beacon_body(uint8_t *body)
     body[11] = 0x00u;                           /* DEPLOY */
     body[12] = g_last_tc_id;
     body[13] = g_last_tc_rc;
-    body[14] = 0x01u;                           /* CFG_ID default */
+    body[14] = lora_cfg_current_id();           /* §9 active CFG_ID */
     body[15] = g_uptime_m;
 
     return 16u;

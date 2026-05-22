@@ -3,6 +3,8 @@
 #include "tc_handler.h"
 #include "beacon.h"
 #include "comms.h"
+#include "frame.h"
+#include "lora_cfg.h"
 #include "tm_builder.h"
 #include "types.h"
 #include "notifications.h"
@@ -17,6 +19,29 @@ static inline void notify(TaskHandle_t handle, uint32_t bits)
 {
     if (handle != NULL) {
         xTaskNotify(handle, bits, eSetBits);
+    }
+}
+
+static void enqueue_nack(uint8_t ref_type, uint8_t ref_seq, uint8_t reason)
+{
+    /* §9: TC_LORA_CONFIG can be rejected after the eager ACK has already
+     * been sent by the transceiver. Emit an explicit NACK on the TX queue;
+     * the GS lora_cfg_service interprets a post-ACK NACK as rejection. */
+    uint8_t buf[AIR_FRAME_MAX];
+    uint8_t len = air_encode_nack(buf, comms_next_seq(), ref_type, ref_seq, reason);
+
+    TxQueueEntry_t entry;
+    memset(&entry, 0, sizeof(entry));
+    memcpy(entry.frame, buf, len);
+    entry.frame_len = len;
+    entry.needs_ack = 0;
+
+    QueueHandle_t tx_q = comms_get_tx_queue();
+    if (tx_q != NULL && xQueueSend(tx_q, &entry, 0) == pdTRUE) {
+        TaskHandle_t trx = tm_get_task_handle(TM_TASK_TRANSCEIVER);
+        if (trx != NULL) {
+            xTaskNotify(trx, N_TRANSCEIVER_TX_READY_BIT, eSetBits);
+        }
     }
 }
 
@@ -98,10 +123,31 @@ void tc_process(const AirFrame_t *frame)
         notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_SURVIVAL);
         break;
 
-    case TC_LORA_CONFIG:
-        /* TODO Phase 4: persist 21-byte config struct to flash (address TBD) */
-        notify(tm_get_task_handle(TM_TASK_COMMS), N_COMMS_NEW_CONFIG);
+    case TC_LORA_CONFIG: {
+        /* §10.1: 23-byte TC body = BODY_VER + TC_ID + 21 B §9.2 config struct
+         * (CFG_ID..REVERT_AFTER_S; the §9.2 BODY_VER is omitted). */
+        if (frame->len < 23u) {
+            g_last_tc_rc = NACK_BAD_PARAMS;
+            enqueue_nack(frame->type, frame->seq, NACK_BAD_PARAMS);
+            break;
+        }
+        LoraConfig_t cfg;
+        lora_cfg_result_t pr = lora_cfg_parse(&p[2], &cfg);
+        if (pr != LORA_CFG_OK) {
+            g_last_tc_rc = NACK_CONFIG_REJECTED;
+            enqueue_nack(frame->type, frame->seq, NACK_CONFIG_REJECTED);
+            break;
+        }
+        lora_cfg_result_t rr = lora_cfg_request(&cfg);
+        if (rr == LORA_CFG_BUSY) {
+            g_last_tc_rc = NACK_BUSY;
+            enqueue_nack(frame->type, frame->seq, NACK_BUSY);
+        } else if (rr == LORA_CFG_REJECTED) {
+            g_last_tc_rc = NACK_CONFIG_REJECTED;
+            enqueue_nack(frame->type, frame->seq, NACK_CONFIG_REJECTED);
+        }
         break;
+    }
 
     case TC_COMMS_PARAMS:
         /* TODO Phase 4: persist params to flash */

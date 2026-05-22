@@ -1,4 +1,5 @@
 #include "tm_builder.h"
+#include "lora_cfg.h"
 #include "obc.h"
 #include "temperature.h"
 #include "health.h"
@@ -26,8 +27,39 @@ void tm_build_hk_live(uint8_t *out)
     /* out[18..23] TC_COUNT, NACK_COUNT, RESET_COUNT — all 0 for now */
 }
 
-/* TODO Phase 4: populate with live LoRa config when lora_cfg is available */
+/* TM_DOWNLINK_CONFIG body layout (§11, reply to TC 0x0E):
+ *   [0]     BODY_VER = 0x01
+ *   [1]     CFG_ID
+ *   [2..5]  FREQUENCY_HZ (BE)
+ *   [6]     SF
+ *   [7]     BW
+ *   [8]     CR
+ *   [9]     TX_POWER_DBM (int8)
+ *   [10..11] PREAMBLE_SYMBOLS (BE)
+ *   [12]    CRC_ON
+ *   [13]    IQ_INVERTED
+ *   [14]    SYNC_WORD
+ *   [15]    reserved (0)
+ */
 void tm_build_downlink_config(uint8_t *out)
 {
-    memset(out, 0, 16);
+    LoraConfig_t c;
+    lora_cfg_active_snapshot(&c);
+
+    out[0]  = 0x01u;
+    out[1]  = c.cfg_id;
+    out[2]  = (uint8_t)(c.frequency_hz >> 24);
+    out[3]  = (uint8_t)(c.frequency_hz >> 16);
+    out[4]  = (uint8_t)(c.frequency_hz >> 8);
+    out[5]  = (uint8_t)(c.frequency_hz);
+    out[6]  = c.sf;
+    out[7]  = c.bw;
+    out[8]  = c.cr;
+    out[9]  = (uint8_t)c.tx_power_dbm;
+    out[10] = (uint8_t)(c.preamble_symbols >> 8);
+    out[11] = (uint8_t)(c.preamble_symbols);
+    out[12] = c.crc_on;
+    out[13] = c.iq_inverted;
+    out[14] = c.sync_word;
+    out[15] = 0u;
 }
