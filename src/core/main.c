@@ -46,8 +46,9 @@ int main(void)
 
   HAL_Init();
 
-  ObcState_t bootState;
-  Read_Flash(CURRENT_STATE_ADDR, (uint8_t*)&bootState, sizeof(ObcState_t));
+  obc_state_t bootState;
+  Read_Flash(CURRENT_STATE_ADDR, (uint8_t*)&bootState, sizeof(obc_state_t));
+  bootState = (bootState >= OBC_STATE_BOOT && bootState <= OBC_STATE_SAFE_HOLD) ? bootState : OBC_STATE_BOOT;
 
   ClockFreq_t freq = freq_for_state(bootState);
   if (!systemclock_init_for_freq(freq)) {
@@ -59,6 +60,7 @@ int main(void)
   time_init();
   printf("\r\n=======================\r\n pocat flight software\r\n=======================\r\n\r\n");
   
+  printf("Boot state: %d\r\n", bootState);
   BaseType_t result = xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, (void*)(uint32_t)bootState, OBC_PRIORITY, &obc_task_handle);
 
   if (result != pdPASS) {

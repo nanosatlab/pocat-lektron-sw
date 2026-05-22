@@ -108,19 +108,19 @@ void tc_process(const AirFrame_t *frame)
         break;
 
     case TC_TRANSIT_TO_NM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_NOMINAL);
+        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_NM);
         break;
 
     case TC_TRANSIT_TO_CM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_CONTINGENCY);
+        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_CM);
         break;
 
     case TC_TRANSIT_TO_SSM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_SUNSAFE);
+        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_SSM);
         break;
 
     case TC_TRANSIT_TO_SM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_SURVIVAL);
+        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_SM);
         break;
 
     case TC_LORA_CONFIG: {
@@ -146,6 +146,7 @@ void tc_process(const AirFrame_t *frame)
             g_last_tc_rc = NACK_CONFIG_REJECTED;
             enqueue_nack(frame->type, frame->seq, NACK_CONFIG_REJECTED);
         }
+        printf("TC: received LoRa config TC, result=%d\r\n", (int)rr);
         break;
     }
 

@@ -144,13 +144,3 @@ typedef enum {
     DATA_END_ABORTED_BY_SENDER   = 0x01,
     DATA_END_ABORTED_BY_RECEIVER = 0x02,
 } data_end_status_t;
-
-/* ---------- OBC state enum (§6.6) ---------- */
-typedef enum {
-    OBC_STATE_BOOT      = 0x00,
-    OBC_STATE_NM        = 0x01,
-    OBC_STATE_CM        = 0x02,
-    OBC_STATE_SSM       = 0x03,
-    OBC_STATE_SM        = 0x04,
-    OBC_STATE_SAFE_HOLD = 0x05,
-} obc_state_t;

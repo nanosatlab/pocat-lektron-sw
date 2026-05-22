@@ -36,15 +36,15 @@
 
 /* ---- Private function prototypes ---- */
 
-static void setup_obc(ObcState_t currentState);
-static void process_obc(ObcState_t *currentState);
+static void setup_obc(obc_state_t currentState);
+static void process_obc(obc_state_t *currentState);
 static uint32_t process_obc_notifications(void);
 
 /* ---- Public function definitions ---- */
 
 void obc_task(void *pv_parameters) {
 
-    ObcState_t currentState = (ObcState_t)(uint32_t)pv_parameters;
+    obc_state_t currentState = (obc_state_t)(uint32_t)pv_parameters;
     setup_obc(currentState);
 
     for (;;) {
@@ -61,7 +61,7 @@ void obc_task(void *pv_parameters) {
 
 /* ---- Private function defisnitions ---- */
 
-static void setup_obc(ObcState_t currentState) {
+static void setup_obc(obc_state_t currentState) {
 
     // 1. Create queues
     obdh_queue_handle = xQueueCreate(OBDH_QUEUE_LEN, OBDH_ITEM_SIZE);
@@ -82,7 +82,7 @@ static void setup_obc(ObcState_t currentState) {
 }
 
 
-static void process_obc(ObcState_t *currentState) {
+static void process_obc(obc_state_t *currentState) {
 
     // Process notifications:
     uint32_t notificationValue = process_obc_notifications();

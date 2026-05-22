@@ -163,6 +163,7 @@ next_event:
                         printf("TRX: SAW result %d\r\n", (int)r);
                     }
                 }
+                printf("TRX: TX done, len=%d\r\n", (int)entry.frame_len);
             }
         }
 

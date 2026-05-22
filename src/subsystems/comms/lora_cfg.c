@@ -144,6 +144,7 @@ bool lora_cfg_tick(void)
         } else {
             s_state = SLOT_STATE_IDLE;
         }
+        printf("LoRa config committed: ID=%d\r\n", s_committed.cfg_id);
         return true;
     }
 
@@ -155,6 +156,7 @@ bool lora_cfg_tick(void)
             s_previous  = tmp;
             apply_to_radio(&s_committed);
             s_state = SLOT_STATE_IDLE;
+            printf("LoRa config auto-reverted: ID=%d\r\n", s_committed.cfg_id);
             return true;
         }
     }
