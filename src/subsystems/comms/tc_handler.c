@@ -1,6 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "tc_handler.h"
+#include "arq.h"
 #include "beacon.h"
 #include "comms.h"
 #include "frame.h"
@@ -192,24 +193,39 @@ void tc_process(const AirFrame_t *frame)
         break;
     }
 
-    case TC_REQUEST_HK_HISTORY:
-        /* TODO: ARQ downlink of historic telemetry */
+    case TC_REQUEST_HK_HISTORY: {
+        /* params: p[2:5] = SINCE_UNIX (4B BE) */
+        static uint8_t s_hk_sess = 0u;
+        s_hk_sess++;
+        arq_begin_dl(s_hk_sess, TRANSFER_HK_HISTORY,
+                     (frame->len >= 6u) ? &p[2] : NULL,
+                     (frame->len >= 6u) ? 4u : 0u);
         break;
+    }
 
-    case TC_REQUEST_PAYLOAD_DATA:
-        /* TODO: ARQ downlink of payload data */
+    case TC_REQUEST_PAYLOAD_DATA: {
+        /* params: p[2]=MEASURE_NUMBER, p[3:4]=FIRST_BLOCK, p[5:6]=BLOCK_COUNT */
+        static uint8_t s_pl_sess = 0x10u;
+        s_pl_sess++;
+        arq_begin_dl(s_pl_sess, TRANSFER_PAYLOAD_DATA,
+                     (frame->len >= 7u) ? &p[2] : NULL,
+                     (frame->len >= 7u) ? 5u : 0u);
         break;
+    }
 
-    case TC_REQUEST_OBC_LOG:
-        /* TODO: ARQ downlink of OBC log */
+    case TC_REQUEST_OBC_LOG: {
+        static uint8_t s_log_sess = 0x20u;
+        s_log_sess++;
+        arq_begin_dl(s_log_sess, TRANSFER_OBC_LOG, NULL, 0u);
         break;
+    }
 
     case TC_UPLOAD_TLE_BEGIN:
-        /* TODO: ARQ upload session for TLE */
+        arq_arm_ul(TRANSFER_TLE_UPLOAD);
         break;
 
     case TC_UPLOAD_ADCS_CAL_BEGIN:
-        /* TODO: ARQ upload session for ADCS calibration */
+        arq_arm_ul(TRANSFER_ADCS_CALIBRATION);
         break;
 
     case TC_EPS_HEATER_ENABLE:

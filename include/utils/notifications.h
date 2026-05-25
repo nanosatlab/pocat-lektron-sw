@@ -53,6 +53,7 @@
 
 #define N_TRANSCEIVER_RADIO_IRQ_BIT      (1u << 0)  /**< DIO1 hardware interrupt: RX_DONE or TX_DONE */
 #define N_TRANSCEIVER_TX_READY_BIT       (1u << 1)  /**< TX packet available in tx_queue */
+#define N_TRANSCEIVER_ARQ_DL_BIT         (1u << 2)  /**< Begin ARQ DL session (OBC → GS) */
 
 /* ── EPS Task Notifications ─────────────────────────────────────────────── */
 

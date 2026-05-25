@@ -3,10 +3,12 @@
 #include "queue.h"
 #include "comms.h"
 #include "tc_handler.h"
+#include "arq.h"
 #include "health.h"
 #include "notifications.h"
 #include "beacon.h"
 #include "task_management.h"
+#include "types.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -63,7 +65,14 @@ void comms_task(void *pv_parameters)
 
         RxAirFrame_t pkt;
         if (xQueueReceive(rx_queue, &pkt, pdMS_TO_TICKS(COMMS_HEALTH_KICK_MS)) == pdTRUE) {
-            tc_process(&pkt.air);
+            /* ARQ frames (UL sessions) are handled by the ARQ engine; all
+             * others dispatch through the TC handler. */
+            air_type_t atype = (air_type_t)pkt.air.type;
+            if (atype == AIR_DATA_BEGIN || atype == AIR_DATA || atype == AIR_DATA_END) {
+                arq_rx(&pkt.air);
+            } else {
+                tc_process(&pkt.air);
+            }
         }
 
         health_kick(HEALTH_BIT_COMMS);

@@ -6,6 +6,7 @@
 #include "dedup.h"
 #include "cad.h"
 #include "saw.h"
+#include "arq.h"
 #include "lora_cfg.h"
 #include "radiolib_wrapper.h"
 #include "health.h"
@@ -79,6 +80,7 @@ void transceiver_task(void *pv_parameters)
         uint32_t notif = 0;
         xTaskNotifyWait(0,
                         N_TRANSCEIVER_RADIO_IRQ_BIT | N_TRANSCEIVER_TX_READY_BIT |
+                        N_TRANSCEIVER_ARQ_DL_BIT |
                         N_TASK_PAUSE | N_TASK_RESUME,
                         &notif, pdMS_TO_TICKS(1000));
 
@@ -146,6 +148,12 @@ void transceiver_task(void *pv_parameters)
         }
 
 next_event:
+        if (notif & N_TRANSCEIVER_ARQ_DL_BIT) {
+            /* Run the ARQ DL session loop. Blocks in the transceiver task
+             * context so it has direct radio access (same as saw_send). */
+            arq_run_dl(rx_q);
+        }
+
         if (notif & N_TRANSCEIVER_TX_READY_BIT) {
             TxQueueEntry_t entry;
             while (xQueueReceive(tx_q, &entry, 0) == pdTRUE) {

@@ -13,6 +13,7 @@
 
 #include "auth.h"
 #include "psk.h"   /* generated: static const uint8_t COMMS_PSK[AUTH_PSK_LEN]; */
+#include "types.h"
 #include <string.h>
 #include <stddef.h>
 
@@ -178,8 +179,12 @@ static void hmac_sha256_8(const uint8_t key[AUTH_PSK_LEN],
 void auth_tag(const uint8_t *header, const uint8_t *payload,
               uint8_t payload_len, uint8_t out_tag[AUTH_TAG_LEN])
 {
-    /* header is 5 bytes; AUTH_TAG_PRESENT must already be set in header[2] */
-    hmac_sha256_8(COMMS_PSK, header, 5u, payload, payload_len, out_tag);
+    /* IS_RETX is a transport hint added after encoding; exclude it from HMAC
+     * so original and retransmitted frames carry the same auth tag. */
+    uint8_t hdr[5u];
+    memcpy(hdr, header, 5u);
+    hdr[2] &= (uint8_t)~AIR_FLAG_IS_RETX;
+    hmac_sha256_8(COMMS_PSK, hdr, 5u, payload, payload_len, out_tag);
 }
 
 bool auth_verify(const uint8_t *header, const uint8_t *payload,
