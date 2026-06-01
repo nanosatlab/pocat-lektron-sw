@@ -120,6 +120,7 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark  1
 #define INCLUDE_xTaskGetCurrentTaskHandle    1
 #define INCLUDE_eTaskGetState                1
+#define INCLUDE_xTaskAbortDelay              1   /* needed by the v11 CMSIS-RTOS2 wrapper (osThreadResume) */
 
 
 
