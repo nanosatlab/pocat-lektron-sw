@@ -24,6 +24,11 @@
 #include "queue.h"
 #include "semphr.h"
 
+#define FLASH_QUEUE_SEND_TIMEOUT_MS 100u   /* wait for room in the OBDH request queue */
+#define FLASH_OP_TIMEOUT_MS         2000u  /* wait for OBDH to complete the operation */
+
+// Memory map
+
 #define PHOTO_ADDR 					0x08040000
 #define COMMS_CONFIG_ADDR
 #define COMMS_CONFIG_ADDR
@@ -112,8 +117,6 @@
 #define SURVIVAL_TH_ADDR            0x08030803  // 1
 
 #define RFI_CONFIG_ADDR             0x08031000  // 8
-
-
 
 
 extern EventGroupHandle_t xEventGroup;

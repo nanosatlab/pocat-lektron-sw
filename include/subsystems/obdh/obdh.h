@@ -36,8 +36,8 @@ typedef enum {
  * @brief Flash access request processed by the OBDH task.
  *
  * Requesters send this structure to obdh_queue_handle. The OBDH task performs
- * the selected operation, writes the HAL status through res when provided, and
- * notifies client when the operation completes.
+ * the selected operation and notifies client on OBDH_NOTIFY_IDX with the
+ * resulting HAL status carried as the notification value.
  */
 typedef struct {
     read_write op;       // Operació: llegir o escriure
@@ -48,7 +48,6 @@ typedef struct {
         uint8_t       *dst;  // FLASH_READ:  buffer a omplir
     } buf;
     TaskHandle_t client; // Tarea que demana l'operació (per notificar-la)
-    HAL_StatusTypeDef *res; //Punter que retorna l'estatus de la escriptura/lectura
 } obdh_request;
 
 /** @brief Queue used to send flash access requests to the OBDH task. */

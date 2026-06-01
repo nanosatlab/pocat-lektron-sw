@@ -2,10 +2,12 @@
  * @file notifications.h
  * @brief Inter-task notification bit definitions.
  *
- * FreeRTOS task notifications use a 32-bit value per task. Each target task
- * has its own notification value, so bit positions are independent across
- * tasks. Senders use xTaskNotify() with eSetBits; receivers use
- * xTaskNotifyWait() and test the bits defined here.
+ * Each task has an array of notification slots; two are used:
+ *   index 0 — general signalling. Per-task bitmask (eSetBits), read by
+ *             wait_for_notification(). A bit's meaning is per task, so the
+ *             N_<TARGET>_* groups below reuse low bits independently.
+ *   index 1 — OBDH flash completion (OBDH_NOTIFY_IDX): the HAL status as a
+ *             whole value (eSetValueWithOverwrite).
  *
  * Naming convention: N_<TARGET>_<ACTION>
  */
@@ -15,10 +17,19 @@
 #include <stdint.h>
 #include "FreeRTOS.h"   /* for TickType_t */
 
-/* ── General Task Notifications ─────────────────────────────────────────── */
-#define N_FLASH_OPERATION_COMPLETE         (1u << 31)  /**< Flash operation completed (success or failure) */
+/* ════════════════════════ Notification indices ═════════════════════════ */
+/* Index 0 carries every N_* bit and is read by wait_for_notification().
+   Index 1 is reserved for the OBDH flash round-trip, so a flash completion can
+   never collide with a task's own signalling. */
+#define OBDH_NOTIFY_IDX                    1u   /**< Flash completion; notification value = HAL status */
+
+
+/* ═══════════ Index 0 — GLOBAL notifications (sent to any task) ═══════════ */
 #define N_TASK_PAUSE                       (1u << 30)  /**< OBC requests task to quiesce and ACK */
 #define N_TASK_RESUME                      (1u << 29)  /**< OBC signals task to resume normal operation */
+
+
+/* ══════════ Index 0 — PER-TASK notifications (bits local to each) ════════ */
 
 /* ── ADCS Task Notifications ────────────────────────────────────────────── */
 
@@ -71,7 +82,6 @@
 
 #define N_PAYLOAD_ACTIVATE               (1u << 0)  /**< Activate the payload */
 #define N_PAYLOAD_DEACTIVATE             (1u << 1)  /**< Deactivate the payload */
-
 
 /**
  * @brief Wait for pending task notifications, blocking up to a timeout.

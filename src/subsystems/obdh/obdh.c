@@ -162,13 +162,10 @@ static void process_obdh(void) {
             }
         }
 
-        if (request.res != NULL)
+        if (request.client != NULL)
         {
-            *(request.res)=status;
-        }
-        if (request.client!=NULL)
-        {
-            xTaskNotify(request.client,N_FLASH_OPERATION_COMPLETE,eSetBits);
+            xTaskNotifyIndexed(request.client, OBDH_NOTIFY_IDX,
+                               (uint32_t)status, eSetValueWithOverwrite);
         }
         
     }

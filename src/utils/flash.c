@@ -28,70 +28,9 @@
 
 extern QueueHandle_t obdh_queue_handle;
 
-/**
-  * @brief  Gets the page of a given address
-  * @param  Addr: Address of the FLASH Memory
-  * @retval The page of a given address
-  */
-static uint32_t get_page(uint32_t Addr)
-{
-  uint32_t page = 0;
-  
-  if (Addr < (FLASH_BASE + FLASH_BANK_SIZE))
-  {
-    /* Bank 1 */
-    page = (Addr - FLASH_BASE) / FLASH_PAGE_SIZE;
-  }
-  else
-  {
-    /* Bank 2 */
-    page = (Addr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
-  }
-  
-  return page;
-}
-
-
-/**
-  * @brief  Gets the bank of a given address
-  * @details Takes Flash bank swapping into account. This is kept for now to
-  *          make the implementation compatible with a possible future dual-boot
-  *          configuration.
-  * @param  Addr: Address of the FLASH Memory
-  * @retval The bank of a given address
-  */
-static uint32_t get_bank(uint32_t Addr)
-{
-  uint32_t bank = 0;
-  
-  if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0)
-  {
-  	/* No Bank swap */
-    if (Addr < (FLASH_BASE + FLASH_BANK_SIZE))
-    {
-      bank = FLASH_BANK_1;
-    }
-    else
-    {
-      bank = FLASH_BANK_2;
-    }
-  }
-  else
-  {
-  	/* Bank swap */
-    if (Addr < (FLASH_BASE + FLASH_BANK_SIZE))
-    {
-      bank = FLASH_BANK_2;
-    }
-    else
-    {
-      bank = FLASH_BANK_1;
-    }
-  }
-  
-  return bank;
-}
-
+static uint32_t get_page(uint32_t Addr);
+static uint32_t get_bank(uint32_t Addr);
+static HAL_StatusTypeDef obdh_submit_request(obdh_request *request);
 
 
 void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
@@ -166,64 +105,123 @@ void Read_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
 
 HAL_StatusTypeDef OBDH_Write_Request(uint32_t address, const uint8_t *data, size_t len)
 {
-    obdh_request request;
-    HAL_StatusTypeDef operation_status = HAL_ERROR; //Variable that indicates the feedback
-    uint32_t received_events =0;
-    request.op=FLASH_WRITE;
-    request.addr=address;
-    request.buf.src=data;
-    request.len=len;
-    request.client=xTaskGetCurrentTaskHandle();
-    request.res=&operation_status;
-//Timeout 100ms
-    if(xQueueSend(obdh_queue_handle,&request,pdMS_TO_TICKS(100))!=pdPASS)
-    {
-        return HAL_BUSY; //Queue full
-    }
+    if (data == NULL || len == 0)
+        return HAL_ERROR;
 
-    //Block and return result. Timeout of 2 seconds
-
-    BaseType_t result_wait= xTaskNotifyWait(0,N_FLASH_OPERATION_COMPLETE,&received_events,pdMS_TO_TICKS(2000));
-    if (result_wait == pdPASS)
-    {
-        if (received_events & N_FLASH_OPERATION_COMPLETE)
-        {
-            return operation_status;
-        }
-    }
-    return HAL_TIMEOUT; //If after 2 seconds nothing is recieved, timeout.
-
-    //HAL_BUSY
+    obdh_request request = {
+        .op      = FLASH_WRITE,
+        .addr    = address,
+        .len     = len,
+        .buf.src = data,
+    };
+    return obdh_submit_request(&request);
 }
 
 HAL_StatusTypeDef OBDH_Read_Request(uint32_t address, uint8_t *data, size_t len)
 {
-    obdh_request request;
-    HAL_StatusTypeDef operation_status = HAL_ERROR; //Variable that indicates the feedback
-    uint32_t received_events =0;
-    request.op=FLASH_READ;
-    request.addr=address;
-    request.buf.dst=data;
-    request.len=len;
-    request.client=xTaskGetCurrentTaskHandle();
-    request.res=&operation_status;
-//Timeout 100ms
-    if(xQueueSend(obdh_queue_handle,&request,pdMS_TO_TICKS(100))!=pdPASS)
-    {
-        return HAL_BUSY; //Queue full
-    }
-    
-    //Block and return result. Timeout of 2 seconds
-    
-    BaseType_t result_wait= xTaskNotifyWait(0,N_FLASH_OPERATION_COMPLETE,&received_events,pdMS_TO_TICKS(2000));
-    if (result_wait == pdPASS)
-    {
-        if (received_events & N_FLASH_OPERATION_COMPLETE)
-        {
-            return operation_status;
-        }
-    }
-    return HAL_TIMEOUT; //If after 2 seconds nothing is recieved, timeout. 
+    if (data == NULL || len == 0)
+        return HAL_ERROR;
 
-    //HAL_BUSY
+    obdh_request request = {
+        .op      = FLASH_READ,
+        .addr    = address,
+        .len     = len,
+        .buf.dst = data,
+    };
+    return obdh_submit_request(&request);
+}
+
+
+/**
+  * @brief  Gets the page of a given address
+  * @param  Addr: Address of the FLASH Memory
+  * @retval The page of a given address
+  */
+static uint32_t get_page(uint32_t Addr)
+{
+  uint32_t page = 0;
+
+  if (Addr < (FLASH_BASE + FLASH_BANK_SIZE))
+  {
+    /* Bank 1 */
+    page = (Addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+  }
+  else
+  {
+    /* Bank 2 */
+    page = (Addr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
+  }
+  
+  return page;
+}
+
+
+/**
+  * @brief  Gets the bank of a given address
+  * @details Takes Flash bank swapping into account. This is kept for now to
+  *          make the implementation compatible with a possible future dual-boot
+  *          configuration.
+  * @param  Addr: Address of the FLASH Memory
+  * @retval The bank of a given address
+  */
+static uint32_t get_bank(uint32_t Addr)
+{
+  uint32_t bank = 0;
+  
+  if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0)
+  {
+  	/* No Bank swap */
+    if (Addr < (FLASH_BASE + FLASH_BANK_SIZE))
+    {
+      bank = FLASH_BANK_1;
+    }
+    else
+    {
+      bank = FLASH_BANK_2;
+    }
+  }
+  else
+  {
+  	/* Bank swap */
+    if (Addr < (FLASH_BASE + FLASH_BANK_SIZE))
+    {
+      bank = FLASH_BANK_2;
+    }
+    else
+    {
+      bank = FLASH_BANK_1;
+    }
+  }
+  
+  return bank;
+}
+
+
+/**
+ * @brief Post a prepared flash request to the OBDH task and block for its result.
+ *
+ * Stamps the calling task handle, enqueues the request, and waits on the
+ * dedicated flash notification index (OBDH_NOTIFY_IDX) for OBDH to return the
+ * HAL status as the notification value. Using a dedicated index keeps this
+ * round-trip off the task's general notification slot (index 0), so it can
+ * never collide with the task's own notifications.
+ *
+ * @param request Flash request with op/addr/len/buf already populated.
+ * @retval HAL_OK / HAL_ERROR  Status reported by the OBDH task.
+ * @retval HAL_BUSY            Request queue still full after the send timeout.
+ * @retval HAL_TIMEOUT         OBDH did not answer within the timeout.
+ */
+static HAL_StatusTypeDef obdh_submit_request(obdh_request *request)
+{
+    request->client = xTaskGetCurrentTaskHandle();
+
+    if (xQueueSend(obdh_queue_handle, request, pdMS_TO_TICKS(FLASH_QUEUE_SEND_TIMEOUT_MS)) != pdPASS)
+        return HAL_BUSY;
+
+    uint32_t value = 0;
+    if (xTaskNotifyWaitIndexed(OBDH_NOTIFY_IDX, UINT32_MAX, UINT32_MAX, &value,
+                               pdMS_TO_TICKS(FLASH_OP_TIMEOUT_MS)) != pdPASS)
+        return HAL_TIMEOUT;
+
+    return (HAL_StatusTypeDef)value;
 }
