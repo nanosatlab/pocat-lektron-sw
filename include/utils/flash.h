@@ -157,6 +157,7 @@ void Read_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
  * @param length Length of the data to be written
  * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
  * has happened)
+ * @todo blocks until OBDH answers (no timeout yet) — see obdh_submit_request. 
  */
 HAL_StatusTypeDef OBDH_Write_Request(uint32_t address, const uint8_t *data, size_t length);
 
@@ -168,6 +169,7 @@ HAL_StatusTypeDef OBDH_Write_Request(uint32_t address, const uint8_t *data, size
  * @param length Length of the data that has to be read. 
  * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
  * has happened)
+ * @todo blocks until OBDH answers (no timeout yet) — see obdh_submit_request. 
  */
 HAL_StatusTypeDef OBDH_Read_Request(uint32_t address,uint8_t *data, size_t length);
 

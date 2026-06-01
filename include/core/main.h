@@ -3,8 +3,8 @@
  * @brief Application entry point definitions.
  * @author Guillermo O'Tuama Pascual
  * @date 2026-01-20
+ * @todo Update FreeRTOSConfig.h with v11.2 macros. This is not critical.
  */
- 
 
 #ifndef __MAIN_H
 #define __MAIN_H
