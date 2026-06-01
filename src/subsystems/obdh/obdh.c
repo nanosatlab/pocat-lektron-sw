@@ -31,9 +31,9 @@ void obdh_task(void *pv_parameters) {
     setup_obdh();
 
     for (;;) {
-        process_obdh(); 
+        /* process_obdh() blocks in xQueueReceive (up to 1 s), which paces this loop */
+        process_obdh();
         health_kick(HEALTH_BIT_OBDH);
-        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
 }

@@ -210,6 +210,13 @@ static uint32_t get_bank(uint32_t Addr)
  * @retval HAL_OK / HAL_ERROR  Status reported by the OBDH task.
  * @retval HAL_BUSY            Request queue still full after the send timeout.
  * @retval HAL_TIMEOUT         OBDH did not answer within the timeout.
+ * @todo TEMPORARY — wait forever (portMAX_DELAY) instead of a finite timeout.
+       With no timeout the caller never abandons a request, so OBDH can never
+       touch a freed buffer or deliver a stale completion.
+       This MUST be restored to a finite FLASH_OP_TIMEOUT_MS, and the timeout
+       path then handled safely (drop/cancel the in-flight request so a late
+       completion can't corrupt the caller). While infinite: if OBDH ever wedges
+       the caller blocks until the IWDG resets — acceptable only as a stopgap
  */
 static HAL_StatusTypeDef obdh_submit_request(obdh_request *request)
 {
@@ -220,8 +227,8 @@ static HAL_StatusTypeDef obdh_submit_request(obdh_request *request)
 
     uint32_t value = 0;
     if (xTaskNotifyWaitIndexed(OBDH_NOTIFY_IDX, UINT32_MAX, UINT32_MAX, &value,
-                               pdMS_TO_TICKS(FLASH_OP_TIMEOUT_MS)) != pdPASS)
-        return HAL_TIMEOUT;
+                               portMAX_DELAY) != pdPASS)
+        return HAL_TIMEOUT;   /* currently unreachable: the wait never times out */
 
     return (HAL_StatusTypeDef)value;
 }
