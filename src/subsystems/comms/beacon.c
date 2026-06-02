@@ -17,7 +17,6 @@
 
 uint8_t  g_last_tc_id      = 0xFFu;
 uint8_t  g_last_tc_rc      = 0x00u;
-uint8_t  g_uptime_m        = 0u;
 uint32_t g_beacon_period_ms = BEACON_PERIOD_MS;
 
 static TimerHandle_t beacon_timer = NULL;
@@ -33,11 +32,16 @@ static void beacon_timer_cb(TimerHandle_t xTimer)
 
 static uint8_t build_beacon_body(uint8_t *body)
 {
-    memset(body, 0, 16);
+    memset(body, 0, 19);
 
     uint32_t epoch = time_get_unix();
     uint8_t obc_state = 0;
     OBDH_Read_Request(CURRENT_STATE_ADDR, &obc_state, 1);
+
+    /* Uptime = current time − persisted boot time (§6.6 UPTIME_S, seconds). */
+    uint32_t boot_time = 0;
+    OBDH_Read_Request(BOOT_TIME_ADDR, (uint8_t *)&boot_time, sizeof(boot_time));
+    uint32_t uptime_s = (epoch >= boot_time) ? (epoch - boot_time) : 0u;
 
     body[0]  = AIR_BODY_VER;
     body[1]  = (uint8_t)(epoch >> 24);
@@ -54,19 +58,22 @@ static uint8_t build_beacon_body(uint8_t *body)
     body[12] = g_last_tc_id;
     body[13] = g_last_tc_rc;
     body[14] = lora_cfg_current_id();           /* §9 active CFG_ID */
-    body[15] = g_uptime_m;
+    body[15] = (uint8_t)(uptime_s >> 24);
+    body[16] = (uint8_t)(uptime_s >> 16);
+    body[17] = (uint8_t)(uptime_s >> 8);
+    body[18] = (uint8_t)(uptime_s);
 
-    return 16u;
+    return 19u;
 }
 
 static void transmit_beacon(void)
 {
-    uint8_t body[16];
+    uint8_t body[19];
     build_beacon_body(body);
 
     uint8_t air_buf[AIR_FRAME_MAX];
     uint8_t frame_len = air_encode(air_buf, AIR_BEACON, 0x00u,
-                                   comms_next_seq(), body, 16u);
+                                   comms_next_seq(), body, 19u);
 
     TxQueueEntry_t entry;
     memset(&entry, 0, sizeof(entry));
@@ -114,10 +121,6 @@ void beacon_task(void *pv_parameters)
 
         if (notif & N_COMMS_TRANSMIT_BEACON) {
             transmit_beacon();
-
-            if (g_uptime_m < 0xFFu) {
-                g_uptime_m++;
-            }
         }
     }
 }

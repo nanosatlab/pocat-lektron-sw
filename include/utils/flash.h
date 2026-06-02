@@ -89,6 +89,8 @@
 
 #define ANTENNA_DEPLOYED_ADDR       0x08030205
 
+#define BOOT_TIME_ADDR              0x08030206 // 4 bytes (OBC boot unix time; beacon uptime = now - boot)
+
 
 /**********OTHER ADDR****************************/
 #define DATA_ADDR					0x08030000

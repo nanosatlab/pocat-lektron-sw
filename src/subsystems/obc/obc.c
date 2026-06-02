@@ -27,6 +27,7 @@
 #include "log.h"
 #include "flash.h"
 #include "notifications.h"
+#include "time.h"
 
 /* ---- Macros and constants ---- */
 //Variables que vaig fer servir per a la simulació, no verificats
@@ -79,6 +80,10 @@ static void setup_obc(obc_state_t currentState) {
     if (!state_machine_boot(currentState)) {
         printf("Error creating subsystem tasks\r\n");
     }
+
+    // 3. Persist the boot time so the beacon can report uptime as (now - boot).
+    uint32_t boot_time = time_get_unix();
+    OBDH_Write_Request(BOOT_TIME_ADDR, (const uint8_t *)&boot_time, sizeof(boot_time));
 }
 
 
