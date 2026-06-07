@@ -1,11 +1,10 @@
 /**
  * @file obc.h
- * @author your name (you@domain.com)
- * @brief 
- * @version 0.1
- * @date 2026-01-20
- * 
- * @copyright Copyright (c) 2026
+ * @author guillermo.o.tuama@estudiantat.upc.edu
+ * @details 
+ * OBC Task serves as the central scheduler, coordinating the operation of all other tasks. 
+ * It is responsible for managing transitions between different operational modes, task management, 
+ * power control, and essential satellite checkups.
  * 
  */
 
@@ -38,23 +37,10 @@
 #define ADCS_PRIORITY       2
 #define PAYLOAD_PRIORITY    1
 
-
 /**
- * @brief OBC task entry point — runs the OBC state machine.
+ * @brief OBC FreeRTOS task entry point: runs the OBC state machine.
+ * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
  */
 void obc_task(void *pv_parameters);
-
-/** @name Subsystem task handle getters
- *  Used by the TC handler and other tasks to send notifications.
- *  Handles are valid once obc_task has finished setup_obc().
- * @{ */
-TaskHandle_t obc_get_comms_handle(void);
-TaskHandle_t obc_get_eps_handle(void);
-TaskHandle_t obc_get_obdh_handle(void);
-TaskHandle_t obc_get_adcs_handle(void);
-TaskHandle_t obc_get_payload_handle(void);
-TaskHandle_t obc_get_transceiver_handle(void);
-TaskHandle_t obc_get_beacon_handle(void);
-/** @} */
 
 #endif /* INC_OBC_H_ */

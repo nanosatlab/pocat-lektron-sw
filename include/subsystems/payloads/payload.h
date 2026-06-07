@@ -1,19 +1,16 @@
 /**
  * @file payload.h
- * @author your name (you@domain.com)
- * @brief 
- * @version 0.1
- * @date 2026-01-20
- * 
- * @copyright Copyright (c) 2026
+ * @brief Payload task header file.
  * 
  */
 
 #ifndef INC_PAYLOAD_H_
 #define INC_PAYLOAD_H_
 
-
+/**
+ * @brief Payload FreeRTOS task entry point.
+ * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
+ */
 void payload_task(void *pv_parameters);
-
 
 #endif /* INC_PAYLOAD_H_ */

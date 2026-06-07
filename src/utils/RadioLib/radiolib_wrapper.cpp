@@ -1,33 +1,50 @@
+/**
+ * @file radiolib_wrapper.cpp
+ * @brief C-compatible wrapper around RadioLib.
+ * @details
+ * Adapts the C API declared in radiolib_wrapper.h to the C++ RadioLib API
+ * for the SX1262 using the STM32-specific RadioLib HAL implementation.
+ */
+
 #ifndef RADIO_MOCK
 #include "radiolib_wrapper.h"
+#include "modules/SX126x/SX126x_registers.h"
 
-/* C++ headers */
 #include <RadioLib.h>
 #include "stm32_radiolib_hal.h"
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-
-// Instantiate C++ outside of extern "C"
+/** @brief STM32 RadioLib HAL adapter used by the RadioLib module instance. */
 static stm32RadioLibHal hal(&hspi2);  
 
 // Pin encoding: (portIndex << 16) | GPIO_PIN_x
 // Port index: A=0, B=1, C=2, D=3, ...
-
 #define RADIO_PIN_NSS    ((1 << 16) | GPIO_PIN_12)  // PB12 - SX1262 Chip Select
 #define RADIO_PIN_DIO1   ((0 << 16) | GPIO_PIN_10)  // PA10 - SX1262 Interrupt (DIO1)
 #define RADIO_PIN_RESET  ((2 << 16) | GPIO_PIN_9)   // PC9  - SX1262 Reset
 #define RADIO_PIN_BUSY   ((0 << 16) | GPIO_PIN_8)   // PA8  - SX1262 Busy Indicator
 
-// Module constructor order: Module(hal, cs, irq, rst, gpio)
-//   cs   = NSS         (PB12)
-//   irq  = DIO1        (PA10)
-//   rst  = SX1262_NRST (PC9)
-//   gpio = BUSY        (PA8)
+/**
+ * @brief RadioLib module descriptor for the SX1262 board wiring.
+ *
+ * Module constructor order: Module(hal, cs, irq, rst, gpio)
+ * - cs   = NSS         (PB12)
+ * - irq  = DIO1        (PA10)
+ * - rst  = SX1262_NRST (PC9)
+ * - gpio = BUSY        (PA8)
+ */
 static Module mod(&hal, RADIO_PIN_NSS, RADIO_PIN_DIO1, RADIO_PIN_RESET, RADIO_PIN_BUSY);
+
+/** @brief RadioLib SX1262 instance used by the C wrapper functions. */
 static SX1262 radio(&mod);
 
+/**
+ * @brief Convert wrapper bandwidth code to RadioLib bandwidth in kHz.
+ * @param bw_code Bandwidth code (0=125 kHz, 1=250 kHz, 2=500 kHz).
+ * @return Bandwidth value in kHz. Defaults to 125 kHz for unknown codes.
+ */
 static float bwCodeToKHz(uint8_t bw_code) {
   switch(bw_code) {
     case 0: return 125.0f;
@@ -37,17 +54,31 @@ static float bwCodeToKHz(uint8_t bw_code) {
   }
 }
 
+/** @brief Semaphore signaled from DIO1 during blocking duty-cycle receive. */
 static SemaphoreHandle_t s_dutyCycleSem = NULL;
+
+/** @brief Task notified from the DIO1 ISR for asynchronous radio operations. */
 static TaskHandle_t s_irqTask = NULL;
 
 #define TRANSCEIVER_RADIO_IRQ_BIT   (1UL << 0)
 
+/**
+ * @brief DIO1 ISR callback used by blocking duty-cycle receive.
+ *
+ * Gives s_dutyCycleSem from interrupt context so the waiting task can continue.
+ */
 static void dutyCycleIsrCallback(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xSemaphoreGiveFromISR(s_dutyCycleSem, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
+/**
+ * @brief DIO1 ISR callback used by asynchronous radio operations.
+ *
+ * Notifies the task registered with RadioLib_SetIrqTask() that a radio IRQ
+ * event occurred.
+ */
 static void radioIrqCallback(void) {
     if (s_irqTask == NULL) return;
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;

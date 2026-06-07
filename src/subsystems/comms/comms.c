@@ -1,6 +1,6 @@
 /**
  * @file comms.c
- * @brief Communications task: protocol logic and packet processing.
+ * @brief Implementation of the communications task: protocol logic and packet processing.
  *
  * This task handles application-level operations:
  * - Receiving packets from transceiver_task via rx_queue
@@ -27,7 +27,7 @@
 #include "interleaving.h"
 #include "beacon.h"
 #include "notifications.h"
-#include "events.h"
+#include "task_management.h"
 
 
 /* ---- Macros and constants ---- */
@@ -40,9 +40,6 @@
 static QueueHandle_t rx_queue = NULL;
 static QueueHandle_t tx_queue = NULL;
 
-// COMMS State Machine starts in startup state
-static CommsState_t CommsState = SLEEP;
-static bool paused;
 static uint32_t deferred_notifications;
 
 /* ---- Public function definitions ---- */
@@ -61,7 +58,6 @@ void comms_task(void *pv_parameters)
         return;
     }
     // Apply the default configuration
-    paused = false;
     deferred_notifications = 0;
 
     /* Main loop */
@@ -70,23 +66,11 @@ void comms_task(void *pv_parameters)
         uint32_t notif = 0;
         xTaskNotifyWait(0, 0xFFFFFFFF, &notif, 0);
 
-        if (paused) {
-            deferred_notifications |= notif & ~(N_TASK_PAUSE | N_TASK_RESUME);
-            if (notif & N_TASK_RESUME) {
-                paused = false;
-                notif = deferred_notifications;
-                deferred_notifications = 0;
-                xEventGroupSetBits(task_events_handle, EV_TASK_ACK_COMMS);
-            }
-            else return;
-        }
+        if (tm_check_pause(notif, &deferred_notifications))
+            continue;
 
-        if (notif & N_TASK_PAUSE) {
-            deferred_notifications |= notif & ~(N_TASK_PAUSE | N_TASK_RESUME);
-            paused = true;
-            xEventGroupSetBits(task_events_handle, EV_TASK_ACK_COMMS);
-            return;
-        }
+        notif |= deferred_notifications;
+        deferred_notifications = 0;
         if (notif & N_COMMS_NEW_CONFIG) {
             /* TODO: reload config from OBDH */
         }

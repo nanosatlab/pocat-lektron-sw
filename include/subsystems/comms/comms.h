@@ -58,7 +58,8 @@ typedef struct {
 } TxQueueEntry_t;
 
 /**
- * @brief Communications task function: handles protocol logic and packet processing.
+ * @brief Communications FreeRTOS task entry point: handles protocol logic and packet processing.
+ * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
  */
 void comms_task(void *pv_parameters);
 

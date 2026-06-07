@@ -14,7 +14,7 @@
 #include "task.h"
 #include "tc_handler.h"
 #include "notifications.h"
-#include "obc.h"
+#include "task_management.h"
 #include "main.h"
 #include "time.h"
 #include "flash.h"
@@ -125,7 +125,7 @@ void tc_process(const uint8_t *rx_data)
          * Beacon_Flag = 1;
          */
         // TODO: save config in OBDH (COMMS_CONFIG_ADDR)
-        notify(obc_get_comms_handle(), N_COMMS_NEW_CONFIG);
+        notify(tm_get_task_handle(TM_TASK_COMMS), N_COMMS_NEW_CONFIG);
         break;
 
     case TC_UPLOAD_COMMS_PARAMS:
@@ -137,7 +137,7 @@ void tc_process(const uint8_t *rx_data)
          * Beacon_Flag = 1;
          */
         // TODO: save config in OBDH (COMMS_CONFIG_ADDR)
-        notify(obc_get_comms_handle(), N_COMMS_NEW_PARAMS);
+        notify(tm_get_task_handle(TM_TASK_COMMS), N_COMMS_NEW_PARAMS);
         break;
 
     case TC_UPLOAD_UNIX_TIME:
@@ -150,7 +150,7 @@ void tc_process(const uint8_t *rx_data)
     case TC_UPLOAD_EPS_TH:
 
         OBDH_Write_Request(EPS_THRESHOLDS_ADDR, &rx_data[3], 3); // write all 3 thresholds at once
-        notify(obc_get_eps_handle(), N_EPS_NEW_THRESHOLDS);
+        notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_NEW_THRESHOLDS);
         break;
 
     case TC_UPLOAD_PL_CONFIG:
@@ -175,12 +175,12 @@ void tc_process(const uint8_t *rx_data)
 
     case TC_EPS_HEATER_ENABLE:
 
-        notify(obc_get_eps_handle(), N_EPS_ENABLE_AUTO_HEAT);
+        notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_ENABLE_AUTO_HEAT);
         break;
 
     case TC_EPS_HEATER_DISABLE:
 
-        notify(obc_get_eps_handle(), N_EPS_DISABLE_AUTO_HEAT);
+        notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_DISABLE_AUTO_HEAT);
         break;
 
     /* ── PoL up/down ────────────────────────────────────────────────────── */
@@ -221,17 +221,17 @@ void tc_process(const uint8_t *rx_data)
 
     case TC_CLEAR_PL_DATA:
 
-        notify(obc_get_obdh_handle(), N_OBDH_CLEAR_PAYLOAD);
+        notify(tm_get_task_handle(TM_TASK_OBDH), N_OBDH_CLEAR_PAYLOAD);
         break;
 
     case TC_CLEAR_FLASH:
 
-        notify(obc_get_obdh_handle(), N_OBDH_CLEAR_FLASH);
+        notify(tm_get_task_handle(TM_TASK_OBDH), N_OBDH_CLEAR_FLASH);
         break;
 
     case TC_CLEAR_HT:
 
-        notify(obc_get_obdh_handle(), N_OBDH_CLEAR_HT);
+        notify(tm_get_task_handle(TM_TASK_OBDH), N_OBDH_CLEAR_HT);
         break;
 
     /* ── COMMS ──────────────────────────────────────────────────────────── */
@@ -242,7 +242,7 @@ void tc_process(const uint8_t *rx_data)
          * xTimerStop(xTimerBeacon, 0);
          * TXStopped_Flag = 1;
          */
-        notify(obc_get_comms_handle(), N_COMMS_STOP_RF);
+        notify(tm_get_task_handle(TM_TASK_COMMS), N_COMMS_STOP_RF);
         break;
 
     case TC_COMMS_RESUME_TX:
@@ -251,7 +251,7 @@ void tc_process(const uint8_t *rx_data)
          * xTimerStart(xTimerBeacon, 0);
          * TXStopped_Flag = 0;
          */
-        notify(obc_get_comms_handle(), N_COMMS_RESUME_RF);
+        notify(tm_get_task_handle(TM_TASK_COMMS), N_COMMS_RESUME_RF);
         break;
 
     case TC_COMMS_IT_DOWNLINK:
@@ -282,7 +282,7 @@ void tc_process(const uint8_t *rx_data)
          * Send_to_WFQueue(&tlc_data[20], 1, INTEGRATION_TIME_ADDR, COMMSsender);
          */
         // TODO: TBD — save config to OBDH, then activate
-        notify(obc_get_payload_handle(), N_PAYLOAD_ACTIVATE);
+        notify(tm_get_task_handle(TM_TASK_PAYLOAD), N_PAYLOAD_ACTIVATE);
         break;
 
     case TC_PAYLOAD_DEACTIVATE:
@@ -291,7 +291,7 @@ void tc_process(const uint8_t *rx_data)
          * Beacon_Flag = 1;
          * GoTX_Flag = 1;
          */
-        notify(obc_get_payload_handle(), N_PAYLOAD_DEACTIVATE);
+        notify(tm_get_task_handle(TM_TASK_PAYLOAD), N_PAYLOAD_DEACTIVATE);
         break;
 
     case TC_PAYLOAD_SEND_DATA:

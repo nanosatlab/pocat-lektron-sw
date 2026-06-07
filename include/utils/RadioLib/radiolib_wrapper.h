@@ -14,7 +14,8 @@
 #include <stdint.h>
 #include "TypeDef.h"
 
-/* SX126x IRQ flag constants (mirrored from SX126x_registers.h for C access) */
+#ifndef __cplusplus
+/* SX126x IRQ flag constants for C users */
 #define RADIOLIB_SX126X_IRQ_TX_DONE             (0x0001)
 #define RADIOLIB_SX126X_IRQ_RX_DONE             (0x0002)
 #define RADIOLIB_SX126X_IRQ_PREAMBLE_DETECTED   (0x0004)
@@ -27,6 +28,7 @@
 #define RADIOLIB_SX126X_IRQ_TIMEOUT             (0x0200)
 #define RADIOLIB_SX126X_IRQ_ALL                 (0x43FF)
 #define RADIOLIB_SX126X_IRQ_NONE                (0x0000)
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -8,7 +8,7 @@
 #include "temperature.h"
 #include "flash.h"
 #include "health.h"
-#include "events.h"
+#include "task_management.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include <stdbool.h>
@@ -21,27 +21,14 @@ void beacon_task(void *pv_parameters)
 {
     (void)pv_parameters;
 
-    bool paused = false;
-
     for (;;) {
         /* Use xTaskNotifyWait as an interruptible delay so pause is handled promptly */
         uint32_t notif = 0;
         xTaskNotifyWait(0, N_TASK_PAUSE | N_TASK_RESUME, &notif,
                         pdMS_TO_TICKS(BEACON_PERIOD_MS));
 
-        if (paused) {
-            if (notif & N_TASK_RESUME) {
-                paused = false;
-                xEventGroupSetBits(task_events_handle, EV_TASK_ACK_BEACON);
-            }
+        if (tm_check_pause(notif, NULL))
             continue;
-        }
-
-        if (notif & N_TASK_PAUSE) {
-            paused = true;
-            xEventGroupSetBits(task_events_handle, EV_TASK_ACK_BEACON);
-            continue;
-        }
 
         health_kick(HEALTH_BIT_BEACON);
 
@@ -85,7 +72,7 @@ void beacon_task(void *pv_parameters)
 
         QueueHandle_t tx_q = comms_get_tx_queue();
         if (tx_q != NULL && xQueueSend(tx_q, &beacon_entry, pdMS_TO_TICKS(100)) == pdTRUE) {
-            TaskHandle_t transceiver = obc_get_transceiver_handle();
+            TaskHandle_t transceiver = tm_get_task_handle(TM_TASK_TRANSCEIVER);
             if (transceiver != NULL) {
                 xTaskNotify(transceiver, N_TRANSCEIVER_TX_READY_BIT, eSetBits);
             }

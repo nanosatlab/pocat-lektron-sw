@@ -1,131 +1,93 @@
 /**
  * @file task_management.h
- * @brief Task creation and reset management for OBC subsystem tasks.
- * @version 0.1
- * @date 2026-03-30
- *
- * @copyright Copyright (c) 2026
+ * @brief Task management for subsystem tasks.
  */
 
 #ifndef INC_TASK_MANAGEMENT_H_
 #define INC_TASK_MANAGEMENT_H_
 
+#include <stdbool.h>
 #include "FreeRTOS.h"
+#include "event_groups.h"
 #include "task.h"
 #include "obc.h"
 
-/** @name Task creation and reset functions
+/** @name Task bitmask definitions
+ *  Used to select which tasks to create, pause, resume, or ACK.
+ *  They coincide with the FreeRTOS task numbers assigned to each task when creating them with vTaskSetTaskNumber(). 
  * @{ */
+#define TM_TASK_PAYLOAD     (1u << 0)
+#define TM_TASK_EPS         (1u << 1)
+#define TM_TASK_COMMS       (1u << 2)
+#define TM_TASK_ADCS        (1u << 3)
+#define TM_TASK_OBDH        (1u << 4)
+#define TM_TASK_TRANSCEIVER (1u << 5)
+#define TM_TASK_BEACON      (1u << 6)
 
-/**
- * @brief Create all subsystem tasks (payload, eps, comms, obdh).
- * @return pdPASS on success, pdFAIL otherwise.
- */
-BaseType_t tm_create_all_tasks(void);
-
-/**
- * @brief Request every nominal-mode managed subsystem task to pause.
- */
-void tm_pause_nominal_tasks(void);
-
-/**
- * @brief Request every non-nominal-mode managed subsystem task to pause.
- */
-void tm_pause_non_nominal_tasks(void);
-
-/**
- * @brief Request every nominal-mode managed subsystem task to resume.
- */
-void tm_resume_nominal_tasks(void);
-
-/**
- * @brief Request every non-nominal-mode managed subsystem task to resume.
- */
-void tm_resume_non_nominal_tasks(void);
-
-/**
- * @brief Reset the payload task by suspending, deleting, and recreating it.
- */
-void tm_reset_payload_task(void);
-
-
-/**
- * @brief Reset the EPS task by suspending, deleting, and recreating it.
- */
-void tm_reset_eps_task(void);
-
-/**
- * @brief Reset the comms task by suspending, deleting, and recreating it.
- */
-void tm_reset_comms_task(void);
-
-/**
- * @brief Reset the ADCS task by suspending, deleting, and recreating it.
- */
-void tm_reset_adcs_task(void);
-
-/**
- * @brief Reset the OBDH task by suspending, deleting, and recreating it.
- */
-void tm_reset_obdh_task(void);
-
-/**
- * @brief Reset the transceiver task by suspending, deleting, and recreating it.
- */
-void tm_reset_transceiver_task(void);
-
-/**
- * @brief Reset the beacon task by suspending, deleting, and recreating it.
- */
-void tm_reset_beacon_task(void);
+#define TM_TASK_ALL         (TM_TASK_PAYLOAD | TM_TASK_EPS | TM_TASK_COMMS | \
+                             TM_TASK_ADCS | TM_TASK_OBDH | TM_TASK_TRANSCEIVER | \
+                             TM_TASK_BEACON)
 
 /** @} */
 
-/** @name Task handle getters
+/** @name Task creation, pause, resume and reset
  * @{ */
 
 /**
- * @brief Get the comms task handle.
- * @return TaskHandle_t for comms task, or NULL if not created.
+ * @brief Create subsystem tasks selected by bitmask.
+ * @param running Bitwise OR of TM_TASK_* flags for tasks that start running.
+ * @param paused  Bitwise OR of TM_TASK_* flags for tasks that start paused.
+ * @return pdPASS on success, pdFAIL if any task creation failed.
  */
-TaskHandle_t obc_get_comms_handle(void);
+BaseType_t tm_create_tasks(uint32_t running, uint32_t paused);
 
 /**
- * @brief Get the EPS task handle.
- * @return TaskHandle_t for EPS task, or NULL if not created.
+ * @brief Request selected tasks to pause and wait for ACKs.
+ * @param task_mask Bitwise OR of TM_TASK_* flags.
  */
-TaskHandle_t obc_get_eps_handle(void);
+void tm_pause_tasks(uint32_t task_mask);
 
 /**
- * @brief Get the OBDH task handle.
- * @return TaskHandle_t for OBDH task, or NULL if not created.
+ * @brief Request selected tasks to resume and wait for ACKs.
+ * @param task_mask Bitwise OR of TM_TASK_* flags.
  */
-TaskHandle_t obc_get_obdh_handle(void);
+void tm_resume_tasks(uint32_t task_mask);
 
 /**
- * @brief Get the ADCS task handle.
- * @return TaskHandle_t for ADCS task, or NULL if not created.
+ * @brief Reset a task by suspending, deleting, and recreating it.
+ * @param task_bit Single TM_TASK_* flag identifying the task to reset.
+ * @todo Test correctness and check possible conditions with mutex ownership, blocked states, etc.
  */
-TaskHandle_t obc_get_adcs_handle(void);
+void tm_reset_task(uint32_t task_bit);
 
 /**
- * @brief Get the payload task handle.
- * @return TaskHandle_t for payload task, or NULL if not created.
+ * @brief Reset tasks that failed the software health check.
+ * @param faults Bitmask returned by health_check().
  */
-TaskHandle_t obc_get_payload_handle(void);
-
-/**
- * @brief Get the transceiver task handle.
- * @return TaskHandle_t for transceiver task, or NULL if not created.
- */
-TaskHandle_t obc_get_transceiver_handle(void);
-
-/**
- * @brief Get the beacon task handle.
- * @return TaskHandle_t for beacon task, or NULL if not created.
- */
-TaskHandle_t obc_get_beacon_handle(void);
+void tm_handle_health_faults(EventBits_t faults);
 
 /** @} */
+
+/**
+ * @brief Handle pause/resume protocol from within a subsystem task.
+ *
+ * Call this at the top of the task's processing loop with the raw notification
+ * value.  It manages the paused state, defers unrelated notifications, and
+ * ACKs the OBC automatically.
+ *
+ * @param notif     Raw notification bits from xTaskNotifyWait().
+ * @param deferred  Pointer to the task's deferred-notification accumulator.
+ *                  May be NULL if the task does not defer notifications.
+ * @return true  Task is paused — caller should skip processing this cycle.
+ * @return false Task is active — caller should process *deferred (then clear it).
+ */
+bool tm_check_pause(uint32_t notif, uint32_t *deferred);
+
+/**
+ * @brief Get the FreeRTOS task handle for a given task.
+ * @param task_bit Single TM_TASK_* flag identifying the task.
+ * @return TaskHandle_t or NULL if the task is not found or not yet created.
+ */
+TaskHandle_t tm_get_task_handle(uint32_t task_bit);
 
 #endif /* INC_TASK_MANAGEMENT_H_ */

@@ -22,7 +22,7 @@
 #include "health.h"
 #include "interleaving.h"
 #include "notifications.h"
-#include "events.h"
+#include "task_management.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
@@ -38,8 +38,6 @@
 #define TX_POST_TX_GUARD_MS    0
 
 /* ---- Module-level variables ---- */
-
-static bool paused;
 
 /* ---- Private helpers ---- */
 
@@ -170,8 +168,6 @@ void transceiver_task(void *pv_parameters)
     /* Register this task for DIO1 notifications */
     RadioLib_SetIrqTask(xTaskGetCurrentTaskHandle());
 
-    paused = false;
-
     /* Enter RX mode immediately */
     RadioLib_StartReceive(LORA_PREAMBLE_LENGTH);
 
@@ -182,19 +178,8 @@ void transceiver_task(void *pv_parameters)
                         N_TASK_PAUSE | N_TASK_RESUME,
                         &notif, portMAX_DELAY);
 
-        if (paused) {
-            if (notif & N_TASK_RESUME) {
-                paused = false;
-                xEventGroupSetBits(task_events_handle, EV_TASK_ACK_TRANSCEIVER);
-            }
+        if (tm_check_pause(notif, NULL))
             continue;
-        }
-
-        if (notif & N_TASK_PAUSE) {
-            paused = true;
-            xEventGroupSetBits(task_events_handle, EV_TASK_ACK_TRANSCEIVER);
-            continue;
-        }
 
         /* ---- Handle radio IRQ (RX_DONE) ---- */
         if (notif & N_TRANSCEIVER_RADIO_IRQ_BIT) {

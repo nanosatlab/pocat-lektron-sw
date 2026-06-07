@@ -1,18 +1,11 @@
 /**
  * @file obdh.c
  * @author Medir Segura medir.segura@estudiantat.upc.edu
- * @brief oversees the management of internal data within the spacecraft. Its primary focus includes 
-    housekeeping data, scientific data, and configurations, as well as managing access to flash 
-    memory. (primary focus now is saving and retrieving data from flash)
- * @version 0.1
- * @date 2026-01-20
- * 
- * @copyright Copyright (c) 2026
+ * @brief Implementation of the OBDH task.
  * 
  */
 
 
-/* ---- Includes ---- */
 #include "obdh.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -23,76 +16,112 @@
 #include "queue.h"
 #include "flash.h"
 #include "notifications.h"
-#include "events.h"
+#include "task_management.h"
 
-/* ---- Macros and constants ---- */
-// ..
-
-/* ---- Type definitions ---- */
-// ..
-
-/* ---- Module-level variables ---- */
-// ..
 QueueHandle_t obdh_queue_handle;
-static bool paused;
 static uint32_t deferred_notifications;
-/* ---- Private function prototypes ---- */
-void setup_obdh(void);
-void process_obdh(void);
-static uint32_t wait_for_notification(void);
+CircularFlashHandler telemetry_handler;
 
+static void setup_obdh(void);
+static void process_obdh(void);
 
-/* ---- Public function definitions ---- */
 
 void obdh_task(void *pv_parameters) {
-
+    (void)pv_parameters;
     setup_obdh();
 
     for (;;) {
-        process_obdh(); 
+        /* process_obdh() blocks in xQueueReceive (up to 1 s), which paces this loop */
+        process_obdh();
         health_kick(HEALTH_BIT_OBDH);
-        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
 }
 
-/* ---- Private function definitions ---- */
-
-void setup_obdh(void) {
-    paused = false;
-    deferred_notifications = 0;
-    // Apply the default configuration
-
+void obdh_save_pointers_flash(void)
+{
+    Write_Flash(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
 }
 
 /**
- * @brief This process waits for an element of the queue to be recived,
- * a request. The request can be to read flash or to write flash.
- * When operations are done, then a notification(with flags) is
- * given to the OBC with an event. 
+ * @brief Initialize OBDH task state.
  */
-void process_obdh(void) {
+static void setup_obdh(void) {
+    deferred_notifications = 0;
+    // Apply the default configuration
+    /*
+    //mirem on ens haviem quedat en memoria. 
+    ht_count=0;
+    ht_head=0;
+    uint32_t prev_epoch=0;
+    uint8_t buf[4]; // First 4 bytes are epoch
+
+    for (uint8_t i=0;i<MAX_HT_BEACONS;i++)
+    {
+        uint32_t addr=HT_BASE_ADDR+(i*HT_BEACON_SIZE);
+        
+        Read_Flash(addr,buf,4);
+        uint32_t curr_epoch=buf[0]<<24 |buf[1]<<16| buf[2]<<8| buf[3] ;
+        if(curr_epoch==0xFFFFFFFF || curr_epoch==0)
+        {
+            ht_head=i;
+            break;//Posició on acaba la cua
+        }
+        else if (curr_epoch < prev_epoch) {
+            
+            ht_head = i;
+            ht_count = MAX_HT_BEACONS; //Hem fet la volta
+            break;
+        }
+
+        else
+        {
+            ht_count++;
+            prev_epoch=curr_epoch;
+        }
+
+    }
+
+*/
+
+    printf("Setting up OBDH...\n");
+    Read_Flash(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
+    if(telemetry_handler.flag==telemetry_circular_flag)
+    {
+        printf("Telemetria circular creada\n");
+    }
+    else    
+    {
+        printf("Telemetria circular no creada\n");
+        telemetry_handler.flag=telemetry_circular_flag;
+        telemetry_handler.current_ht_count=0;
+        telemetry_handler.reading_pointer=0;
+        telemetry_handler.writing_pointer=0;
+        obdh_save_pointers_flash();
+        
+
+    }
+}
+
+/**
+ * @brief Execute one OBDH task processing cycle.
+ *
+ * Handles pause/resume notifications, receives one pending flash request from
+ * the OBDH queue, performs the requested read or write operation, stores the
+ * operation status in the request result pointer, and notifies the requesting
+ * task when the operation is complete.
+ */
+static void process_obdh(void) {
 
     uint32_t notifications = 0;
-    notifications = wait_for_notification();
+    // Non-blocking poll: OBDH paces on its request queue (xQueueReceive) below.
+    notifications = wait_for_notification(0);
 
-    if (paused) {
-        deferred_notifications |= notifications & ~(N_TASK_PAUSE | N_TASK_RESUME);
-        if (notifications & N_TASK_RESUME) {
-            paused = false;
-            notifications = deferred_notifications;
-            deferred_notifications = 0;
-            xEventGroupSetBits(task_events_handle, EV_TASK_ACK_OBDH);
-        }
-        else return;
-    }
-
-    if (notifications & N_TASK_PAUSE) {
-        deferred_notifications |= notifications & ~(N_TASK_PAUSE | N_TASK_RESUME);
-        paused = true;
-        xEventGroupSetBits(task_events_handle, EV_TASK_ACK_OBDH);
+    if (tm_check_pause(notifications, &deferred_notifications))
         return;
-    }
+
+    notifications |= deferred_notifications;
+    deferred_notifications = 0;
     
     obdh_request request;
     HAL_StatusTypeDef status=HAL_OK;
@@ -102,40 +131,86 @@ void process_obdh(void) {
     {
         if(request.op==FLASH_READ)
         {
-            if(request.buf!=NULL)
+            if(request.buf.dst!=NULL)
             {
-                Read_Flash(request.addr, request.buf, request.len);
+                Read_Flash(request.addr, request.buf.dst, request.len);
             }
+            /*if(request.client != NULL) {
+                xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);//We send a notification to the task
+                //vTaskDelay(100/portTICK_PERIOD_MS);
+            }*/
             status=HAL_OK;
         }
         else if(request.op == FLASH_WRITE)
+
         {
-            if(request.buf != NULL)
+            if(request.buf.src != NULL)
             {
-                Write_Flash(request.addr, request.buf, request.len);
+                Write_Flash(request.addr, request.buf.src, request.len);
                 status=HAL_OK;
+
+                /*
+                if(request.client != NULL) {
+                    xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);
+                }
+                */
             }
             else
             {
                 status=HAL_ERROR;
+
             }
         }
 
-        if (request.res != NULL)
+        if (request.client != NULL)
         {
-            *(request.res)=status;
-        }
-        if (request.client!=NULL)
-        {
-            xTaskNotify(request.client,N_FLASH_OPERATION_COMPLETE,eSetBits);
+            xTaskNotifyIndexed(request.client, OBDH_NOTIFY_IDX,
+                               (uint32_t)status, eSetValueWithOverwrite);
         }
         
     }
-}
 
-static uint32_t wait_for_notification(void)
-{
-    uint32_t notificationValue = 0;
-    xTaskNotifyWait(0, 0xFFFFFFFF, &notificationValue, 0);
-    return notificationValue;
 }
+/*
+HAL_StatusTypeDef obdh_get_telemetry(uint8_t *buffer)
+{
+    uint8_t index;
+    uint32_t address;
+    HAL_StatusTypeDef read_state;
+
+    if(ht_count==0)
+    {
+        return HAL_ERROR;
+        
+    }
+    index=(ht_head+MAX_HT_BEACONS-ht_count)%MAX_HT_BEACONS;
+    address=HT_BASE_ADDR+(index*HT_BEACON_SIZE);
+    read_state=OBDH_Read_Request(address,buffer,HT_BEACON_SIZE);
+    if(read_state==HAL_OK)
+    {
+        ht_count--;
+    }
+    return read_state;
+}
+*/
+/*
+HAL_StatusTypeDef obdh_insert_telemetry(uint8_t *buffer)
+{ 
+    uint32_t address;
+    HAL_StatusTypeDef write_state;
+
+    address=HT_BASE_ADDR+(ht_head*HT_BEACON_SIZE);
+    write_state=OBDH_Write_Request(address,buffer,HT_BEACON_SIZE);
+    if (write_state==HAL_OK)
+    {
+        ht_head=(ht_head+1)%HT_BEACON_SIZE;
+        if(ht_head<HT_BEACON_SIZE)
+        {
+            ht_count++;
+        }
+    }
+    return write_state;  
+
+
+}
+*/

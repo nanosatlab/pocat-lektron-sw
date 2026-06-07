@@ -1,10 +1,12 @@
-/*
- * flash2.h
- *
- *  Created on: 17 ene. 2023
- *      Author: NilRi
- * 
- * * Modified on: 4 march 2026
+/**
+ * @file flash.h
+ * @brief Internal flash memory address map and access helpers.
+ * @details
+ * Defines the firmware flash address map and declares raw flash access helpers
+ * plus OBDH-mediated read/write request functions for task-safe access.
+ * @author Medir Segura
+ * @date 2023-01-17
+ * @note Modified on 2026-03-04.
  */
 
 #ifndef INC_FLASH_H_
@@ -21,6 +23,11 @@
 #include "event_groups.h"
 #include "queue.h"
 #include "semphr.h"
+
+#define FLASH_QUEUE_SEND_TIMEOUT_MS 100u   /* wait for room in the OBDH request queue */
+#define FLASH_OP_TIMEOUT_MS         2000u  /* wait for OBDH to complete the operation */
+
+// Memory map
 
 #define PHOTO_ADDR 					0x08040000
 #define COMMS_CONFIG_ADDR
@@ -112,23 +119,35 @@
 #define RFI_CONFIG_ADDR             0x08031000  // 8
 
 
-
-
-
-
-
-
-
 extern EventGroupHandle_t xEventGroup;
 extern QueueHandle_t FLASH_Queue;
 extern SemaphoreHandle_t xMutex;
 
-void Write_Flash(uint32_t data_addr, uint8_t *data,uint16_t n_bytes);
-void Read_Flash(uint32_t data_addr, uint8_t *RxBuf, uint16_t n_bytes);
-void Send_to_WFQueue(uint8_t* pointer, uint32_t arrayLength, uint32_t addr, DataSource_t DataSource);
+/**
+  * @brief  Writes a byte buffer to internal flash, spanning multiple pages if needed.
+  * @details Each flash page touched by the destination range is read into RAM,
+  *          updated with the new bytes, erased, then programmed back one
+  *          doubleword at a time, using a single page-sized RAM buffer.
+  * @param  data_addr: Destination start address in flash.
+  * @param  data: Pointer to the source buffer.
+  * @param  n_bytes: Number of bytes to write.
+  * @todo   Consider FLASH_TYPEPROGRAM_FAST (256-byte row programming) in the future.
+  * @todo   This was implemented to support multi-page writes; if that turns out
+  *         not to be necessary, the function can be simplified back to a single page.
+  * @todo   Review __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+  */
+void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
 
-void erase_page(uint32_t data_addr);
-void store_flash_memory(uint32_t memory_address, uint8_t *data, uint16_t data_length);
+/**
+  * @brief  Reads a block of bytes from internal flash into a RAM buffer.
+  * @details Internal flash is memory-mapped, so the read is a plain copy.
+  *          Access is serialized through the OBDH queue at runtime; the
+  *          remaining direct callers run at boot/setup with no contention.
+  * @param  data_addr: Source start address in flash.
+  * @param  data: Destination buffer (must hold at least n_bytes).
+  * @param  n_bytes: Number of bytes to read.
+  */
+void Read_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
 
 /**
  * @brief This functions allows any task at any moment to perform a writing on the flash
@@ -138,8 +157,10 @@ void store_flash_memory(uint32_t memory_address, uint8_t *data, uint16_t data_le
  * @param length Length of the data to be written
  * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
  * has happened)
+ * @todo blocks until OBDH answers (no timeout yet) — see obdh_submit_request. 
  */
-HAL_StatusTypeDef OBDH_Write_Request(uint32_t address,uint8_t *data, size_t length);
+HAL_StatusTypeDef OBDH_Write_Request(uint32_t address, const uint8_t *data, size_t length);
+
 /**
  * @brief This function allows any task to perform a reading on the flash
  * 
@@ -148,6 +169,7 @@ HAL_StatusTypeDef OBDH_Write_Request(uint32_t address,uint8_t *data, size_t leng
  * @param length Length of the data that has to be read. 
  * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
  * has happened)
+ * @todo blocks until OBDH answers (no timeout yet) — see obdh_submit_request. 
  */
 HAL_StatusTypeDef OBDH_Read_Request(uint32_t address,uint8_t *data, size_t length);
 

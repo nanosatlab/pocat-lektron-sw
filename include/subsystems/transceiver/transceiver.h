@@ -16,4 +16,8 @@
 
 #pragma once
 
+/**
+ * @brief Transceiver FreeRTOS task entry point.
+ * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
+ */
 void transceiver_task(void *pv_parameters);
