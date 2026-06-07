@@ -49,20 +49,21 @@ static bool paused;
 static uint32_t deferred_notifications;
 
 // heater
+static bool g_mock_mode_enabled;
 static bool auto_heat_enabled = false;
-static float thresholds[3] = {4.0f, 3.3f, 3.9f}; // needs to be changed (float?? what to expect from OBDH)
+static uint8_t thresholds[3] = {4, 3.3, 3}; // needs to be changed (float?? what to expect from OBDH)
 // Nom, Cont, Safe
 
 // Function prototypes
 static void setup_eps(void);
 static void process_eps(void);
 static uint32_t wait_for_notification(void);
-static bool poll_battery_sensor(uint8_t *payload);
-static HAL_StatusTypeDef send_telemetry_to_obdh(uint8_t *payload);
+static void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic, OBDH_Payload_t *payload_out);
+static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload);
 
 void eps_task(void *pv_parameters)
 {
-
+    DS2782_Set_Mock_Mode(true);
     setup_eps();
 
     for (;;) {
@@ -145,69 +146,53 @@ static void process_eps(void)
     // 2. Poll battery sensor (DS2782E+) for voltage, current and capacity. This IC is
     // connected to the IC2 line 1 (SCL1,SDA1).
     // 3. Send to OBDH task for it to store to flash
-    uint8_t sensor_data[9] = {0};
 
-    if (poll_battery_sensor(sensor_data) == true) 
-    {   
-        // heater part
-        // math could be skipped, read this from OBDH? just wait for command? how should thresholds be (float)??
-        uint16_t raw_voltage = (sensor_data[3] << 8) | sensor_data[4];
-        float actual_voltage = (float)raw_voltage * VOLTAGE_MULTIPLIER_V;
+    static Battery_Telemetry_t battery_sensor;
+    static EPS_Status_t eps_status;
+    static OBDH_Payload_t payload;
+    bool battery_ok = DS2782_Read_Hardware(&battery_sensor);
+    bool pmic_ok = LTC4040_Read_Hardware(&eps_status);
 
-        uint16_t raw_temp = (sensor_data[1] << 8) | sensor_data[2];
-        float actual_temp = (float)raw_temp / 256.0f;
-
-
-        //
-        // Contingency Event Trigger
-        if (actual_voltage < thresholds[1]) {
-            //xEventGroupSetBits(task_events_handle, EV_BATT_CONTINGENCY);
-        }
-
-        // THERMOSTAT LOGIC
-        if (actual_voltage <= thresholds[1]) {
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET); 
-        }
-        else if (auto_heat_enabled == true) {
-            // hysteresis
-            if (actual_temp <= 2.0f) {
-                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET); 
-            }
-            else if (actual_temp >= 5.0f) {
-                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-            }
-        }
-        else {
-            // DISABLED: Ensure hardware is off
-            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-        }
-
-        // telemetry
-        uint8_t telemetry_packet[10] = {0};
+    if (battery_ok) {
         
-        memcpy(telemetry_packet, sensor_data, 9);
-        
-        uint8_t status_byte = 0;
-        
-        if (auto_heat_enabled) {
-            status_byte |= (1 << 0); // Bit 0: Ground Config State
-        }
-        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10) == GPIO_PIN_SET) {
-            status_byte |= (1 << 1); // Bit 1: Physical Heater State
-        }
-        if (actual_voltage <= thresholds[1]) {
-            status_byte |= (1 << 2); // Bit 2: Contingency State
-        }
-        
-        telemetry_packet[9] = status_byte; // Attach status byte to the end
+        float vbat = DS2782_Compute_Voltage(&battery_sensor);
+        float temp = DS2782_Compute_Temperature(&battery_sensor);
 
-        // Send unified packet to OBDH Mailbox
-        send_telemetry_to_obdh(telemetry_packet);
+        if (vbat < 3.3f) {
+            EPS_Charger_Disable(); // Forcem CHGOFF a HIGH per seguretat
+            // Set EventGroup bits -> Alerta Crítica a l'OBDH
+        }
 
-        // check voltage contingency?
-        // only sensor part
-        //send_telemetry_to_obdh(sensor_data);
+        // 7. Auto-heater rules amb control de pins net mitjançant l'auxiliar
+        if (temp < 5.0f) {
+            EPS_Heater_Enable(); // PB10 a HIGH automàticament
+        } else if (temp > 15.0f) {
+            EPS_Heater_Disable(); // PB10 a LOW
+        }
+
+    } else {
+        // fail logic
+
     }
+
+    if (pmic_ok) {
+        // pmic logic
+    } else {
+        //fail logic
+
+    }
+
+    // read heater status
+    eps_status.auto_heater_enabled = auto_heat_enabled;
+    eps_status.heater_state = EPS_Heater_Read();
+
+    // read status
+    eps_status.battery_read_failure = !battery_ok;
+    eps_status.pmic_read_failure = !pmic_ok;
+
+    EPS_Pack_Telemetry(&battery_sensor, &eps_status, &payload);
+
+    HAL_StatusTypeDef i2c_status = send_telemetry_to_obdh(&payload);
 
     // 4. Update EPS Event Group bits with the current battery conditions
 }
@@ -219,38 +204,160 @@ static uint32_t wait_for_notification(void)
     return notificationValue;
 }
 
-static bool poll_battery_sensor(uint8_t *payload)
-{
-    uint8_t i2c_buffer[12] = {0};
-    
-    HAL_StatusTypeDef i2c_status = HAL_I2C_Mem_Read(
-        &hi2c1, (DS2782_I2C_ADDR << 1), 0x06, 
-        I2C_MEMADD_SIZE_8BIT, i2c_buffer, 12, 50
-    );
-
-    if (i2c_status == HAL_OK) 
-    {
-        payload[0] = i2c_buffer[0];  // SOC
-        payload[1] = i2c_buffer[4];  // Temp MSB
-        payload[2] = i2c_buffer[5];  // Temp LSB
-        payload[3] = i2c_buffer[6];  // Volt MSB
-        payload[4] = i2c_buffer[7];  // Volt LSB
-        payload[5] = i2c_buffer[8];  // Curr MSB
-        payload[6] = i2c_buffer[9];  // Curr LSB
-        payload[7] = i2c_buffer[10]; // Cap MSB
-        payload[8] = i2c_buffer[11]; // Cap LSB
-        
-        return true;
-    }
-    
-    return false; // Failure -> TODO: How to handle failure
-}
-
-static HAL_StatusTypeDef send_telemetry_to_obdh(uint8_t *payload)
+static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload)
 {
     return OBDH_Write_Request(
         OBDH_MAILBOX_ADDRESS, 
-        payload, 
-        10 // We know it is exactly 10 bytes (without heater info 9)
+        (uint8_t*)payload, 
+        sizeof(OBDH_Payload_t)
     );
+}
+
+// Helper functions:
+
+void DS2782_Set_Mock_Mode(bool enable) {
+    g_mock_mode_enabled = enable;
+}
+
+void EPS_Heater_Enable(void) {
+    // pin PB10 HIGH enable heater
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+}
+
+void EPS_Heater_Disable(void) {
+    // pin PB10 LOW disable heater
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+}
+
+bool EPS_Heater_Read(void) {
+    // Read pin PB10 HIGH heater is enabled
+    return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10));
+}
+
+void EPS_Charger_Enable(void) {
+    // pin CHGOFF (PA3), LOW charging enabled
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+}
+
+void EPS_Charger_Disable(void) {
+    // pin CHGOFF (PA3), HIGH charging disabled
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);
+}
+
+
+bool DS2782_Read_Hardware(Battery_Telemetry_t *telemetry_out) {
+    if (telemetry_out == NULL) return false;
+
+    // Mock data
+    if (g_mock_mode_enabled) {
+        // (Battery 3.82V, 24.5ºC, consuming 150mA)
+        telemetry_out->raw_voltage         = (uint16_t)(3.82f / 0.00488f);
+        telemetry_out->raw_current         = (int16_t)(-150.0f / 0.104f);
+        telemetry_out->raw_avg_current     = (int16_t)(-145.0f / 0.104f);
+        telemetry_out->raw_temperature     = (int16_t)(24.5f / 0.125f);
+        telemetry_out->raw_accumulated_cap = 2400; 
+        telemetry_out->raw_relative_cap    = 78;   // 78% de bateria
+        telemetry_out->raw_standby_relative_cap = 40;
+        return true;
+    }
+}
+
+bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
+    if (pmic_out == NULL) return false;
+
+    if (g_mock_mode_enabled) {
+        // Simulació PMIC: Estem a l'espai sota el sol (No eclipse, carregant, sense fallades)
+        pmic_out->is_charging        = true;  // !CHRG a 0V
+        pmic_out->has_fault          = false; // !FAULT en High impedance (3.3V)
+        pmic_out->is_eclipse         = false; // !PFO en High impedance (3.3V)
+        pmic_out->raw_clprog_adc     = 2048;  // Mig rang ADC
+        // --- Add additional analog readings later ---
+        //pmic_out->raw_vsys_adc       = 3100;  // Raïl de 5V nominal estable
+        //pmic_out->raw_killswitch_adc = 2900;  // Voltatge analògic
+        //pmic_out->raw_batt_ntc_adc   = 1950;  // Temperatura equilibrada
+        return true;
+    }
+
+    // OPERACIÓ FÍSICA: Llegir l'estat elèctric actual dels pins actius en LOW (Open-Drain)
+    pmic_out->is_charging = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET); // !CHRG (PB2)
+    pmic_out->has_fault   = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
+    pmic_out->is_eclipse  = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET); // !PFO (PB5)
+    // pmic_out->was_reset   = __HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)                      // !RST
+
+    // ADC readings (CLPROG)
+
+    // Can be added later
+    //pmic_out->raw_killswitch_adc = (uint16_t)HAL_ADC_GetValue(&hadc1);
+    return true;
+}
+
+// Compute functions and payload logic
+
+uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry) {
+    // in Volts using 4.88 mV
+    return telemetry->raw_voltage * VOLTAGE_MULTIPLIER_V;
+}
+
+int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry) {
+    // positive means charging, negative uncharging
+    // using 0.104 mA
+    return telemetry->raw_current * CURRENT_MULTIPLIER_MA;
+}
+
+int16_t DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry) {
+    // Celsius
+    return telemetry->raw_temperature * 0.125f;
+}
+
+void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic, OBDH_Payload_t *payload_out) {
+    // Safety check: Ensure pointers are not null before accessing memory
+    if (batt == NULL || pmic == NULL || payload_out == NULL) {
+        return; 
+    }
+
+    // --- raw I2C Battery Data ---
+    payload_out->vbat_raw            = batt->raw_voltage;
+    payload_out->current_raw         = batt->raw_current;
+    payload_out->avg_current_raw     = batt->raw_avg_current;
+    payload_out->temp_raw            = batt->raw_temperature;
+    payload_out->accum_cap_raw       = batt->raw_accumulated_cap;
+    payload_out->rel_cap_raw         = batt->raw_relative_cap;
+    payload_out->standby_rel_cap_raw = batt->raw_standby_relative_cap;
+
+    // --- Analog PMIC Data ---
+    payload_out->clprog_adc          = pmic->raw_clprog_adc;
+    /* --- Extra possible Analog readings that could be done --- */
+    //payload_out->vsys_adc        = pmic->raw_vsys_adc;
+    //payload_out->killswitch_adc  = pmic->raw_killswitch_adc;
+    //payload_out->batt_ntc_adc    = pmic->raw_batt_ntc_adc;
+
+    // --- Boolean Logic ---
+    // (0000 0000)
+    payload_out->system_status = 0x00; 
+
+    // Pack the hardware booleans using bitwise OR
+    if (pmic->is_charging) {
+        payload_out->system_status |= (1 << 0); // Set Bit 0
+    }
+    if (pmic->has_fault) {
+        payload_out->system_status |= (1 << 1); // Set Bit 1
+    }
+    if (pmic->is_eclipse) {
+        payload_out->system_status |= (1 << 2); // Set Bit 2
+    }
+    if (pmic->charging_disabled) {
+        payload_out->system_status |= (1 << 3); //Set bit 3
+    }
+    if (pmic->auto_heater_enabled) {
+        payload_out->system_status |= (1 << 4); //Set bit 4
+    }
+    if (pmic->heater_state) {
+        payload_out->system_status |= (1 << 5); //Set bit 5
+    }
+    if (pmic->battery_read_failure) {
+        payload_out->system_status |= (1 << 6); //Set bit 6
+    }
+    if (pmic->pmic_read_failure) {
+        payload_out->system_status |= (1 << 7); //Set bit 7
+    }
 }
