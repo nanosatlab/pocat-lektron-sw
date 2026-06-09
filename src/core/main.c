@@ -55,7 +55,8 @@ int main(void)
 {
 
   HAL_Init();
-  SystemClock_Config();  
+  
+/*   SystemClock_Config();  
   MX_GPIO_Init(); 
   MX_TIM5_Init();
   MX_TIM2_Init();
@@ -63,7 +64,7 @@ int main(void)
   MX_IWDG_Init();
   MX_USART2_UART_Init();
   MX_RTC_Init();
-  MX_ADC1_Init();
+  MX_ADC1_Init(); */
   MX_I2C1_Init();
 
   ObcState_t bootState;

@@ -51,11 +51,16 @@ static bool g_mock_mode_enabled;
 static bool auto_heat_enabled = false;
 static uint8_t thresholds[3] = {4, 3.3, 3}; // needs to be changed (what to expect from OBDH)
 // Nom, Cont, Safe
+static uint8_t heater_hysteresis[2] = {0, 5}; // [0]: lower boundary, [1]: upper boundary
+// activate heater under 0, and deactivate at 5, default: should be changed
+
+//eventGroup
+EventGroupHandle_t batteryStatus = NULL;
 
 // Function prototypes
-static uint32_t wait_for_notification(void);
 static void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic, OBDH_Payload_t *payload_out);
 static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload);
+static void EPS_Update_System_State(uint16_t vbat);
 
 void eps_task(void *pv_parameters)
 {
@@ -76,6 +81,14 @@ void eps_task(void *pv_parameters)
 static void setup_eps(void)
 {
     deferred_notifications = 0;
+
+    batteryStatus = xEventGroupCreate();
+
+    if (batteryStatus != NULL) {
+        // Set the default startup state to NOMINAL on boot
+        xEventGroupSetBits(batteryStatus, EV_BAT_NOMINAL);
+    }
+
     // Apply the default configuration
 
     // Recovery
@@ -88,6 +101,9 @@ static void setup_eps(void)
 
     // GPIOB10 OFF, eps will set it again if necessary
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+
+    // recover thresholds:
+    OBDH_Read_Request(EPS_THRESHOLDS_ADDR, thresholds, 3); 
 }
 
 
@@ -108,17 +124,16 @@ static void process_eps(void)
     deferred_notifications = 0;
 
     if (notifications & N_EPS_NEW_THRESHOLDS) {
-        uint8_t thresholds[3] = {0}; // TODO define default theshholds in case of read failure
+        // TODO define default theshholds in case of read failure
         OBDH_Read_Request(EPS_THRESHOLDS_ADDR, thresholds, 3); 
         // Thresholds are now in the thresholds array, in the order: 
         // thresholds[0]: nominal
         // thresholds[1]: contingency
-        // thresholds[2]: sunsafe
+        // thresholds[2]: sunsafe 
     }
 
     if (notifications & N_EPS_ENABLE_AUTO_HEAT) {
-        // TODO: TBD — enable EPS heater
-        // Save configuration in OBDH if needed?
+        // enable EPS heater and save to flash
 
         auto_heat_enabled = true;
         uint8_t new_conf = 1;
@@ -126,7 +141,7 @@ static void process_eps(void)
     }
 
     if (notifications & N_EPS_DISABLE_AUTO_HEAT) {
-        // TODO: TBD — disable EPS heater
+        // disable EPS heater and save to flash
 
         auto_heat_enabled = false;
         uint8_t new_conf = 0;
@@ -148,19 +163,17 @@ static void process_eps(void)
 
     if (battery_ok) {
         
-        float vbat = DS2782_Compute_Voltage(&battery_sensor);
-        float temp = DS2782_Compute_Temperature(&battery_sensor);
+        uint16_t vbat = DS2782_Compute_Voltage(&battery_sensor);
+        int16_t temp = DS2782_Compute_Temperature(&battery_sensor);
 
-        if (vbat < 3.3f) {
-            EPS_Charger_Disable(); // Forcem CHGOFF a HIGH per seguretat
-            // Set EventGroup bits -> Alerta Crítica a l'OBDH
-        }
+        // manage batteryStatus EventGroup
+        EPS_Update_System_State(vbat);
 
-        // 7. Auto-heater rules amb control de pins net mitjançant l'auxiliar
-        if (temp < 5.0f) {
-            EPS_Heater_Enable(); // PB10 a HIGH automàticament
-        } else if (temp > 15.0f) {
-            EPS_Heater_Disable(); // PB10 a LOW
+        // auto heater
+        if (temp < heater_hysteresis[0]) { //
+            EPS_Heater_Enable(); // PB10 HIGH
+        } else if (temp > heater_hysteresis[1]) {
+            EPS_Heater_Disable(); // PB10 LOW
         }
 
     } else {
@@ -186,15 +199,6 @@ static void process_eps(void)
     EPS_Pack_Telemetry(&battery_sensor, &eps_status, &payload);
 
     HAL_StatusTypeDef i2c_status = send_telemetry_to_obdh(&payload);
-
-    // 4. Update EPS Event Group bits with the current battery conditions
-}
-
-static uint32_t wait_for_notification(void)
-{
-    uint32_t notificationValue = 0;
-    xTaskNotifyWait(0, 0xFFFFFFFF, &notificationValue, 0);
-    return notificationValue;
 }
 
 static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload)
@@ -327,8 +331,6 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     // --- Boolean Logic ---
     // (0000 0000)
     payload_out->system_status = 0x00; 
-
-    // Pack the hardware booleans using bitwise OR
     if (pmic->is_charging) {
         payload_out->system_status |= (1 << 0); // Set Bit 0
     }
@@ -352,5 +354,37 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     }
     if (pmic->pmic_read_failure) {
         payload_out->system_status |= (1 << 7); //Set bit 7
+    }
+}
+
+// TODO: add hysteresis
+/**
+ * @brief Simple evaluation of battery voltage thresholds.
+ * Jumps instantly to any state without hysteresis guard bands.
+ * @param vbat The calculated floating-point battery voltage.
+ */
+void EPS_Update_System_State(uint16_t vbat)
+{
+    uint32_t state_bitmask = 0;
+
+    if (vbat < (uint16_t)thresholds[2]) {
+        state_bitmask = EV_BAT_SURVIVAL;
+    } 
+    else if (vbat < (uint16_t)thresholds[1]) {
+        state_bitmask = EV_BAT_SUNSAFE;
+    } 
+    else if (vbat < (uint16_t)thresholds[0]) {
+        state_bitmask = EV_BAT_CONTINGENCY;
+    } 
+    else {
+        state_bitmask = EV_BAT_NOMINAL;
+    }
+
+    uint32_t active_bits = xEventGroupGetBits(batteryStatus);
+    
+    // only update if change detected
+    if ((active_bits & state_bitmask) == 0) {
+        xEventGroupClearBits(batteryStatus, ALL_BATTERY_STATES);
+        xEventGroupSetBits(batteryStatus, state_bitmask);
     }
 }
