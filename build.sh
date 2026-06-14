@@ -5,10 +5,12 @@
 #   --clean  Remove the build directory before building (force full rebuild)
 
 RADIO_MOCK=OFF
+EPS_TESTS=OFF
 CLEAN=0
 for arg in "$@"; do
     case "$arg" in
         --mock)  RADIO_MOCK=ON ;;
+        --tests) EPS_TESTS=ON ;;
         --clean) CLEAN=1 ;;
     esac
 done
@@ -19,7 +21,7 @@ if [ "$CLEAN" -eq 1 ]; then
 fi
 mkdir -p build
 cd build
-cmake .. -DRADIO_MOCK=$RADIO_MOCK
+cmake .. -DRADIO_MOCK=$RADIO_MOCK -DEPS_TESTS=$EPS_TESTS
 make -j4    # 4 threads (Adjust to your number of cores)
 cd ..
 

@@ -82,6 +82,8 @@ file(GLOB_RECURSE PROJECT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/RadioLib/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/subsystems/*/*.c
 )
+# Mock sensor code must never enter the flight binary
+list(FILTER PROJECT_SOURCES EXCLUDE REGEX "eps_mock\\.c$")
 
 # FreeRTOS: core kernel (non-recursive) + exactly one port + one heap + the wrapper.
 file(GLOB FREERTOS_SOURCES
@@ -163,3 +165,52 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
 )
 
+# ── On-target EPS test firmware ─────────────────────────────────────────────
+# Second ELF with test_eps.c replacing src/core/main.c (one main() per image).
+# OFF by default: the flight build is untouched.
+option(EPS_TESTS "Build the on-target EPS test firmware" OFF)
+if(EPS_TESTS)
+    set(TEST_EXECUTABLE pocat_eps_tests.elf)
+    set(TEST_PROJECT_SOURCES ${PROJECT_SOURCES})
+    list(FILTER TEST_PROJECT_SOURCES EXCLUDE REGEX "src/core/main\\.c$")
+
+    add_executable(${TEST_EXECUTABLE}
+        ${STM32CUBEMX_SOURCES}
+        ${FREERTOS_SOURCES}
+        ${TEST_PROJECT_SOURCES}
+        ${RADIOLIB_SOURCES}
+        ${STARTUP_SCRIPT}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/subsystems/eps/eps_mock.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/test_eps.c
+    )
+    target_compile_definitions(${TEST_EXECUTABLE} PRIVATE
+        ${MCU_MODEL}
+        USE_HAL_DRIVER
+        UNIT_TEST
+        $<$<BOOL:${RADIO_MOCK}>:RADIO_MOCK>
+    )
+    target_include_directories(${TEST_EXECUTABLE} PRIVATE
+        ${CUBEMX_INCLUDE_DIRECTORIES}
+        ${FREERTOS_INCLUDE_DIRECTORIES}
+        ${PROJECT_INCLUDE_DIRECTORIES}
+        ${RADIOLIB_INCLUDE_DIRECTORIES}
+    )
+    target_compile_options(${TEST_EXECUTABLE} PRIVATE
+        ${CPU_PARAMETERS}
+        -Wall -Wextra -Wpedantic -Wno-unused-parameter
+        $<$<CONFIG:Debug>:-Og -g3 -ggdb>
+        $<$<CONFIG:Release>:-O2 -g0>
+    )
+    target_link_options(${TEST_EXECUTABLE} PRIVATE
+        -T${MCU_LINKER_SCRIPT}
+        ${CPU_PARAMETERS}
+        -Wl,-Map=pocat_eps_tests.map
+        --specs=nosys.specs
+        -Wl,--start-group -lc -lm -Wl,--end-group
+        -Wl,--print-memory-usage
+        -g3 -ggdb
+    )
+    add_custom_command(TARGET ${TEST_EXECUTABLE} POST_BUILD
+        COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${TEST_EXECUTABLE}>
+    )
+endif()
