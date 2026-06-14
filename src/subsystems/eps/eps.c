@@ -24,12 +24,11 @@
 
 // I2C and sensor constants
 #define DS2782_I2C_ADDR      0x34
-#define DS2782_REG_START     0x06  // We start reading at the SOC register
+#define DS2782_REG_START     0x06
 #define I2C_TIMEOUT          50
-
-// OBDH connbstants
-#define OBDH_MAILBOX_ADDRESS    0x08030800 // memory address for OBDH payload (telemetry)
-#define HEATER_CONFIG_ADDRESS   0x08031000 // permanent heater config
+// (mailbox / heater-config addresses now come from flash.h: OBDH_EPS_TELEMETRY_ADDR,
+//  HEATER_CONFIG_ADDR — the old local defines collided with EPS_THRESHOLDS_ADDR
+//  and RFI_CONFIG_ADDR)
 
 // Sensor multipliers (Not really needed we just want to send raw data)
 // Current & Capacity assume a 10mOhm (0.01 Ohm) Sense Resistor
@@ -43,28 +42,34 @@ static bool paused;
 /** @brief Notification bits deferred while the EPS task is paused. */
 static uint32_t deferred_notifications;
 
-static void setup_eps(void);
-static void process_eps(void);
-
-// heater
-static bool g_mock_mode_enabled;
 static bool auto_heat_enabled = false;
-static uint8_t thresholds[3] = {4, 3.3, 3}; // needs to be changed (what to expect from OBDH)
-// Nom, Cont, Safe
-static uint8_t heater_hysteresis[2] = {0, 5}; // [0]: lower boundary, [1]: upper boundary
-// activate heater under 0, and deactivate at 5, default: should be changed
+
+// Unit convention: ALL voltages in mV, temperatures in °C, currents in mA.
+// Stored in flash as 1 byte each in units of 100 mV (matches the 3-byte TC format).
+static uint16_t thresholds_mv[3] = {3700, 3300, 3000}; // [0] nominal, [1] contingency, [2] sunsafe
+static int8_t   heater_hysteresis_c[2] = {0, 5};       // ON below [0], OFF above [1]
+static uint16_t sampling_period_100ms  = 10;           // 10 x 100 ms = 1 s default
+
+volatile uint32_t eps_cycle_count = 0;
 
 //eventGroup
 EventGroupHandle_t batteryStatus = NULL;
 
 // Function prototypes
-static void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic, OBDH_Payload_t *payload_out);
+static void setup_eps(void);
+static void process_eps(void);
 static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload);
-static void EPS_Update_System_State(uint16_t vbat);
+static void load_thresholds_from_flash(void);
+static void load_sampling_from_flash(void);
+
+#ifdef UNIT_TEST
+bool EPS_Mock_Mode_Active(void);
+bool DS2782_Read_Mock(Battery_Telemetry_t *out);
+bool LTC4040_Read_Mock(EPS_Status_t *out);
+#endif
 
 void eps_task(void *pv_parameters)
 {
-    DS2782_Set_Mock_Mode(true);
     (void)pv_parameters;
     setup_eps();
 
@@ -93,17 +98,17 @@ static void setup_eps(void)
 
     // Recovery
     uint8_t saved_heater_conf = 0;
-
-    if (OBDH_Read_Request(HEATER_CONFIG_ADDRESS, &saved_heater_conf, 1) == HAL_OK)
+    if (OBDH_Read_Request(HEATER_CONFIG_ADDR, &saved_heater_conf, 1) == HAL_OK)
         auto_heat_enabled = (saved_heater_conf == 1);
     else
-        auto_heat_enabled = false; // defaults to false
+        auto_heat_enabled = false;
 
     // GPIOB10 OFF, eps will set it again if necessary
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 
     // recover thresholds:
-    OBDH_Read_Request(EPS_THRESHOLDS_ADDR, thresholds, 3); 
+    load_thresholds_from_flash();
+    load_sampling_from_flash(); 
 }
 
 
@@ -115,7 +120,7 @@ static void setup_eps(void)
  */
 static void process_eps(void)
 {
-    uint32_t notifications = wait_for_notification(pdMS_TO_TICKS(1000));
+    uint32_t notifications = wait_for_notification(pdMS_TO_TICKS((uint32_t)sampling_period_100ms * 100u));
 
     if (tm_check_pause(notifications, &deferred_notifications))
         return;
@@ -125,19 +130,22 @@ static void process_eps(void)
 
     if (notifications & N_EPS_NEW_THRESHOLDS) {
         // TODO define default theshholds in case of read failure
-        OBDH_Read_Request(EPS_THRESHOLDS_ADDR, thresholds, 3); 
+        load_thresholds_from_flash();
         // Thresholds are now in the thresholds array, in the order: 
         // thresholds[0]: nominal
         // thresholds[1]: contingency
         // thresholds[2]: sunsafe 
     }
 
+    if (notifications & N_EPS_NEW_SAMPLING)
+        load_sampling_from_flash();
+
     if (notifications & N_EPS_ENABLE_AUTO_HEAT) {
         // enable EPS heater and save to flash
 
         auto_heat_enabled = true;
         uint8_t new_conf = 1;
-        OBDH_Write_Request(HEATER_CONFIG_ADDRESS, &new_conf, 1);
+        OBDH_Write_Request(HEATER_CONFIG_ADDR, &new_conf, 1);
     }
 
     if (notifications & N_EPS_DISABLE_AUTO_HEAT) {
@@ -145,7 +153,7 @@ static void process_eps(void)
 
         auto_heat_enabled = false;
         uint8_t new_conf = 0;
-        OBDH_Write_Request(HEATER_CONFIG_ADDRESS, &new_conf, 1);
+        OBDH_Write_Request(HEATER_CONFIG_ADDR, &new_conf, 1);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
     }
 
@@ -163,18 +171,14 @@ static void process_eps(void)
 
     if (battery_ok) {
         
-        uint16_t vbat = DS2782_Compute_Voltage(&battery_sensor);
-        int16_t temp = DS2782_Compute_Temperature(&battery_sensor);
+        uint16_t vbat_mv = DS2782_Compute_Voltage(&battery_sensor);
+        int16_t temp_c = DS2782_Compute_Temperature(&battery_sensor);
 
         // manage batteryStatus EventGroup
-        EPS_Update_System_State(vbat);
+        EPS_Update_System_State(vbat_mv);
 
         // auto heater
-        if (temp < heater_hysteresis[0]) { //
-            EPS_Heater_Enable(); // PB10 HIGH
-        } else if (temp > heater_hysteresis[1]) {
-            EPS_Heater_Disable(); // PB10 LOW
-        }
+        EPS_Heater_Control(temp_c);
 
     } else {
         // fail logic
@@ -199,22 +203,23 @@ static void process_eps(void)
     EPS_Pack_Telemetry(&battery_sensor, &eps_status, &payload);
 
     HAL_StatusTypeDef i2c_status = send_telemetry_to_obdh(&payload);
+    printf("[EPS] cycle %lu | batt_ok=%d pmic_ok=%d obdh=%d\r\n",
+           eps_cycle_count, (int)battery_ok, (int)pmic_ok, (int)i2c_status);
+
+    eps_cycle_count++;
+    // when is cycle reset?
 }
 
 static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload)
 {
     return OBDH_Write_Request(
-        OBDH_MAILBOX_ADDRESS, 
+        OBDH_EPS_TELEMETRY_ADDR, 
         (uint8_t*)payload, 
         sizeof(OBDH_Payload_t)
     );
 }
 
 // Helper functions:
-
-void DS2782_Set_Mock_Mode(bool enable) {
-    g_mock_mode_enabled = enable;
-}
 
 void EPS_Heater_Enable(void) {
     // pin PB10 HIGH enable heater
@@ -244,37 +249,19 @@ void EPS_Charger_Disable(void) {
 
 bool DS2782_Read_Hardware(Battery_Telemetry_t *telemetry_out) {
     if (telemetry_out == NULL) return false;
-
-    // Mock data
-    if (g_mock_mode_enabled) {
-        // (Battery 3.82V, 24.5ºC, consuming 150mA)
-        telemetry_out->raw_voltage         = (uint16_t)(3.82f / 0.00488f);
-        telemetry_out->raw_current         = (int16_t)(-150.0f / 0.104f);
-        telemetry_out->raw_avg_current     = (int16_t)(-145.0f / 0.104f);
-        telemetry_out->raw_temperature     = (int16_t)(24.5f / 0.125f);
-        telemetry_out->raw_accumulated_cap = 2400; 
-        telemetry_out->raw_relative_cap    = 78;   // 78% de bateria
-        telemetry_out->raw_standby_relative_cap = 40;
-        return true;
-    }
+#ifdef UNIT_TEST
+    if (EPS_Mock_Mode_Active()) return DS2782_Read_Mock(telemetry_out);
+#endif
+    // TODO: real DS2782 burst read over I2C1 (HAL_I2C_Mem_Read, DS2782_I2C_ADDR,
+    //       DS2782_REG_START) once the sensor is connected.
+    return false;
 }
 
 bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
     if (pmic_out == NULL) return false;
-
-    if (g_mock_mode_enabled) {
-        // Simulació PMIC: Estem a l'espai sota el sol (No eclipse, carregant, sense fallades)
-        pmic_out->is_charging        = true;  // !CHRG a 0V
-        pmic_out->has_fault          = false; // !FAULT en High impedance (3.3V)
-        pmic_out->is_eclipse         = false; // !PFO en High impedance (3.3V)
-        pmic_out->raw_clprog_adc     = 2048;  // Mig rang ADC
-        // --- Add additional analog readings later ---
-        //pmic_out->raw_vsys_adc       = 3100;  // Raïl de 5V nominal estable
-        //pmic_out->raw_killswitch_adc = 2900;  // Voltatge analògic
-        //pmic_out->raw_batt_ntc_adc   = 1950;  // Temperatura equilibrada
-        return true;
-    }
-
+#ifdef UNIT_TEST
+    if (EPS_Mock_Mode_Active()) return LTC4040_Read_Mock(pmic_out);
+#endif
     // OPERACIÓ FÍSICA: Llegir l'estat elèctric actual dels pins actius en LOW (Open-Drain)
     pmic_out->is_charging = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET); // !CHRG (PB2)
     pmic_out->has_fault   = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
@@ -291,19 +278,19 @@ bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
 // Compute functions and payload logic
 
 uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry) {
-    // in Volts using 4.88 mV
-    return telemetry->raw_voltage * VOLTAGE_MULTIPLIER_V;
+    // millivolts: raw * 4.88 mV/LSB (max raw 1023 -> 4992 mV, fits uint16_t)
+    return (uint16_t)(((uint32_t)telemetry->raw_voltage * 488u) / 100u);
 }
 
+/* DS2782_Compute_Current — enable when hardware team adds raw_current to Battery_Telemetry_t
 int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry) {
-    // positive means charging, negative uncharging
-    // using 0.104 mA
-    return telemetry->raw_current * CURRENT_MULTIPLIER_MA;
+    return (int16_t)(((int32_t)telemetry->raw_current * 5) / 32);
 }
+*/
 
 int16_t DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry) {
-    // Celsius
-    return telemetry->raw_temperature * 0.125f;
+    // degrees Celsius: raw * 0.125 C/LSB (truncates toward zero)
+    return (int16_t)(telemetry->raw_temperature / 8);
 }
 
 void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic, OBDH_Payload_t *payload_out) {
@@ -313,13 +300,11 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     }
 
     // --- raw I2C Battery Data ---
-    payload_out->vbat_raw            = batt->raw_voltage;
-    payload_out->current_raw         = batt->raw_current;
-    payload_out->avg_current_raw     = batt->raw_avg_current;
-    payload_out->temp_raw            = batt->raw_temperature;
-    payload_out->accum_cap_raw       = batt->raw_accumulated_cap;
-    payload_out->rel_cap_raw         = batt->raw_relative_cap;
-    payload_out->standby_rel_cap_raw = batt->raw_standby_relative_cap;
+    payload_out->vbat_raw    = batt->raw_voltage;
+    payload_out->temp_raw    = batt->raw_temperature;
+    payload_out->rel_cap_raw = batt->raw_relative_cap;
+    // payload_out->current_raw   = batt->raw_current;        // enable with raw_current
+    // payload_out->accum_cap_raw = batt->raw_accumulated_cap; // enable if energy accounting needed
 
     // --- Analog PMIC Data ---
     payload_out->clprog_adc          = pmic->raw_clprog_adc;
@@ -363,28 +348,67 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
  * Jumps instantly to any state without hysteresis guard bands.
  * @param vbat The calculated floating-point battery voltage.
  */
-void EPS_Update_System_State(uint16_t vbat)
+void EPS_Update_System_State(uint16_t vbat_mv)
 {
-    uint32_t state_bitmask = 0;
+    if (batteryStatus == NULL)
+        return;
 
-    if (vbat < (uint16_t)thresholds[2]) {
-        state_bitmask = EV_BAT_SURVIVAL;
-    } 
-    else if (vbat < (uint16_t)thresholds[1]) {
-        state_bitmask = EV_BAT_SUNSAFE;
-    } 
-    else if (vbat < (uint16_t)thresholds[0]) {
-        state_bitmask = EV_BAT_CONTINGENCY;
-    } 
-    else {
-        state_bitmask = EV_BAT_NOMINAL;
-    }
+    uint32_t state_bitmask;
+    if (vbat_mv < thresholds_mv[2])      state_bitmask = EV_BAT_SURVIVAL;
+    else if (vbat_mv < thresholds_mv[1]) state_bitmask = EV_BAT_SUNSAFE;
+    else if (vbat_mv < thresholds_mv[0]) state_bitmask = EV_BAT_CONTINGENCY;
+    else                                 state_bitmask = EV_BAT_NOMINAL;
 
     uint32_t active_bits = xEventGroupGetBits(batteryStatus);
-    
-    // only update if change detected
     if ((active_bits & state_bitmask) == 0) {
         xEventGroupClearBits(batteryStatus, ALL_BATTERY_STATES);
         xEventGroupSetBits(batteryStatus, state_bitmask);
     }
 }
+
+/** Auto-heater hysteresis. Only acts when auto-heat is enabled by telecommand. */
+void EPS_Heater_Control(int16_t temp_c)
+{
+    if (!auto_heat_enabled)
+        return;
+    if (temp_c < heater_hysteresis_c[0])
+        EPS_Heater_Enable();
+    else if (temp_c > heater_hysteresis_c[1])
+        EPS_Heater_Disable();
+}
+
+/** Load thresholds from flash; keep current values if the data is implausible. */
+static void load_thresholds_from_flash(void)
+{
+    uint8_t raw[3];
+    if (OBDH_Read_Request(EPS_THRESHOLDS_ADDR, raw, 3) != HAL_OK)
+        return;
+    for (int i = 0; i < 3; i++)
+        if (raw[i] < 25 || raw[i] > 45)      // plausible battery range 2.5–4.5 V
+            return;
+    if (!(raw[0] > raw[1] && raw[1] > raw[2])) // must be strictly descending
+        return;
+    for (int i = 0; i < 3; i++)
+        thresholds_mv[i] = (uint16_t)raw[i] * 100u;
+}
+
+/** Load sampling period from flash; reject erased/zero values, clamp the minimum. */
+static void load_sampling_from_flash(void)
+{
+    uint16_t raw;
+    if (OBDH_Read_Request(EPS_SAMPLING_ADDR, (uint8_t *)&raw, 2) != HAL_OK)
+        return;
+    if (raw == 0x0000u || raw == 0xFFFFu)    // unprogrammed / erased flash
+        return;
+    if (raw < 5u)                            // DS2782 updates every ~440 ms; floor 500 ms
+        raw = 5u;
+    sampling_period_100ms = raw;
+}
+
+#ifdef UNIT_TEST
+void EPS_Test_Set_Thresholds_mV(const uint16_t mv[3])
+{
+    for (int i = 0; i < 3; i++) thresholds_mv[i] = mv[i];
+}
+void EPS_Test_Set_Auto_Heat(bool enable) { auto_heat_enabled = enable; }
+#endif

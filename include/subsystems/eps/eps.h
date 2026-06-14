@@ -23,13 +23,11 @@ void eps_task(void *pv_parameters);
 
 // DS2782 raw data
 typedef struct {
-    uint16_t raw_voltage;               // Resolution: 4.88 mV
-    int16_t  raw_current;               // Resolution: 0.104 mA
-    int16_t  raw_avg_current;           // Resolution: 0.104 mA
-    int16_t  raw_temperature;           // Resolution: 0.125 ºC
-    uint16_t raw_accumulated_cap;       // Resolution: 0.4167 mAh
-    uint8_t raw_relative_cap;           // Resolution: 1% (State of Charge)
-    uint8_t raw_standby_relative_cap;   // Resolution: 1%
+    uint16_t raw_voltage;             // 4.88 mV/LSB
+    // int16_t  raw_current;          // 0.104 mA/LSB — avg vs. instant decided by hardware team
+    int16_t  raw_temperature;         // 0.125 ºC/LSB
+    uint8_t  raw_relative_cap;        // 1% State of Charge (RARC)
+    // uint16_t raw_accumulated_cap;  // 0.4167 mAh/LSB — enable if energy accounting needed
 } Battery_Telemetry_t;
 
 // LTC4040 (PMIC) data
@@ -86,36 +84,50 @@ bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out);
 /* --- Compute values from read data functions --- */
 
 uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry);
-int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry);
+// int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry);  // enable with raw_current
 int16_t DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry);
 
 // Force the compiler to pack this struct with ZERO empty padding bytes
 #pragma pack(push, 1)
 
 typedef struct {
-    // 1. Digital Battery Sensor Data (DS2782) - 12 Bytes total
+    // 1. Digital Battery Sensor Data (DS2782) - 5 Bytes
     uint16_t vbat_raw;
-    int16_t  current_raw;
-    int16_t  avg_current_raw;
     int16_t  temp_raw;
-    uint16_t accum_cap_raw;
-    uint8_t  rel_cap_raw;      // Fits in 1 byte since it's just 0-100%
-    uint8_t standby_rel_cap_raw;
+    uint8_t  rel_cap_raw;
+    // int16_t  current_raw;     // enable when hardware team selects avg vs. instant register
+    // uint16_t accum_cap_raw;   // enable if energy accounting needed
 
-    // 2. Analog Power Manager Data (LTC4040 ADCs) - 8 Bytes total
+    // 2. Analog Power Manager Data (LTC4040 ADCs) - 2 Bytes
     uint16_t clprog_adc;
-    // --- Extra analog readings, can be added later
-    //uint16_t vsys_adc;
-    //uint16_t killswitch_adc;
-    //uint16_t batt_ntc_adc;
 
-    // 3. Compressed Status Word (All booleans compressed into 1 Byte)
+    // 3. Compressed Status Word - 1 Byte
     uint8_t  system_status;
 
 } OBDH_Payload_t;
 
 // Restore normal compiler padding for the rest of the code
 #pragma pack(pop)
+
+/* --- Pure logic, exposed for unit testing and reuse --- */
+void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic,
+                        OBDH_Payload_t *payload_out);
+void EPS_Update_System_State(uint16_t vbat_mv);
+void EPS_Heater_Control(int16_t temp_c);
+
+/* --- Mock injection (debug facility; used by the on-target tests) --- */
+void DS2782_Set_Mock_Values(const Battery_Telemetry_t *v);
+void DS2782_Set_Mock_Fail(bool fail);
+void LTC4040_Set_Mock_Values(const EPS_Status_t *v);
+void LTC4040_Set_Mock_Fail(bool fail);
+
+#ifdef UNIT_TEST
+/* Test-only seams, compiled exclusively in the EPS_TESTS build */
+void EPS_Test_Set_Thresholds_mV(const uint16_t mv[3]);
+void EPS_Test_Set_Auto_Heat(bool enable);
+extern volatile uint32_t eps_cycle_count;   /* ++ at end of each process_eps */
+#endif
+
 
 #endif /* DS2782_DRIVER_H */
 #endif /* INC_EPS_H_ */
