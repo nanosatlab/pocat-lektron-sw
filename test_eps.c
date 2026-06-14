@@ -656,12 +656,29 @@ static void MX_GPIO_Init_EPS(void)
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3,  GPIO_PIN_RESET);
 
+    /* PB2 !CHRG — polled GPIO (charging status changes gradually) */
     gpio.Mode = GPIO_MODE_INPUT;
-    gpio.Pull = GPIO_PULLUP;                 /* PMIC pins are open-drain active-LOW */
-    gpio.Pin = GPIO_PIN_2 | GPIO_PIN_5;      /* PB2 !CHRG, PB5 !PFO */
+    gpio.Pull = GPIO_PULLUP;
+    gpio.Pin  = GPIO_PIN_2;
     HAL_GPIO_Init(GPIOB, &gpio);
-    gpio.Pin = GPIO_PIN_4;                   /* PC4 !FAULT */
+
+    /* PB5 !PFO — EXTI both edges (falling = eclipse start, rising = eclipse end) */
+    gpio.Mode = GPIO_MODE_IT_RISING_FALLING;
+    gpio.Pull = GPIO_PULLUP;
+    gpio.Pin  = GPIO_PIN_5;
+    HAL_GPIO_Init(GPIOB, &gpio);
+
+    /* PC4 !FAULT — EXTI falling edge (fault when pin goes LOW) */
+    gpio.Mode = GPIO_MODE_IT_FALLING;
+    gpio.Pull = GPIO_PULLUP;
+    gpio.Pin  = GPIO_PIN_4;
     HAL_GPIO_Init(GPIOC, &gpio);
+
+    /* Enable NVIC for both EXTI lines — priority 5 satisfies FreeRTOS fromISR requirement */
+    HAL_NVIC_SetPriority(EXTI4_IRQn,   5, 0);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+    HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
 /** Same I2C1 setup as flight main.c (needed for the future hardware checkout). */

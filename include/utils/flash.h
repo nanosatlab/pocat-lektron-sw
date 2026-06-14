@@ -109,12 +109,19 @@
 
 
 
-//EPS
-#define EPS_THRESHOLDS_ADDR			0x08030800 // 4 bytes (1 byte per threshold)
-#define NOMINAL_TH_ADDR             0x08030800  // 1
-#define CONTINGENCY_TH_ADDR         0x08030801  // 1
-#define SUNSAFE_TH_ADDR             0x08030802  // 1
-#define SURVIVAL_TH_ADDR            0x08030803  // 1
+//EPS — config lives on one page (0x08030800..0x08030FFF); the telemetry
+//mailbox gets its OWN page because it is rewritten every EPS cycle and each
+//write erases the whole page (wear isolation from config data).
+#define EPS_THRESHOLDS_ADDR         0x08030800 // 3 bytes, 1 per threshold, units of 100 mV (37 = 3700 mV)
+#define NOMINAL_TH_ADDR             0x08030800 // 1
+#define CONTINGENCY_TH_ADDR         0x08030801 // 1
+#define SUNSAFE_TH_ADDR             0x08030802 // 1
+#define EPS_SAMPLING_ADDR           0x08030804 // 2 bytes LE, units of 100 ms (10 = 1 s)
+#define HEATER_CONFIG_ADDR          0x08030806 // 1 byte (moved: 0x08031000 collides with RFI_CONFIG_ADDR)
+#define CHARGER_CONFIG_ADDR         0x08030807 // 1 byte: 1 = charger enabled, 0 = charger disabled
+
+#define OBDH_EPS_TELEMETRY_ADDR     0x08031800 // 8 bytes, EPS -> OBDH telemetry mailbox
+
 
 #define RFI_CONFIG_ADDR             0x08031000  // 8
 

@@ -71,6 +71,13 @@
 #define N_EPS_NEW_THRESHOLDS             (1u << 0)  /**< New power thresholds available in memory */
 #define N_EPS_ENABLE_AUTO_HEAT           (1u << 1)  /**< Enable automatic heater activation */
 #define N_EPS_DISABLE_AUTO_HEAT          (1u << 2)  /**< Disable automatic heater activation */
+#define N_EPS_NEW_SAMPLING               (1u << 3)  /**< New sampling period available in memory */
+#define N_EPS_ENABLE_CHARGER             (1u << 4)  /**< Enable battery charger (CHROFF low) */
+#define N_EPS_DISABLE_CHARGER            (1u << 5)  /**< Disable battery charger (CHROFF high) */
+#define N_EPS_FAULT_DETECTED             (1u << 6)  /**< !FAULT EXTI fired — charger already disabled by ISR */
+#define N_EPS_ECLIPSE_START              (1u << 7)  /**< !PFO fell — solar input lost, eclipse started */
+#define N_EPS_ECLIPSE_END                (1u << 8)  /**< !PFO rose — solar input returned, eclipse ended */
+
 
 /* ── OBDH Task Notifications ────────────────────────────────────────────── */
 

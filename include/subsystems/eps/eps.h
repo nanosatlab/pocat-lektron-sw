@@ -115,6 +115,10 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
 void EPS_Update_System_State(uint16_t vbat_mv);
 void EPS_Heater_Control(int16_t temp_c);
 
+/* --- Hardware interrupt dispatch (called from stm32l4xx_it.c) --- */
+void EPS_Fault_IRQHandler(void);   /**< PC4 !FAULT falling edge — disables charger immediately */
+void EPS_PFO_IRQHandler(void);     /**< PB5 !PFO both edges — eclipse start/end detection */
+
 /* --- Mock injection (debug facility; used by the on-target tests) --- */
 void DS2782_Set_Mock_Values(const Battery_Telemetry_t *v);
 void DS2782_Set_Mock_Fail(bool fail);

@@ -24,6 +24,7 @@
 #include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "eps.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,6 +192,28 @@ void SysTick_Handler(void)
  */
 void EXTI15_10_IRQHandler(void) {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+}
+
+/**
+ * @brief EXTI line 4 interrupt handler.
+ * PC4 !FAULT (LTC4040) — falling edge only.
+ */
+void EXTI4_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_4)) {
+        EPS_Fault_IRQHandler();
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
+    }
+}
+
+/**
+ * @brief EXTI lines [9:5] interrupt handler.
+ * PB5 !PFO (LTC4040) — both edges (eclipse start / eclipse end).
+ */
+void EXTI9_5_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5)) {
+        EPS_PFO_IRQHandler();
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
+    }
 }
 
 /* USER CODE END 1 */

@@ -42,7 +42,8 @@ static bool paused;
 /** @brief Notification bits deferred while the EPS task is paused. */
 static uint32_t deferred_notifications;
 
-static bool auto_heat_enabled = false;
+static TaskHandle_t eps_task_handle  = NULL;
+static bool         auto_heat_enabled  = false;
 
 // Unit convention: ALL voltages in mV, temperatures in °C, currents in mA.
 // Stored in flash as 1 byte each in units of 100 mV (matches the 3-byte TC format).
@@ -70,6 +71,7 @@ bool LTC4040_Read_Mock(EPS_Status_t *out);
 
 void eps_task(void *pv_parameters)
 {
+    eps_task_handle = xTaskGetCurrentTaskHandle();
     (void)pv_parameters;
     setup_eps();
 
@@ -106,9 +108,17 @@ static void setup_eps(void)
     // GPIOB10 OFF, eps will set it again if necessary
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 
+    // Restore charger state from flash; default to enabled on fresh flash (0xFF)
+    uint8_t saved_charger_conf = 1;
+    if (OBDH_Read_Request(CHARGER_CONFIG_ADDR, &saved_charger_conf, 1) == HAL_OK
+        && saved_charger_conf != 0xFF)
+        (saved_charger_conf == 1) ? EPS_Charger_Enable() : EPS_Charger_Disable();
+    else
+        EPS_Charger_Enable();
+
     // recover thresholds:
     load_thresholds_from_flash();
-    load_sampling_from_flash(); 
+    load_sampling_from_flash();
 }
 
 
@@ -149,15 +159,34 @@ static void process_eps(void)
     }
 
     if (notifications & N_EPS_DISABLE_AUTO_HEAT) {
-        // disable EPS heater and save to flash
-
         auto_heat_enabled = false;
         uint8_t new_conf = 0;
         OBDH_Write_Request(HEATER_CONFIG_ADDR, &new_conf, 1);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
     }
 
-    // Process other notifications as needed
+    if (notifications & N_EPS_ENABLE_CHARGER) {
+        EPS_Charger_Enable();
+        uint8_t conf = 1;
+        OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
+    }
+
+    if (notifications & N_EPS_DISABLE_CHARGER) {
+        EPS_Charger_Disable();
+        uint8_t conf = 0;
+        OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
+    }
+
+    if (notifications & N_EPS_FAULT_DETECTED) {
+        // Charger already disabled by ISR. Persist the disabled state so it
+        // survives a reboot. OBC re-enables via N_EPS_ENABLE_CHARGER.
+        uint8_t conf = 0;
+        OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
+    }
+
+    // N_EPS_ECLIPSE_START / N_EPS_ECLIPSE_END: no software action needed.
+    // The LTC4040 handles the power path automatically. is_eclipse is reflected
+    // in telemetry via LTC4040_Read_Hardware() polling the !PFO pin each cycle.
 
     // 2. Poll battery sensor (DS2782E+) for voltage, current and capacity. This IC is
     // connected to the IC2 line 1 (SCL1,SDA1).
@@ -186,7 +215,11 @@ static void process_eps(void)
     }
 
     if (pmic_ok) {
-        // pmic logic
+        if (eps_status.has_fault && !eps_status.charging_disabled) {
+            EPS_Charger_Disable;
+            uint8_t conf = 0;
+            OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
+        }
     } else {
         //fail logic
 
@@ -263,15 +296,11 @@ bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
     if (EPS_Mock_Mode_Active()) return LTC4040_Read_Mock(pmic_out);
 #endif
     // OPERACIÓ FÍSICA: Llegir l'estat elèctric actual dels pins actius en LOW (Open-Drain)
-    pmic_out->is_charging = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET); // !CHRG (PB2)
-    pmic_out->has_fault   = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
-    pmic_out->is_eclipse  = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET); // !PFO (PB5)
-    // pmic_out->was_reset   = __HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)                      // !RST
-
-    // ADC readings (CLPROG)
-
-    // Can be added later
-    //pmic_out->raw_killswitch_adc = (uint16_t)HAL_ADC_GetValue(&hadc1);
+    pmic_out->is_charging      = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET); // !CHRG (PB2)
+    pmic_out->has_fault        = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
+    pmic_out->is_eclipse       = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET); // !PFO (PB5)
+    pmic_out->charging_disabled = (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3) == GPIO_PIN_SET);  // CHROFF (PA3)
+    // TODO: pmic_out->raw_clprog_adc = ADC read on PA4 (hadc1 channel 9)
     return true;
 }
 
@@ -307,11 +336,7 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     // payload_out->accum_cap_raw = batt->raw_accumulated_cap; // enable if energy accounting needed
 
     // --- Analog PMIC Data ---
-    payload_out->clprog_adc          = pmic->raw_clprog_adc;
-    /* --- Extra possible Analog readings that could be done --- */
-    //payload_out->vsys_adc        = pmic->raw_vsys_adc;
-    //payload_out->killswitch_adc  = pmic->raw_killswitch_adc;
-    //payload_out->batt_ntc_adc    = pmic->raw_batt_ntc_adc;
+    payload_out->clprog_adc  = pmic->raw_clprog_adc;
 
     // --- Boolean Logic ---
     // (0000 0000)
@@ -403,6 +428,42 @@ static void load_sampling_from_flash(void)
     if (raw < 5u)                            // DS2782 updates every ~440 ms; floor 500 ms
         raw = 5u;
     sampling_period_100ms = raw;
+}
+
+/**
+ * @brief Called from EXTI4_IRQHandler in stm32l4xx_it.c (PC4 !FAULT, falling edge).
+ *
+ * Disables the charger immediately — GPIO write is ISR-safe.
+ * Wakes eps_task via notification so it can persist the disabled state to flash.
+ */
+void EPS_Fault_IRQHandler(void)
+{
+    EPS_Charger_Disable();
+
+    if (eps_task_handle != NULL) {
+        BaseType_t woken = pdFALSE;
+        xTaskNotifyFromISR(eps_task_handle, N_EPS_FAULT_DETECTED, eSetBits, &woken);
+        portYIELD_FROM_ISR(woken);
+    }
+}
+
+/**
+ * @brief Called from EXTI9_5_IRQHandler in stm32l4xx_it.c (PB5 !PFO, both edges).
+ *
+ * Reads the current pin state to distinguish eclipse start (falling) from eclipse
+ * end (rising) and wakes eps_task. No hardware action — LTC4040 handles the power
+ * path automatically.
+ */
+void EPS_PFO_IRQHandler(void)
+{
+    if (eps_task_handle != NULL) {
+        uint32_t notif = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+                         ? N_EPS_ECLIPSE_START
+                         : N_EPS_ECLIPSE_END;
+        BaseType_t woken = pdFALSE;
+        xTaskNotifyFromISR(eps_task_handle, notif, eSetBits, &woken);
+        portYIELD_FROM_ISR(woken);
+    }
 }
 
 #ifdef UNIT_TEST
