@@ -49,6 +49,9 @@
 #define N_OBC_HARD_REBOOT                (1u << 5)  /**< Perform a hard reboot (including flash) */
 #define N_OBC_SOFT_REBOOT                (1u << 6)  /**< Perform a soft reboot (without clearing flash) */
 #define N_OBC_PERIPHERALS_REBOOT         (1u << 7)  /**< Reboot peripheral devices */
+#define N_OBC_EPS_FAULT_DETECTED         (1u << 8)  /**< EPS reported a PMIC fault via EXTI */
+#define N_OBC_EPS_ECLIPSE_START          (1u << 9)  /**< EPS reported eclipse start via EXTI */
+#define N_OBC_EPS_ECLIPSE_END            (1u << 10) /**< EPS reported eclipse end via EXTI */
 
 #define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_NOMINAL | N_OBC_EXIT_STATE_TO_CONTINGENCY | \
                                 N_OBC_EXIT_STATE_TO_SUNSAFE | N_OBC_EXIT_STATE_TO_SURVIVAL)

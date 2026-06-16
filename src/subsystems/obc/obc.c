@@ -107,6 +107,18 @@ static void process_obc(ObcState_t *currentState) {
         // Handle soft reboot, e.g., reset tasks and reinitialize subsystems without clearing flash
     }
 
+    if (notificationValue & N_OBC_EPS_FAULT_DETECTED) {
+        // Handle fault in Power Manager, eps has disabled charging and is saving the configuration to flash in parallel
+    }
+
+    if (notificationValue & N_OBC_EPS_ECLIPSE_START) {
+        // Notification to let OBC know we are entering eclipse, eps is running and updating telemetry in parallel
+    }
+
+    if (notificationValue & N_OBC_EPS_ECLIPSE_END) {
+        // Notification to let OBC know we have sunlight again
+    }
+
     check_next_state(currentState, notificationValue);
 }
 

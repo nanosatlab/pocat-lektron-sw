@@ -477,11 +477,18 @@ void EPS_Fault_IRQHandler(void)
 {
     EPS_Charger_Disable();
 
+    BaseType_t woken = pdFALSE;
+
     if (eps_task_handle != NULL) {
-        BaseType_t woken = pdFALSE;
         xTaskNotifyFromISR(eps_task_handle, N_EPS_FAULT_DETECTED, eSetBits, &woken);
-        portYIELD_FROM_ISR(woken);
     }
+
+    TaskHandle_t obc = main_get_obc_handle();
+    if (obc != NULL) {
+        xTaskNotifyFromISR(obc, N_OBC_EPS_FAULT_DETECTED, eSetBits, &woken);
+    }
+
+    portYIELD_FROM_ISR(woken);
 }
 
 /**
@@ -493,14 +500,23 @@ void EPS_Fault_IRQHandler(void)
  */
 void EPS_PFO_IRQHandler(void)
 {
+    bool is_eclipse_start = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET);
+
+    uint32_t eps_notif = is_eclipse_start ? N_EPS_ECLIPSE_START : N_EPS_ECLIPSE_END;
+    uint32_t obc_notif = is_eclipse_start ? N_OBC_EPS_ECLIPSE_START : N_OBC_EPS_ECLIPSE_END;
+
+    BaseType_t woken = pdFALSE;
+
     if (eps_task_handle != NULL) {
-        uint32_t notif = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
-                         ? N_EPS_ECLIPSE_START
-                         : N_EPS_ECLIPSE_END;
-        BaseType_t woken = pdFALSE;
-        xTaskNotifyFromISR(eps_task_handle, notif, eSetBits, &woken);
-        portYIELD_FROM_ISR(woken);
+        xTaskNotifyFromISR(eps_task_handle, eps_notif, eSetBits, &woken);
     }
+
+    TaskHandle_t obc = main_get_obc_handle();
+    if (obc != NULL) {
+        xTaskNotifyFromISR(obc, obc_notif, eSetBits, &woken);
+    }
+
+    portYIELD_FROM_ISR(woken);
 }
 
 #ifdef UNIT_TEST
