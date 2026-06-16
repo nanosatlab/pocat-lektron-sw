@@ -77,6 +77,7 @@
 #define N_EPS_FAULT_DETECTED             (1u << 6)  /**< !FAULT EXTI fired — charger already disabled by ISR */
 #define N_EPS_ECLIPSE_START              (1u << 7)  /**< !PFO fell — solar input lost, eclipse started */
 #define N_EPS_ECLIPSE_END                (1u << 8)  /**< !PFO rose — solar input returned, eclipse ended */
+#define N_EPS_NEW_HEATER_BANDS           (1u << 9)  /**< New heater hysteresis bands available in memory */
 
 
 /* ── OBDH Task Notifications ────────────────────────────────────────────── */

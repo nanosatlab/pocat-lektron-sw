@@ -119,6 +119,9 @@
 #define EPS_SAMPLING_ADDR           0x08030804 // 2 bytes LE, units of 100 ms (10 = 1 s)
 #define HEATER_CONFIG_ADDR          0x08030806 // 1 byte (moved: 0x08031000 collides with RFI_CONFIG_ADDR)
 #define CHARGER_CONFIG_ADDR         0x08030807 // 1 byte: 1 = charger enabled, 0 = charger disabled
+#define HEATER_BANDS_ADDR           0x08030808 // 2 bytes, signed (int8_t): [0]=lower ON band, [1]=upper OFF band, units of 1 °C
+#define HEATER_LOWER_TH_ADDR        0x08030808 // 1
+#define HEATER_UPPER_TH_ADDR        0x08030809 // 1
 
 #define OBDH_EPS_TELEMETRY_ADDR     0x08031800 // 8 bytes, EPS -> OBDH telemetry mailbox
 

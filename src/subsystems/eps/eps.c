@@ -12,8 +12,7 @@
 #include "health.h"
 #include "flash.h"
 #include "notifications.h"
-#include "events.h"
-// need to include ..hal.h
+#include "events.h" 
 #include "main.h"
 #include "stm32l4xx.h"
 #include "task_management.h"
@@ -25,20 +24,12 @@
 // I2C and sensor constants
 #define DS2782_I2C_ADDR      0x34
 #define DS2782_REG_START     0x06
-#define I2C_TIMEOUT          50
-// (mailbox / heater-config addresses now come from flash.h: OBDH_EPS_TELEMETRY_ADDR,
-//  HEATER_CONFIG_ADDR — the old local defines collided with EPS_THRESHOLDS_ADDR
-//  and RFI_CONFIG_ADDR)
 
-// Sensor multipliers (Not really needed we just want to send raw data)
-// Current & Capacity assume a 10mOhm (0.01 Ohm) Sense Resistor
-#define VOLTAGE_MULTIPLIER_V    0.00488f
-#define CURRENT_MULTIPLIER_MA   0.15625f 
-#define CAPACITY_MULTIPLIER_MAH 0.625f
+// Battery state machine hysteresis (rising-direction only, in mV)
+#define EPS_HYSTERESIS_MV    50u
 
 extern I2C_HandleTypeDef hi2c1;
 
-static bool paused;
 /** @brief Notification bits deferred while the EPS task is paused. */
 static uint32_t deferred_notifications;
 
@@ -62,6 +53,7 @@ static void process_eps(void);
 static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload);
 static void load_thresholds_from_flash(void);
 static void load_sampling_from_flash(void);
+static void load_heater_bands_from_flash(void);
 
 #ifdef UNIT_TEST
 bool EPS_Mock_Mode_Active(void);
@@ -110,15 +102,18 @@ static void setup_eps(void)
 
     // Restore charger state from flash; default to enabled on fresh flash (0xFF)
     uint8_t saved_charger_conf = 1;
-    if (OBDH_Read_Request(CHARGER_CONFIG_ADDR, &saved_charger_conf, 1) == HAL_OK
-        && saved_charger_conf != 0xFF)
-        (saved_charger_conf == 1) ? EPS_Charger_Enable() : EPS_Charger_Disable();
-    else
+    if (OBDH_Read_Request(CHARGER_CONFIG_ADDR, &saved_charger_conf, 1) == HAL_OK && saved_charger_conf != 0xFF) {
+        if (saved_charger_conf == 1)
+            EPS_Charger_Enable();
+        else
+            EPS_Charger_Disable();
+    } else
         EPS_Charger_Enable();
 
     // recover thresholds:
     load_thresholds_from_flash();
     load_sampling_from_flash();
+    load_heater_bands_from_flash();
 }
 
 
@@ -139,7 +134,6 @@ static void process_eps(void)
     deferred_notifications = 0;
 
     if (notifications & N_EPS_NEW_THRESHOLDS) {
-        // TODO define default theshholds in case of read failure
         load_thresholds_from_flash();
         // Thresholds are now in the thresholds array, in the order: 
         // thresholds[0]: nominal
@@ -150,9 +144,11 @@ static void process_eps(void)
     if (notifications & N_EPS_NEW_SAMPLING)
         load_sampling_from_flash();
 
+    if (notifications & N_EPS_NEW_HEATER_BANDS)
+        load_heater_bands_from_flash();
+
     if (notifications & N_EPS_ENABLE_AUTO_HEAT) {
         // enable EPS heater and save to flash
-
         auto_heat_enabled = true;
         uint8_t new_conf = 1;
         OBDH_Write_Request(HEATER_CONFIG_ADDR, &new_conf, 1);
@@ -216,7 +212,7 @@ static void process_eps(void)
 
     if (pmic_ok) {
         if (eps_status.has_fault && !eps_status.charging_disabled) {
-            EPS_Charger_Disable;
+            EPS_Charger_Disable();
             uint8_t conf = 0;
             OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
         }
@@ -240,7 +236,6 @@ static void process_eps(void)
            eps_cycle_count, (int)battery_ok, (int)pmic_ok, (int)i2c_status);
 
     eps_cycle_count++;
-    // when is cycle reset?
 }
 
 static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload)
@@ -255,17 +250,14 @@ static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload)
 // Helper functions:
 
 void EPS_Heater_Enable(void) {
-    // pin PB10 HIGH enable heater
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
 }
 
 void EPS_Heater_Disable(void) {
-    // pin PB10 LOW disable heater
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 }
 
 bool EPS_Heater_Read(void) {
-    // Read pin PB10 HIGH heater is enabled
     return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10));
 }
 
@@ -285,8 +277,7 @@ bool DS2782_Read_Hardware(Battery_Telemetry_t *telemetry_out) {
 #ifdef UNIT_TEST
     if (EPS_Mock_Mode_Active()) return DS2782_Read_Mock(telemetry_out);
 #endif
-    // TODO: real DS2782 burst read over I2C1 (HAL_I2C_Mem_Read, DS2782_I2C_ADDR,
-    //       DS2782_REG_START) once the sensor is connected.
+    // TODO: real DS2782 burst read over I2C1 (HAL_I2C_Mem_Read, DS2782_I2C_ADDR
     return false;
 }
 
@@ -295,7 +286,6 @@ bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
 #ifdef UNIT_TEST
     if (EPS_Mock_Mode_Active()) return LTC4040_Read_Mock(pmic_out);
 #endif
-    // OPERACIÓ FÍSICA: Llegir l'estat elèctric actual dels pins actius en LOW (Open-Drain)
     pmic_out->is_charging      = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET); // !CHRG (PB2)
     pmic_out->has_fault        = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
     pmic_out->is_eclipse       = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET); // !PFO (PB5)
@@ -311,7 +301,7 @@ uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry) {
     return (uint16_t)(((uint32_t)telemetry->raw_voltage * 488u) / 100u);
 }
 
-/* DS2782_Compute_Current — enable when hardware team adds raw_current to Battery_Telemetry_t
+/* DS2782_Compute_Current — enable for use of raw_current to Battery_Telemetry_t
 int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry) {
     return (int16_t)(((int32_t)telemetry->raw_current * 5) / 32);
 }
@@ -332,7 +322,7 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     payload_out->vbat_raw    = batt->raw_voltage;
     payload_out->temp_raw    = batt->raw_temperature;
     payload_out->rel_cap_raw = batt->raw_relative_cap;
-    // payload_out->current_raw   = batt->raw_current;        // enable with raw_current
+    // payload_out->current_raw   = batt->raw_current;         // enable with raw_current
     // payload_out->accum_cap_raw = batt->raw_accumulated_cap; // enable if energy accounting needed
 
     // --- Analog PMIC Data ---
@@ -342,52 +332,84 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     // (0000 0000)
     payload_out->system_status = 0x00; 
     if (pmic->is_charging) {
-        payload_out->system_status |= (1 << 0); // Set Bit 0
+        payload_out->system_status |= (1 << 0);
     }
     if (pmic->has_fault) {
-        payload_out->system_status |= (1 << 1); // Set Bit 1
+        payload_out->system_status |= (1 << 1);
     }
     if (pmic->is_eclipse) {
-        payload_out->system_status |= (1 << 2); // Set Bit 2
+        payload_out->system_status |= (1 << 2);
     }
     if (pmic->charging_disabled) {
-        payload_out->system_status |= (1 << 3); //Set bit 3
+        payload_out->system_status |= (1 << 3);
     }
     if (pmic->auto_heater_enabled) {
-        payload_out->system_status |= (1 << 4); //Set bit 4
+        payload_out->system_status |= (1 << 4);
     }
     if (pmic->heater_state) {
-        payload_out->system_status |= (1 << 5); //Set bit 5
+        payload_out->system_status |= (1 << 5);
     }
     if (pmic->battery_read_failure) {
-        payload_out->system_status |= (1 << 6); //Set bit 6
+        payload_out->system_status |= (1 << 6);
     }
     if (pmic->pmic_read_failure) {
-        payload_out->system_status |= (1 << 7); //Set bit 7
+        payload_out->system_status |= (1 << 7);
     }
 }
 
-// TODO: add hysteresis
 /**
- * @brief Simple evaluation of battery voltage thresholds.
- * Jumps instantly to any state without hysteresis guard bands.
- * @param vbat The calculated floating-point battery voltage.
+ * @brief Update batteryStatus event group based on measured voltage.
+ *
+ * Implements an asymmetric hysteresis state machine:
+ *   - Falling transitions (toward more severe state) are immediate and may
+ *     skip intermediate states in a single call. Battery protection takes
+ *     precedence over response smoothness.
+ *   - Rising transitions (toward less severe state) advance one state per
+ *     call and require voltage to exceed the threshold by EPS_HYSTERESIS_MV.
+ *     This suppresses load-sag flap and ensures recovery is real.
+ *
+ * @param vbat_mv Measured battery voltage in millivolts.
  */
 void EPS_Update_System_State(uint16_t vbat_mv)
 {
     if (batteryStatus == NULL)
         return;
 
-    uint32_t state_bitmask;
-    if (vbat_mv < thresholds_mv[2])      state_bitmask = EV_BAT_SURVIVAL;
-    else if (vbat_mv < thresholds_mv[1]) state_bitmask = EV_BAT_SUNSAFE;
-    else if (vbat_mv < thresholds_mv[0]) state_bitmask = EV_BAT_CONTINGENCY;
-    else                                 state_bitmask = EV_BAT_NOMINAL;
+    uint32_t current_state = xEventGroupGetBits(batteryStatus) & ALL_BATTERY_STATES;
+    uint32_t new_state     = current_state;
 
-    uint32_t active_bits = xEventGroupGetBits(batteryStatus);
-    if ((active_bits & state_bitmask) == 0) {
+    switch (current_state) {
+        case EV_BAT_NOMINAL:
+            if      (vbat_mv < thresholds_mv[2]) new_state = EV_BAT_SURVIVAL;
+            else if (vbat_mv < thresholds_mv[1]) new_state = EV_BAT_SUNSAFE;
+            else if (vbat_mv < thresholds_mv[0]) new_state = EV_BAT_CONTINGENCY;
+            break;
+
+        case EV_BAT_CONTINGENCY:
+            if      (vbat_mv < thresholds_mv[2]) new_state = EV_BAT_SURVIVAL;
+            else if (vbat_mv < thresholds_mv[1]) new_state = EV_BAT_SUNSAFE;
+            else if (vbat_mv >= thresholds_mv[0] + EPS_HYSTERESIS_MV)
+                                                 new_state = EV_BAT_NOMINAL;
+            break;
+
+        case EV_BAT_SUNSAFE:
+            if      (vbat_mv < thresholds_mv[2]) new_state = EV_BAT_SURVIVAL;
+            else if (vbat_mv >= thresholds_mv[1] + EPS_HYSTERESIS_MV)
+                                                 new_state = EV_BAT_CONTINGENCY;
+            break;
+
+        case EV_BAT_SURVIVAL:
+            if (vbat_mv >= thresholds_mv[2] + EPS_HYSTERESIS_MV)
+                                                 new_state = EV_BAT_SUNSAFE;
+            break;
+
+        default:
+            break;
+    }
+
+    if (new_state != current_state) {
         xEventGroupClearBits(batteryStatus, ALL_BATTERY_STATES);
-        xEventGroupSetBits(batteryStatus, state_bitmask);
+        xEventGroupSetBits(batteryStatus, new_state);
     }
 }
 
@@ -428,6 +450,21 @@ static void load_sampling_from_flash(void)
     if (raw < 5u)                            // DS2782 updates every ~440 ms; floor 500 ms
         raw = 5u;
     sampling_period_100ms = raw;
+}
+
+/** Load heater hysteresis bands from flash. Requires upper > lower with a
+ *  minimum 2 °C deadband to prevent relay chatter near the threshold. */
+static void load_heater_bands_from_flash(void)
+{
+    int8_t raw[2];
+    if (OBDH_Read_Request(HEATER_BANDS_ADDR, (uint8_t *)raw, 2) != HAL_OK)
+        return;
+    if ((uint8_t)raw[0] == 0xFFu && (uint8_t)raw[1] == 0xFFu)   // erased flash
+        return;
+    if ((int)raw[1] - (int)raw[0] < 2)        // require minimum 2 °C deadband
+        return;
+    heater_hysteresis_c[0] = raw[0];
+    heater_hysteresis_c[1] = raw[1];
 }
 
 /**
