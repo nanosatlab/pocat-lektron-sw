@@ -231,9 +231,9 @@ static void process_eps(void)
 
     EPS_Pack_Telemetry(&battery_sensor, &eps_status, &payload);
 
-    HAL_StatusTypeDef i2c_status = send_telemetry_to_obdh(&payload);
+    HAL_StatusTypeDef telem_status = send_telemetry_to_obdh(&payload);
     printf("[EPS] cycle %lu | batt_ok=%d pmic_ok=%d obdh=%d\r\n",
-           eps_cycle_count, (int)battery_ok, (int)pmic_ok, (int)i2c_status);
+           eps_cycle_count, (int)battery_ok, (int)pmic_ok, (int)telem_status);
 
     eps_cycle_count++;
 }
@@ -472,6 +472,7 @@ static void load_heater_bands_from_flash(void)
  *
  * Disables the charger immediately — GPIO write is ISR-safe.
  * Wakes eps_task via notification so it can persist the disabled state to flash.
+ * Wakes up obc_task via notification so it can handle the fault
  */
 void EPS_Fault_IRQHandler(void)
 {
@@ -497,6 +498,7 @@ void EPS_Fault_IRQHandler(void)
  * Reads the current pin state to distinguish eclipse start (falling) from eclipse
  * end (rising) and wakes eps_task. No hardware action — LTC4040 handles the power
  * path automatically.
+ * Wakes up obc_task so it can handle the eclipse state
  */
 void EPS_PFO_IRQHandler(void)
 {

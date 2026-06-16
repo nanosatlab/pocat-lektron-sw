@@ -37,15 +37,7 @@ typedef struct {
     bool    is_eclipse;            // pin !PFO (true = eclipse active)
     bool    charging_disabled;     // pin CHROFF status (true = charging disabled)
 
-    // !RST is hardwired to NRST, we can check if the external reset was triggered but not the pin exactly
-    //bool    was_reset;             // Estat del pin !RST (RCC_FLAG_PINRST)
-
     uint16_t raw_clprog_adc;       // ADC value of generated solar current
-
-    // --- Extra analog readings, can be added later ---
-    //uint16_t raw_vsys_adc;         // general 5V rail ADC
-    //uint16_t raw_killswitch_adc;   // battery voltage ADC
-    //uint16_t raw_batt_ntc_adc;     // Analog battery temperature reading, could be used as backup
 
     // auto heater status
     bool auto_heater_enabled;
