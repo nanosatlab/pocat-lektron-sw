@@ -53,4 +53,16 @@ void periph_init_for_freq(ClockFreq_t freq);
  */
 void periph_reconfigure_for_freq(ClockFreq_t freq);
 
+/**
+ * @brief Perform a single blocking ADC1 conversion on the given channel.
+ * @details Configures the channel, starts the conversion, polls for completion,
+ *          reads the value, and stops the ADC. The pin backing the channel must
+ *          already be configured as GPIO_MODE_ANALOG.
+ * @param channel ADC channel (e.g. ADC_CHANNEL_9 for PA4, ADC_CHANNEL_VREFINT).
+ * @param[out] result Raw 12-bit ADC value (0–4095).
+ * @return HAL_OK on success, HAL_ERROR on channel config failure,
+ *         HAL_TIMEOUT if the conversion does not complete within 100 ms.
+ */
+HAL_StatusTypeDef adc_read_channel(uint32_t channel, uint32_t *result);
+
 #endif /* INC_UTILS_PERIPH_H_ */

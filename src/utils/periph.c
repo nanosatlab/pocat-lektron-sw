@@ -76,6 +76,30 @@ void periph_reconfigure_for_freq(ClockFreq_t freq)
     }
 }
 
+HAL_StatusTypeDef adc_read_channel(uint32_t channel, uint32_t *result)
+{
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    sConfig.Channel = channel;
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+    sConfig.SingleDiff = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    sConfig.Offset = 0;
+    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+        return HAL_ERROR;
+    }
+
+    HAL_ADC_Start(&hadc1);
+    if (HAL_ADC_PollForConversion(&hadc1, 100) != HAL_OK) {
+        return HAL_TIMEOUT;
+    }
+    *result = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    return HAL_OK;
+}
+
 /**
  * @brief Select the TIM5 prescaler for the configured system clock.
  *
