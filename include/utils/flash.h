@@ -123,7 +123,7 @@
 #define HEATER_LOWER_TH_ADDR        0x08030808 // 1
 #define HEATER_UPPER_TH_ADDR        0x08030809 // 1
 
-#define OBDH_EPS_TELEMETRY_ADDR     0x08031800 // 8 bytes, EPS -> OBDH telemetry mailbox
+#define OBDH_EPS_TELEMETRY_ADDR     0x08031800 // 19 bytes, EPS -> OBDH telemetry mailbox
 
 
 #define RFI_CONFIG_ADDR             0x08031000  // 8

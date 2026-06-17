@@ -16,6 +16,7 @@
 #include "main.h"
 #include "stm32l4xx.h"
 #include "task_management.h"
+#include "periph.h"
 
 // The main functionality of the EPS task is providing the OBC with battery readings on 
 // it's voltage, current generated, capacity, temperature and charging status. The task 
@@ -290,7 +291,16 @@ bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
     pmic_out->has_fault        = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
     pmic_out->is_eclipse       = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET); // !PFO (PB5)
     pmic_out->charging_disabled = (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3) == GPIO_PIN_SET);  // CHROFF (PA3)
-    // TODO: pmic_out->raw_clprog_adc = ADC read on PA4 (hadc1 channel 9)
+
+    // CLPROG (PA4) — LTC4040 solar input current monitor via ADC1 channel 9.
+    // An ADC failure does not invalidate the GPIO reads; report 0 and continue.
+    uint32_t adc_val = 0;
+    if (adc_read_channel(ADC_CHANNEL_9, &adc_val) == HAL_OK) {
+        pmic_out->raw_clprog_adc = (uint16_t)adc_val;
+    } else {
+        pmic_out->raw_clprog_adc = 0;
+    }
+
     return true;
 }
 
@@ -301,11 +311,9 @@ uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry) {
     return (uint16_t)(((uint32_t)telemetry->raw_voltage * 488u) / 100u);
 }
 
-/* DS2782_Compute_Current — enable for use of raw_current to Battery_Telemetry_t
 int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry) {
     return (int16_t)(((int32_t)telemetry->raw_current * 5) / 32);
 }
-*/
 
 int16_t DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry) {
     // degrees Celsius: raw * 0.125 C/LSB (truncates toward zero)
@@ -319,11 +327,15 @@ void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmi
     }
 
     // --- raw I2C Battery Data ---
-    payload_out->vbat_raw    = batt->raw_voltage;
-    payload_out->temp_raw    = batt->raw_temperature;
-    payload_out->rel_cap_raw = batt->raw_relative_cap;
-    // payload_out->current_raw   = batt->raw_current;         // enable with raw_current
-    // payload_out->accum_cap_raw = batt->raw_accumulated_cap; // enable if energy accounting needed
+    payload_out->vbat_raw        = batt->raw_voltage;
+    payload_out->temp_raw        = batt->raw_temperature;
+    payload_out->rel_cap_raw     = batt->raw_relative_cap;
+    payload_out->current_raw     = batt->raw_current;
+    payload_out->avg_current_raw = batt->raw_avg_current;
+    payload_out->acr_raw         = batt->raw_acr;
+    payload_out->aac_raw         = batt->raw_active_abs_cap;
+    payload_out->sac_raw         = batt->raw_standby_abs_cap;
+    payload_out->rsrc_raw        = batt->raw_standby_rel_cap;
 
     // --- Analog PMIC Data ---
     payload_out->clprog_adc  = pmic->raw_clprog_adc;

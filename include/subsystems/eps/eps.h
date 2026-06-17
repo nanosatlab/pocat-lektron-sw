@@ -24,10 +24,14 @@ void eps_task(void *pv_parameters);
 // DS2782 raw data
 typedef struct {
     uint16_t raw_voltage;             // 4.88 mV/LSB
-    // int16_t  raw_current;          // 0.104 mA/LSB — avg vs. instant decided by hardware team
+    int16_t  raw_current;             // 0.15625 mA/LSB (10mΩ sense) — instantaneous
     int16_t  raw_temperature;         // 0.125 ºC/LSB
-    uint8_t  raw_relative_cap;        // 1% State of Charge (RARC)
-    // uint16_t raw_accumulated_cap;  // 0.4167 mAh/LSB — enable if energy accounting needed
+    uint8_t  raw_relative_cap;        // 1% State of Charge — RARC (active)
+    int16_t  raw_avg_current;         // 0.15625 mA/LSB (10mΩ sense) — IAVG, 28 s window
+    int16_t  raw_acr;                 // 0.625 mAh/LSB (10mΩ sense) — accumulated charge in/out
+    uint16_t raw_active_abs_cap;      // 1.6 mAh/LSB — RAAC (active absolute capacity)
+    uint16_t raw_standby_abs_cap;     // 1.6 mAh/LSB — RSAC (standby absolute capacity)
+    uint8_t  raw_standby_rel_cap;     // 1% — RSRC (standby relative capacity)
 } Battery_Telemetry_t;
 
 // LTC4040 (PMIC) data
@@ -76,19 +80,23 @@ bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out);
 /* --- Compute values from read data functions --- */
 
 uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry);
-// int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry);  // enable with raw_current
+int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry);
 int16_t DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry);
 
 // Force the compiler to pack this struct with ZERO empty padding bytes
 #pragma pack(push, 1)
 
 typedef struct {
-    // 1. Digital Battery Sensor Data (DS2782) - 5 Bytes
+    // 1. Digital Battery Sensor Data (DS2782) - 16 Bytes
     uint16_t vbat_raw;
     int16_t  temp_raw;
-    uint8_t  rel_cap_raw;
-    // int16_t  current_raw;     // enable when hardware team selects avg vs. instant register
-    // uint16_t accum_cap_raw;   // enable if energy accounting needed
+    uint8_t  rel_cap_raw;      // RARC (active relative capacity, %)
+    int16_t  current_raw;      // instantaneous current (signed)
+    int16_t  avg_current_raw;  // IAVG (28 s averaged current, signed)
+    int16_t  acr_raw;          // ACR (accumulated charge, signed)
+    uint16_t aac_raw;          // RAAC (active absolute capacity, mAh)
+    uint16_t sac_raw;          // RSAC (standby absolute capacity, mAh)
+    uint8_t  rsrc_raw;         // RSRC (standby relative capacity, %)
 
     // 2. Analog Power Manager Data (LTC4040 ADCs) - 2 Bytes
     uint16_t clprog_adc;
