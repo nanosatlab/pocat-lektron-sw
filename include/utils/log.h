@@ -18,7 +18,7 @@
  * @brief Write function for standard output.
  * @details 
  * Implements the _write() system call used by printf() and related functions.
- * Data is transmitted over USART2 using huart2.
+ * Data is transmitted over USART3 using huart3.
  *
  * The function enters a FreeRTOS critical section to prevent concurrent access
  * to the UART during transmission. This implementation is intended for

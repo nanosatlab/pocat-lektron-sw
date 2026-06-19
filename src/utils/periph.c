@@ -21,7 +21,7 @@
  *   - TIM2 (used for tone generation in stm32_radiolib_hal.cpp)
  *       - will probably not be needed for SX1262
  *   - SPI1 (communication with SX1262)
- *   - USART2 (debug output)
+ *   - USART3 (debug output)
  *   - IWDG (independent watchdog)
  * - It then finally creates the OBC task and starts the FreeRTOS scheduler.
  */
@@ -36,7 +36,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim5;
 SPI_HandleTypeDef hspi2;
-UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 IWDG_HandleTypeDef hiwdg;
 RTC_HandleTypeDef hrtc;
 ADC_HandleTypeDef hadc1;
@@ -51,7 +51,7 @@ static void periph_tim2_init(void);
 static void periph_tim5_init(ClockFreq_t freq);
 static void periph_spi2_init(ClockFreq_t freq);
 static void periph_iwdg_init(void);
-static void periph_usart2_init(void);
+static void periph_usart3_init(void);
 static void periph_rtc_init(void);
 static void periph_adc1_init(ClockFreq_t freq);
 
@@ -63,7 +63,7 @@ void periph_init_for_freq(ClockFreq_t freq)
     periph_tim2_init();
     periph_spi2_init(freq);
     periph_iwdg_init();
-    periph_usart2_init();
+    periph_usart3_init();
     periph_rtc_init();
     periph_adc1_init(freq);
 }
@@ -73,7 +73,7 @@ void periph_reconfigure_for_freq(ClockFreq_t freq)
     __HAL_TIM_SET_PRESCALER(&htim5, tim5_prescaler_for_freq(freq));
     HAL_TIM_GenerateEvent(&htim5, TIM_EVENTSOURCE_UPDATE);
 
-    if (HAL_UART_Init(&huart2) != HAL_OK) {
+    if (HAL_UART_Init(&huart3) != HAL_OK) {
         Error_Handler();
     }
 
@@ -269,22 +269,22 @@ static void periph_iwdg_init(void)
 }
 
 /**
-  * @brief USART2 Initialization Function
-  * @details USART2 is configured for debug output using printf() at 115200 baud.
+  * @brief USART3 Initialization Function
+  * @details USART3 is configured for debug output using printf() at 115200 baud.
   */
-static void periph_usart2_init(void)
+static void periph_usart3_init(void)
 {
-    huart2.Instance = USART2;
-    huart2.Init.BaudRate = 115200;
-    huart2.Init.WordLength = UART_WORDLENGTH_8B;
-    huart2.Init.StopBits = UART_STOPBITS_1;
-    huart2.Init.Parity = UART_PARITY_NONE;
-    huart2.Init.Mode = UART_MODE_TX_RX;
-    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-    huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-    huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-    if (HAL_UART_Init(&huart2) != HAL_OK) {
+    huart3.Instance = USART3;
+    huart3.Init.BaudRate = 115200;
+    huart3.Init.WordLength = UART_WORDLENGTH_8B;
+    huart3.Init.StopBits = UART_STOPBITS_1;
+    huart3.Init.Parity = UART_PARITY_NONE;
+    huart3.Init.Mode = UART_MODE_TX_RX;
+    huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+    huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+    huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+    if (HAL_UART_Init(&huart3) != HAL_OK) {
         Error_Handler();
     }
 }
