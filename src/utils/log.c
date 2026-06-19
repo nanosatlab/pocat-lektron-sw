@@ -26,10 +26,10 @@ int _write(int file, char *ptr, int len)
 {
     if (uart_mutex != NULL && xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
         xSemaphoreTake(uart_mutex, portMAX_DELAY);
-        HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 1000);
+        HAL_UART_Transmit(&huart3, (uint8_t *)ptr, len, 1000);
         xSemaphoreGive(uart_mutex);
     } else {
-        HAL_UART_Transmit(&huart2, (uint8_t *)ptr, len, 1000);
+        HAL_UART_Transmit(&huart3, (uint8_t *)ptr, len, 1000);
     }
     return len;
 }

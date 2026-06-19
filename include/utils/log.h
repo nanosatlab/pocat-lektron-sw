@@ -1,8 +1,8 @@
 /**
  * @file log.h
- * @brief Debug printf redirection through USART2.
+ * @brief Debug printf redirection through USART3.
  * @details
- * Call log_init() after USART2 initialization to create the mutex used for
+ * Call log_init() after USART3 initialization to create the mutex used for
  * serialized UART output once FreeRTOS is running. Before the scheduler starts,
  * printf() output is transmitted directly.
  * @author Guillermo O'Tuama Pascual
@@ -30,7 +30,7 @@ void log_init(void);
  * @brief Low-level write hook for standard output.
  * @details
  * Implements the _write() system call used by printf() and related functions.
- * Data is transmitted through USART2 using huart2.
+ * Data is transmitted through USART3 using huart3.
  *
  * When the FreeRTOS scheduler is running and log_init() has created the mutex,
  * the function serializes UART access with that mutex. Before the scheduler is

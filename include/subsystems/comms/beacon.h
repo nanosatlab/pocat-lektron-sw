@@ -1,16 +1,13 @@
-/**
- * @file beacon.h
- * @brief Periodic beacon transmission task.
- */
-
 #pragma once
 
-#define BEACON_PERIOD_MS  5000  /**< Beacon interval in ms */
+#include <stdint.h>
 
-/**
- * @brief Beacon task: enqueues a beacon packet every BEACON_PERIOD_MS.
- *
- * Gets the TX queue handle from comms and notifies transceiver_task.
- * Must be created after the scheduler is running.
- */
+#define BEACON_PERIOD_MS      30000u
+#define BEACON_HEALTH_KICK_MS  4000u  /* must be < health check period (5 s) */
+
+extern uint8_t  g_last_tc_id;
+extern uint8_t  g_last_tc_rc;
+extern uint32_t g_beacon_period_ms;
+
+void beacon_set_period(uint32_t period_ms);
 void beacon_task(void *pv_parameters);

@@ -70,7 +70,9 @@ void health_config(TickType_t period);
  *
  * @param expected_bits Bitmask of subsystems to monitor (OR of health_bit_t values).
  *
- * @note This restarts the health check window.
+ * @note Does not restart the health check window. Tasks newly added to the
+ *       expected set are marked as already-kicked for the current period so
+ *       they aren't faulted before they've had a chance to run.
  */
 void health_set_expected(EventBits_t expected_bits);
 
