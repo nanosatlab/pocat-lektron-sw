@@ -99,11 +99,16 @@ add_executable(${EXECUTABLE}
 # Mock radio option (no hardware required: prints config and TX packets, RX always times out)
 option(RADIO_MOCK "Use mock radio implementation" OFF)
 
+# Test instrumentation option (bench test campaign only, see ir-report/test-campaign.md):
+# prints TIM5-based microsecond timing for auth tag compute and CAD scan duration over USART2.
+option(POCAT_TEST_INSTRUMENTATION "Enable bench test campaign timing instrumentation" OFF)
+
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
     ${MCU_MODEL}
     USE_HAL_DRIVER
     $<$<BOOL:${RADIO_MOCK}>:RADIO_MOCK>
+    $<$<BOOL:${POCAT_TEST_INSTRUMENTATION}>:POCAT_TEST_INSTRUMENTATION>
 )
 
 # Add header directories (AFTER add_executable !!)

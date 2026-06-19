@@ -1,5 +1,6 @@
 #include "frame.h"
 #include "auth.h"
+#include "test_instrumentation.h"
 #include <string.h>
 
 /* AIR_FRAME_MAX_AUTH: maximum total LoRa frame size when AUTH_TAG is present.
@@ -55,7 +56,9 @@ uint8_t air_encode(uint8_t *buf, uint8_t type, uint8_t flags,
     flags |= AIR_FLAG_AUTH_TAG;
     uint8_t hdr_len = encode_raw(buf, type, flags, seq, payload, len);
     /* hdr_len = 5 + len; auth_tag hashes header (buf[0..4]) then payload. */
+    uint32_t t0 = TINSTR_US();
     auth_tag(buf, payload, len, &buf[hdr_len]);
+    TINSTR_LOG("auth_tag_us=%lu len=%u", (unsigned long)(TINSTR_US() - t0), len);
     return (uint8_t)(hdr_len + AUTH_TAG_LEN);
 }
 
@@ -78,7 +81,10 @@ int air_decode(const uint8_t *buf, uint8_t buf_len, AirFrame_t *out)
     if ((uint8_t)(tag_off + AUTH_TAG_LEN) > buf_len) {
         return -1;
     }
-    if (!auth_verify(buf, out->payload, out->len, &buf[tag_off])) {
+    uint32_t t0 = TINSTR_US();
+    bool ok = auth_verify(buf, out->payload, out->len, &buf[tag_off]);
+    TINSTR_LOG("auth_verify_us=%lu len=%u", (unsigned long)(TINSTR_US() - t0), out->len);
+    if (!ok) {
         return -1;
     }
     return 0;

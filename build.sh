@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# Usage: ./build.sh [--mock] [--clean]
-#   --mock   Build with the mock radio (no hardware required)
-#   --clean  Remove the build directory before building (force full rebuild)
+# Usage: ./build.sh [--mock] [--clean] [--test-instr]
+#   --mock        Build with the mock radio (no hardware required)
+#   --clean       Remove the build directory before building (force full rebuild)
+#   --test-instr  Enable bench test campaign timing instrumentation
+#                 (auth tag / CAD scan microsecond timing over USART2,
+#                 see ir-report/test-campaign.md). Off by default.
 #
 # Requires POCAT_PSK (32 hex chars = 16-byte PSK, §4.7) to be set in the
 # environment.  build.sh generates include/subsystems/comms/psk.h from the
@@ -10,10 +13,12 @@
 
 RADIO_MOCK=OFF
 CLEAN=0
+TEST_INSTR=OFF
 for arg in "$@"; do
     case "$arg" in
-        --mock)  RADIO_MOCK=ON ;;
-        --clean) CLEAN=1 ;;
+        --mock)        RADIO_MOCK=ON ;;
+        --clean)       CLEAN=1 ;;
+        --test-instr)  TEST_INSTR=ON ;;
     esac
 done
 
@@ -47,7 +52,7 @@ if [ "$CLEAN" -eq 1 ]; then
 fi
 mkdir -p build
 cd build
-cmake .. -DRADIO_MOCK=$RADIO_MOCK
+cmake .. -DRADIO_MOCK=$RADIO_MOCK -DPOCAT_TEST_INSTRUMENTATION=$TEST_INSTR
 make -j4    # 4 threads (Adjust to your number of cores)
 cd ..
 
