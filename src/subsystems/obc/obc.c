@@ -112,11 +112,11 @@ static void process_obc(ObcState_t *currentState) {
     }
 
     if (notificationValue & N_OBC_EPS_ECLIPSE_START) {
-        // Notification to let OBC know we are entering eclipse, eps is running and updating telemetry in parallel
+        // EPS reported !PFO power-fail (input power lost — commonly eclipse, but not only); EPS keeps running and updating telemetry in parallel
     }
 
     if (notificationValue & N_OBC_EPS_ECLIPSE_END) {
-        // Notification to let OBC know we have sunlight again
+        // EPS reported !PFO cleared (input power restored)
     }
 
     check_next_state(currentState, notificationValue);

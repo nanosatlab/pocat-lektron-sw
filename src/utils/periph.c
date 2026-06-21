@@ -37,6 +37,7 @@ static void periph_iwdg_init(void);
 static void periph_usart2_init(void);
 static void periph_rtc_init(void);
 static void periph_adc1_init(ClockFreq_t freq);
+static void periph_i2c1_init(void);
 
 void periph_init_for_freq(ClockFreq_t freq)
 {
@@ -48,6 +49,7 @@ void periph_init_for_freq(ClockFreq_t freq)
     periph_usart2_init();
     periph_rtc_init();
     periph_adc1_init(freq);
+    periph_i2c1_init();
 }
 
 void periph_reconfigure_for_freq(ClockFreq_t freq)
@@ -394,6 +396,38 @@ static void periph_adc1_init(ClockFreq_t freq)
     }
 
     if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @details Configures I2C1 at 100 kHz for the DS2782 battery fuel gauge.
+  * The timing constant is precomputed for an 80 MHz PCLK1; the project does
+  * not currently switch system clock at runtime, so a single value suffices.
+  * If dynamic clocking is added, periph_reconfigure_for_freq() must reinit
+  * I2C1 with a timing value selected from the new PCLK1.
+  */
+static void periph_i2c1_init(void)
+{
+    hi2c1.Instance = I2C1;
+    hi2c1.Init.Timing = 0x10909CEC;
+    hi2c1.Init.OwnAddress1 = 0;
+    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c1.Init.OwnAddress2 = 0;
+    hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+        Error_Handler();
+    }
+
+    if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK) {
+        Error_Handler();
+    }
+
+    if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK) {
         Error_Handler();
     }
 }

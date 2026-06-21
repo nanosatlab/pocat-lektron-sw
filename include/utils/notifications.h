@@ -50,8 +50,8 @@
 #define N_OBC_SOFT_REBOOT                (1u << 6)  /**< Perform a soft reboot (without clearing flash) */
 #define N_OBC_PERIPHERALS_REBOOT         (1u << 7)  /**< Reboot peripheral devices */
 #define N_OBC_EPS_FAULT_DETECTED         (1u << 8)  /**< EPS reported a PMIC fault via EXTI */
-#define N_OBC_EPS_ECLIPSE_START          (1u << 9)  /**< EPS reported eclipse start via EXTI */
-#define N_OBC_EPS_ECLIPSE_END            (1u << 10) /**< EPS reported eclipse end via EXTI */
+#define N_OBC_EPS_ECLIPSE_START          (1u << 9)  /**< EPS reported !PFO power-fail (input power lost; commonly eclipse) via EXTI */
+#define N_OBC_EPS_ECLIPSE_END            (1u << 10) /**< EPS reported !PFO cleared (input power restored) via EXTI */
 
 #define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_NOMINAL | N_OBC_EXIT_STATE_TO_CONTINGENCY | \
                                 N_OBC_EXIT_STATE_TO_SUNSAFE | N_OBC_EXIT_STATE_TO_SURVIVAL)
@@ -78,8 +78,8 @@
 #define N_EPS_ENABLE_CHARGER             (1u << 4)  /**< Enable battery charger (CHROFF low) */
 #define N_EPS_DISABLE_CHARGER            (1u << 5)  /**< Disable battery charger (CHROFF high) */
 #define N_EPS_FAULT_DETECTED             (1u << 6)  /**< !FAULT EXTI fired — charger already disabled by ISR */
-#define N_EPS_ECLIPSE_START              (1u << 7)  /**< !PFO fell — solar input lost, eclipse started */
-#define N_EPS_ECLIPSE_END                (1u << 8)  /**< !PFO rose — solar input returned, eclipse ended */
+#define N_EPS_ECLIPSE_START              (1u << 7)  /**< !PFO fell — input power lost (commonly eclipse, but also any brown-out/low-sun) */
+#define N_EPS_ECLIPSE_END                (1u << 8)  /**< !PFO rose — input power restored */
 #define N_EPS_NEW_HEATER_BANDS           (1u << 9)  /**< New heater hysteresis bands available in memory */
 
 

@@ -207,7 +207,7 @@ void EXTI4_IRQHandler(void) {
 
 /**
  * @brief EXTI lines [9:5] interrupt handler.
- * PB5 !PFO (LTC4040) — both edges (eclipse start / eclipse end).
+ * PB5 !PFO (LTC4040) — both edges (power-fail assert / clear; input power lost/restored).
  */
 void EXTI9_5_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5)) {

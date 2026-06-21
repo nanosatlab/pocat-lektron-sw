@@ -38,7 +38,7 @@ typedef struct {
 typedef struct {
     bool    is_charging;           // pin !CHRG (true = charging)
     bool    has_fault;             // pin !FAULT (true = emergency fault)
-    bool    is_eclipse;            // pin !PFO (true = eclipse active)
+    bool    is_eclipse;            // pin !PFO power-fail (true = input power lost; commonly eclipse, but not only)
     bool    charging_disabled;     // pin CHROFF status (true = charging disabled)
 
     uint16_t raw_clprog_adc;       // ADC value of generated solar current
@@ -112,12 +112,12 @@ typedef struct {
 /* --- Pure logic, exposed for unit testing and reuse --- */
 void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic,
                         OBDH_Payload_t *payload_out);
-void EPS_Update_System_State(uint16_t vbat_mv);
+bool EPS_Update_System_State(uint16_t vbat_mv);   /* returns true if the state changed */
 void EPS_Heater_Control(int16_t temp_c);
 
 /* --- Hardware interrupt dispatch (called from stm32l4xx_it.c) --- */
 void EPS_Fault_IRQHandler(void);   /**< PC4 !FAULT falling edge — disables charger immediately */
-void EPS_PFO_IRQHandler(void);     /**< PB5 !PFO both edges — eclipse start/end detection */
+void EPS_PFO_IRQHandler(void);     /**< PB5 !PFO both edges — power-fail assert/clear (input power lost/restored) */
 
 /* --- Mock injection (debug facility; used by the on-target tests) --- */
 void DS2782_Set_Mock_Values(const Battery_Telemetry_t *v);
