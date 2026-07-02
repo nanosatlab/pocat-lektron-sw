@@ -1,6 +1,6 @@
 /**
  * @file log.c
- * @brief Debug printf redirection through USART2.
+ * @brief Debug printf redirection through UART4.
  * @details
  * Implements the project _write() hook used by the C library for stdout.
  * @author Guillermo O'Tuama Pascual
@@ -26,10 +26,10 @@ int _write(int file, char *ptr, int len)
 {
     if (uart_mutex != NULL && xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
         xSemaphoreTake(uart_mutex, portMAX_DELAY);
-        HAL_UART_Transmit(&huart3, (uint8_t *)ptr, len, 1000);
+        HAL_UART_Transmit(&huart4, (uint8_t *)ptr, len, 1000);
         xSemaphoreGive(uart_mutex);
     } else {
-        HAL_UART_Transmit(&huart3, (uint8_t *)ptr, len, 1000);
+        HAL_UART_Transmit(&huart4, (uint8_t *)ptr, len, 1000);
     }
     return len;
 }

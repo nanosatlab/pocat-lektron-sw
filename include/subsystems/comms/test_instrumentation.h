@@ -5,7 +5,7 @@
  *        POCAT_TEST_INSTRUMENTATION (./build.sh --test-instr).
  *
  * Reads the free-running 1 MHz TIM5 counter (periph.c) directly; no extra
- * peripheral setup required. Output goes over the existing USART3 debug
+ * peripheral setup required. Output goes over the existing UART4 debug
  * console (log.c) and is meant to be captured by a serial terminal on the
  * bench, not parsed automatically.
  */

@@ -120,47 +120,25 @@ extern "C" { // to stop name mangling
        }
     }
 
+    static void logIfErr(const char *who, int state) {
+        if (state != RADIOLIB_ERR_NONE) {
+            printf("RadioLib_%s FAILED state=%d\r\n", who, state);
+        }
+    }
+
     void RadioLib_SetTxConfig(uint8_t sf, uint8_t cr, int8_t power,
                             uint8_t bw, int iqInverted,
                             int crcOn, uint16_t preambleLen)
     {
-        int state;
-
-        // Set output power
-        state = radio.setOutputPower(power);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Set spreading factor
-        state = radio.setSpreadingFactor(sf);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Set coding rate (RadioLib CR uses values 5–8)
-        state = radio.setCodingRate(cr + 4);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Set bandwidth
-        state = radio.setBandwidth(bwCodeToKHz(bw));
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // CRC enable/disable
-        state = radio.setCRC(crcOn);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Preamble length
-        state = radio.setPreambleLength(preambleLen);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
+        // Set bandwidth FIRST so setSpreadingFactor's internal LDRO
+        // auto-calc (symbolLength = 2^sf / bandwidthKhz) uses the bandwidth
+        // we're actually about to use, not whatever was cached before.
+        logIfErr("SetTxConfig.setBandwidth", radio.setBandwidth(bwCodeToKHz(bw)));
+        logIfErr("SetTxConfig.setOutputPower", radio.setOutputPower(power));
+        logIfErr("SetTxConfig.setSpreadingFactor", radio.setSpreadingFactor(sf));
+        logIfErr("SetTxConfig.setCodingRate", radio.setCodingRate(cr + 4));
+        logIfErr("SetTxConfig.setCRC", radio.setCRC(crcOn));
+        logIfErr("SetTxConfig.setPreambleLength", radio.setPreambleLength(preambleLen));
 
         // Note: IQ inversion is not a separate method in RadioLib SX1262
         // If needed, handle in modulation settings or ignore.
@@ -170,37 +148,11 @@ extern "C" { // to stop name mangling
                             int iqInverted, int crcOn,
                             uint16_t preambleLen)
     {
-        int state;
-
-        // Set spreading factor
-        state = radio.setSpreadingFactor(sf);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Set coding rate
-        state = radio.setCodingRate(cr + 4);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Set bandwidth
-        state = radio.setBandwidth(bwCodeToKHz(bw));
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // CRC enable/disable
-        state = radio.setCRC(crcOn);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
-
-        // Preamble length
-        state = radio.setPreambleLength(preambleLen);
-        if (state != RADIOLIB_ERR_NONE) {
-            // Handle error
-        }
+        logIfErr("SetRxConfig.setBandwidth", radio.setBandwidth(bwCodeToKHz(bw)));
+        logIfErr("SetRxConfig.setSpreadingFactor", radio.setSpreadingFactor(sf));
+        logIfErr("SetRxConfig.setCodingRate", radio.setCodingRate(cr + 4));
+        logIfErr("SetRxConfig.setCRC", radio.setCRC(crcOn));
+        logIfErr("SetRxConfig.setPreambleLength", radio.setPreambleLength(preambleLen));
 
         // Note: IQ inversion doesn’t have a separate setter in RadioLib SX1262
     }
@@ -412,6 +364,10 @@ extern "C" { // to stop name mangling
             preambleLen, 0,
             RADIOLIB_IRQ_RX_DEFAULT_FLAGS,
             RADIOLIB_IRQ_RX_DEFAULT_MASK);
+        if (state != RADIOLIB_ERR_NONE) {
+            printf("RadioLib_StartReceive: startReceiveDutyCycleAuto FAILED state=%d preamble=%u\r\n",
+                   (int)state, (unsigned)preambleLen);
+        }
         return state;
     }
 

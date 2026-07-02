@@ -26,8 +26,8 @@ extern TIM_HandleTypeDef htim5;
 /** @brief Global SPI2 handle used for SX1262 communication. */
 extern SPI_HandleTypeDef hspi2;
 
-/** @brief Global USART3 handle used for debug logging. */
-extern UART_HandleTypeDef huart3;
+/** @brief Global UART4 handle used for debug logging. */
+extern UART_HandleTypeDef huart4;
 
 /** @brief Global independent watchdog handle. */
 extern IWDG_HandleTypeDef hiwdg;

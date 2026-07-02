@@ -300,6 +300,12 @@ void tc_process(const AirFrame_t *frame)
         break;
 
     default:
+        /* §6.5 NACK_UNKNOWN_TC_ID — the air-layer ACK was already sent by
+         * the transceiver (eager-ACK design, see TC_LORA_CONFIG above); this
+         * NACK is the explicit post-ACK signal the GS uses to learn the TC
+         * was not recognized. */
+        g_last_tc_rc = NACK_UNKNOWN_TC_ID;
+        enqueue_nack(frame->type, frame->seq, NACK_UNKNOWN_TC_ID);
         break;
     }
 }

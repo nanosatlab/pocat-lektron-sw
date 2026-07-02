@@ -71,6 +71,15 @@ static arq_session_t g_sess;
 
 /* ---- Flash address map for DL transfer types ---- */
 
+/* TRANSFER_OBC_LOG has no real log-to-flash capture subsystem yet (it reuses
+ * the telemetry area as a stand-in source). To exercise the ARQ engine and
+ * measure throughput at a realistic size (test-campaign.md §3.2) without
+ * reading into unrelated flash regions, OBC_LOG sessions cycle through a
+ * small, legitimately-OBC_LOG-owned window of flash, repeating it as many
+ * times as needed to reach ARQ_OBC_LOG_TOTAL_BYTES — see dl_block_addr(). */
+#define ARQ_OBC_LOG_TOTAL_BYTES  8192u
+#define ARQ_OBC_LOG_SRC_WINDOW    256u   /* TELEMETRY_ADDR .. COUNT_PACKET_ADDR */
+
 static uint32_t dl_base_addr(transfer_type_t type)
 {
     switch (type) {
@@ -78,6 +87,20 @@ static uint32_t dl_base_addr(transfer_type_t type)
     case TRANSFER_PAYLOAD_DATA:  return PHOTO_ADDR;
     default:                     return TELEMETRY_ADDR; /* OBC_LOG: reuse telemetry area */
     }
+}
+
+/* Flash address to read for one DL block. OBC_LOG wraps within
+ * ARQ_OBC_LOG_SRC_WINDOW (repeating content) since its source bytes are a
+ * placeholder, not a real per-block log buffer; other transfer types read
+ * linearly as before. */
+static uint32_t dl_block_addr(transfer_type_t type, uint32_t base_addr,
+                              uint16_t block_idx, uint8_t block_size)
+{
+    uint32_t off = (uint32_t)block_idx * block_size;
+    if (type == TRANSFER_OBC_LOG) {
+        off %= ARQ_OBC_LOG_SRC_WINDOW;
+    }
+    return base_addr + off;
 }
 
 /* Return total bytes for a DL session based on type and params. */
@@ -94,7 +117,7 @@ static uint32_t dl_total_bytes(transfer_type_t type, const uint8_t *p, uint8_t p
     case TRANSFER_HK_HISTORY:
         return 2048u; /* 2 KB of historic HK (≈128 × 16-B records) */
     case TRANSFER_OBC_LOG:
-        return 1024u;
+        return ARQ_OBC_LOG_TOTAL_BYTES;
     default:
         return 1024u;
     }
@@ -147,12 +170,13 @@ static void arq_tx_raw(const uint8_t *buf, uint8_t len)
 }
 
 /* CAD + transmit + wait TX_DONE for one DATA block. */
-static void arq_send_data_block(uint8_t session_id, uint16_t block_idx,
-                                 uint8_t block_size, uint8_t actual_size,
-                                 uint32_t base_addr, bool is_retx)
+static void arq_send_data_block(transfer_type_t type, uint8_t session_id,
+                                 uint16_t block_idx, uint8_t block_size,
+                                 uint8_t actual_size, uint32_t base_addr,
+                                 bool is_retx)
 {
     uint8_t block_data[ARQ_BLOCK_SIZE];
-    OBDH_Read_Request(base_addr + (uint32_t)block_idx * block_size,
+    OBDH_Read_Request(dl_block_addr(type, base_addr, block_idx, block_size),
                       block_data, actual_size);
 
     /* DATA payload: [SESSION_ID][BLOCK_INDEX_HI][BLOCK_INDEX_LO][data...] */
@@ -633,7 +657,7 @@ void arq_run_dl(QueueHandle_t rx_q)
                 uint8_t rem = (uint8_t)(tbytes % bsize);
                 if (rem != 0u) { actual = rem; }
             }
-            arq_send_data_block(sid, tx_next, bsize, actual, base_addr,
+            arq_send_data_block(ttype, sid, tx_next, bsize, actual, base_addr,
                                 retx_attempts > 0u);
             tx_next++;
             health_kick(HEALTH_BIT_TRANSCEIVER);
@@ -692,7 +716,7 @@ void arq_run_dl(QueueHandle_t rx_q)
                 uint8_t rem = (uint8_t)(tbytes % bsize);
                 if (rem != 0u) { actual = rem; }
             }
-            arq_send_data_block(sid, tx_base, bsize, actual, base_addr, true);
+            arq_send_data_block(ttype, sid, tx_base, bsize, actual, base_addr, true);
             health_kick(HEALTH_BIT_TRANSCEIVER);
         }
 
@@ -711,7 +735,7 @@ void arq_run_dl(QueueHandle_t rx_q)
                     uint8_t rem = (uint8_t)(tbytes % bsize);
                     if (rem != 0u) { actual = rem; }
                 }
-                arq_send_data_block(sid, blk, bsize, actual, base_addr, true);
+                arq_send_data_block(ttype, sid, blk, bsize, actual, base_addr, true);
                 health_kick(HEALTH_BIT_TRANSCEIVER);
             }
         }
@@ -734,7 +758,7 @@ void arq_run_dl(QueueHandle_t rx_q)
             if (rem != 0u) { actual = rem; }
         }
         uint8_t blk_buf[ARQ_BLOCK_SIZE];
-        OBDH_Read_Request(base_addr + (uint32_t)blk * bsize, blk_buf, actual);
+        OBDH_Read_Request(dl_block_addr(ttype, base_addr, blk, bsize), blk_buf, actual);
         crc = crc32_update(crc, blk_buf, actual);
         health_kick(HEALTH_BIT_TRANSCEIVER);
     }

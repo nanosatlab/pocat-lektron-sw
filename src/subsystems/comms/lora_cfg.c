@@ -64,12 +64,16 @@ void lora_cfg_init(void)
 {
     /* Defaults match the hard-coded values that transceiver.c installs at
      * boot (RF_FREQUENCY, LORA_*_DEFAULT, TX_OUTPUT_POWER). CFG_ID=1 is the
-     * first committed config. */
+     * first committed config.
+     * SF10 (not the original SF8) per the bench test campaign: SF11/12
+     * showed a sharp, unexplained reliability cliff (see ir-report/
+     * test-campaign.md) — SF9/SF10 were consistently clean, SF10 chosen for
+     * the larger link margin. */
     LoraConfig_t boot = {
         .cfg_id           = 0x01u,
         .target           = 0x01u,
         .frequency_hz     = 868000000ul,
-        .sf               = 8u,
+        .sf               = 10u,
         .bw               = 0u,
         .cr               = 1u,
         .tx_power_dbm     = 18,

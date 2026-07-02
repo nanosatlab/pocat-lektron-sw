@@ -4,7 +4,7 @@
  * @details
  * Defines the global STM32 HAL peripheral handles declared in periph.h and
  * centralizes board peripheral initialization. The module initializes GPIO,
- * TIM5, TIM2, SPI2, IWDG, USART2, RTC, and ADC1, and provides reconfiguration
+ * TIM5, TIM2, SPI2, IWDG, UART4, RTC, and ADC1, and provides reconfiguration
  * for peripherals whose timing depends on the selected system clock.
  * @author Guillermo O'Tuama Pascual
  * @date 2026-01-20
@@ -20,7 +20,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim5;
 SPI_HandleTypeDef hspi2;
-UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart4;
 IWDG_HandleTypeDef hiwdg;
 RTC_HandleTypeDef hrtc;
 ADC_HandleTypeDef hadc1;
@@ -33,7 +33,7 @@ static void periph_tim2_init(void);
 static void periph_tim5_init(ClockFreq_t freq);
 static void periph_spi2_init(ClockFreq_t freq);
 static void periph_iwdg_init(void);
-static void periph_usart3_init(void);
+static void periph_uart4_init(void);
 static void periph_rtc_init(void);
 static void periph_adc1_init(ClockFreq_t freq);
 
@@ -44,7 +44,7 @@ void periph_init_for_freq(ClockFreq_t freq)
     periph_tim2_init();
     periph_spi2_init(freq);
     periph_iwdg_init();
-    periph_usart3_init();
+    periph_uart4_init();
     periph_rtc_init();
     periph_adc1_init(freq);
 }
@@ -54,7 +54,7 @@ void periph_reconfigure_for_freq(ClockFreq_t freq)
     __HAL_TIM_SET_PRESCALER(&htim5, tim5_prescaler_for_freq(freq));
     HAL_TIM_GenerateEvent(&htim5, TIM_EVENTSOURCE_UPDATE);
 
-    if (HAL_UART_Init(&huart3) != HAL_OK) {
+    if (HAL_UART_Init(&huart4) != HAL_OK) {
         Error_Handler();
     }
 
@@ -268,22 +268,22 @@ static void periph_iwdg_init(void)
 }
 
 /**
-  * @brief USART3 Initialization Function
-  * @details USART3 is configured for debug output using printf() at 115200 baud.
+  * @brief UART4 Initialization Function
+  * @details UART4 is configured for debug output using printf() at 115200 baud.
   */
-static void periph_usart3_init(void)
+static void periph_uart4_init(void)
 {
-    huart3.Instance = USART3;
-    huart3.Init.BaudRate = 115200;
-    huart3.Init.WordLength = UART_WORDLENGTH_8B;
-    huart3.Init.StopBits = UART_STOPBITS_1;
-    huart3.Init.Parity = UART_PARITY_NONE;
-    huart3.Init.Mode = UART_MODE_TX_RX;
-    huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-    huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-    huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-    if (HAL_UART_Init(&huart3) != HAL_OK) {
+    huart4.Instance = UART4;
+    huart4.Init.BaudRate = 115200;
+    huart4.Init.WordLength = UART_WORDLENGTH_8B;
+    huart4.Init.StopBits = UART_STOPBITS_1;
+    huart4.Init.Parity = UART_PARITY_NONE;
+    huart4.Init.Mode = UART_MODE_TX_RX;
+    huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+    huart4.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+    huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+    if (HAL_UART_Init(&huart4) != HAL_OK) {
         Error_Handler();
     }
 }
