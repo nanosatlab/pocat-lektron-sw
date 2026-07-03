@@ -164,8 +164,10 @@ static void process_obdh(void) {
 
         if (request.client != NULL)
         {
+            uint32_t completion = (request.token << OBDH_STATUS_BITS)
+                                | ((uint32_t)status & OBDH_STATUS_MASK);
             xTaskNotifyIndexed(request.client, OBDH_NOTIFY_IDX,
-                               (uint32_t)status, eSetValueWithOverwrite);
+                               completion, eSetValueWithOverwrite);
         }
         
     }

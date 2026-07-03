@@ -48,7 +48,18 @@ typedef struct {
         uint8_t       *dst;  // FLASH_READ:  buffer a omplir
     } buf;
     TaskHandle_t client; // Tarea que demana l'operació (per notificar-la)
+    uint32_t token;      // Identifies this request so a late/stale completion can be rejected
 } obdh_request;
+
+/*
+ * The OBDH completion notification (sent on OBDH_NOTIFY_IDX) packs the request
+ * token and the HAL status into one 32-bit value, so a requester can tell its
+ * own completion apart from a late one left over from a request that already
+ * timed out:  value = (token << OBDH_STATUS_BITS) | status.
+ */
+#define OBDH_STATUS_BITS  4u
+#define OBDH_STATUS_MASK  0x0Fu
+#define OBDH_TOKEN_MASK   (0xFFFFFFFFu >> OBDH_STATUS_BITS)   /* 28-bit token space */
 
 /** @brief Queue used to send flash access requests to the OBDH task. */
 extern QueueHandle_t obdh_queue_handle;

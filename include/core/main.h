@@ -23,9 +23,11 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /** @brief Return the OBC task handle (created in main). */
 TaskHandle_t main_get_obc_handle(void);
 
-/** @brief Error handler function
-* @todo Implement proper error handling mechanism.
-*/
+/**
+ * @brief STM32 HAL fatal-error hook (defined in main.c).
+ * @details Called by the HAL/MSP and peripheral layers on unrecoverable init
+ *          failures; forwards to error_fatal() (record + clean reset).
+ */
 void Error_Handler(void);
 
 #endif /* __MAIN_H */
