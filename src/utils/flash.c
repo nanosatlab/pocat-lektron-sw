@@ -19,7 +19,7 @@ static uint32_t get_page(uint32_t Addr);
 static uint32_t get_bank(uint32_t Addr);
 
 
-void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
+void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
 	
     static uint8_t  dataSave[FLASH_PAGE_SIZE];
 
@@ -86,7 +86,7 @@ void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
 
 }
 
-void Read_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
+void flash_read(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
     memcpy(data, (const void *)data_addr, n_bytes);
 }
 

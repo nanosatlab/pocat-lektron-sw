@@ -47,7 +47,7 @@ int main(void)
   HAL_Init();
 
   obc_state_t bootState;
-  Read_Flash(CURRENT_STATE_ADDR, (uint8_t*)&bootState, sizeof(obc_state_t));
+  flash_read(CURRENT_STATE_ADDR, (uint8_t*)&bootState, sizeof(obc_state_t));
   bootState = (bootState >= OBC_STATE_BOOT && bootState <= OBC_STATE_SAFE_HOLD) ? bootState : OBC_STATE_BOOT;
 
   ClockFreq_t freq = freq_for_state(bootState);

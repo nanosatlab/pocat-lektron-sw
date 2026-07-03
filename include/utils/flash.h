@@ -136,7 +136,7 @@ extern SemaphoreHandle_t xMutex;
   *         not to be necessary, the function can be simplified back to a single page.
   * @todo   Review __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
   */
-void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
+void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
 
 /**
   * @brief  Reads a block of bytes from internal flash into a RAM buffer.
@@ -147,6 +147,6 @@ void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
   * @param  data: Destination buffer (must hold at least n_bytes).
   * @param  n_bytes: Number of bytes to read.
   */
-void Read_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
+void flash_read(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
 
 #endif /* INC_FLASH_H_ */

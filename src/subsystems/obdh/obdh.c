@@ -40,7 +40,7 @@ void obdh_task(void *pv_parameters) {
 
 void obdh_save_pointers_flash(void)
 {
-    Write_Flash(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
+    flash_write(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
 }
 
 /**
@@ -60,7 +60,7 @@ static void setup_obdh(void) {
     {
         uint32_t addr=HT_BASE_ADDR+(i*HT_BEACON_SIZE);
         
-        Read_Flash(addr,buf,4);
+        flash_read(addr,buf,4);
         uint32_t curr_epoch=buf[0]<<24 |buf[1]<<16| buf[2]<<8| buf[3] ;
         if(curr_epoch==0xFFFFFFFF || curr_epoch==0)
         {
@@ -85,7 +85,7 @@ static void setup_obdh(void) {
 */
 
     printf("Setting up OBDH...\n");
-    Read_Flash(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
+    flash_read(HT_POINTER_ADDR, (uint8_t*)&telemetry_handler, sizeof(CircularFlashHandler));
     if(telemetry_handler.flag==telemetry_circular_flag)
     {
         printf("Telemetria circular creada\n");
@@ -133,7 +133,7 @@ static void process_obdh(void) {
         {
             if(request.buf.dst!=NULL)
             {
-                Read_Flash(request.addr, request.buf.dst, request.len);
+                flash_read(request.addr, request.buf.dst, request.len);
             }
             /*if(request.client != NULL) {
                 xTaskNotify(request.client, OBC_EVENT_OBDH_DONE, eSetBits);//We send a notification to the task
@@ -146,7 +146,7 @@ static void process_obdh(void) {
         {
             if(request.buf.src != NULL)
             {
-                Write_Flash(request.addr, request.buf.src, request.len);
+                flash_write(request.addr, request.buf.src, request.len);
                 status=HAL_OK;
 
                 /*
