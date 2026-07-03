@@ -11,6 +11,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "flash.h"
+#include "obdh_requests.h"
 #include "task_management.h"
 #include "clock.h"
 #include "periph.h"
@@ -103,7 +104,7 @@ static uint32_t tasks_for_state(obc_state_t state)
  */
 static void change_state(obc_state_t *currentState, obc_state_t newState)
 {
-    OBDH_Write_Request(PREVIOUS_STATE_ADDR, (uint8_t*)currentState, sizeof(obc_state_t));
+    obdh_write_request(PREVIOUS_STATE_ADDR, (uint8_t*)currentState, sizeof(obc_state_t));
 
     uint32_t oldTasks = tasks_for_state(*currentState);
     uint32_t newTasks = tasks_for_state(newState);
@@ -121,5 +122,5 @@ static void change_state(obc_state_t *currentState, obc_state_t newState)
     tm_resume_tasks(newTasks);
 
     *currentState = newState;
-    OBDH_Write_Request(CURRENT_STATE_ADDR, (uint8_t*)currentState, sizeof(obc_state_t));
+    obdh_write_request(CURRENT_STATE_ADDR, (uint8_t*)currentState, sizeof(obc_state_t));
 }

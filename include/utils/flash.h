@@ -2,11 +2,12 @@
  * @file flash.h
  * @brief Internal flash memory address map and access helpers.
  * @details
- * Defines the firmware flash address map and declares raw flash access helpers
- * plus OBDH-mediated read/write request functions for task-safe access.
+ * Defines the firmware flash address map and declares raw flash access helpers.
+ * For task-safe access at runtime use the OBDH-mediated request functions in
+ * obdh_requests.h instead.
  * @author Medir Segura
  * @date 2023-01-17
- * @note Modified on 2026-03-04.
+ * @note Modified on 2026-07-03.
  */
 
 #ifndef INC_FLASH_H_
@@ -23,9 +24,6 @@
 #include "event_groups.h"
 #include "queue.h"
 #include "semphr.h"
-
-#define FLASH_QUEUE_SEND_TIMEOUT_MS 100u   /* wait for room in the OBDH request queue */
-#define FLASH_OP_TIMEOUT_MS         2000u  /* wait for OBDH to complete the operation */
 
 // Memory map
 
@@ -150,30 +148,5 @@ void Write_Flash(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
   * @param  n_bytes: Number of bytes to read.
   */
 void Read_Flash(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
-
-/**
- * @brief This functions allows any task at any moment to perform a writing on the flash
- * 
- * @param address Adress where the memory aims to be written
- * @param data Data to be written
- * @param length Length of the data to be written
- * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
- * has happened)
- * @todo blocks until OBDH answers (no timeout yet) — see obdh_submit_request. 
- */
-HAL_StatusTypeDef OBDH_Write_Request(uint32_t address, const uint8_t *data, size_t length);
-
-/**
- * @brief This function allows any task to perform a reading on the flash
- * 
- * @param address Adress of what we want to write
- * @param data Where the data that we want to read will be alocated
- * @param length Length of the data that has to be read. 
- * @return HAL_StatusTypeDef Returns wether the operation has been sucesful or not (indicates which type of error
- * has happened)
- * @todo blocks until OBDH answers (no timeout yet) — see obdh_submit_request. 
- */
-HAL_StatusTypeDef OBDH_Read_Request(uint32_t address,uint8_t *data, size_t length);
-
 
 #endif /* INC_FLASH_H_ */

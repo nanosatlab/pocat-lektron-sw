@@ -52,7 +52,7 @@ int save_ht_to_circular_storage(CircularFlashHandler *ch)
     //Falta implementar
 
     //adreça a escriure
-    // HAL_StatusTypeDef status= OBDH_Write_Request();//escrivim el bloc comprimit
+    // HAL_StatusTypeDef status= obdh_write_request();//escrivim el bloc comprimit
     // if (status==HAL_OK)
     // {
     //     ch.writing_pointer=(ch.writing_pointer+1)%OBDH_MAX_HT12_MESSAGES;

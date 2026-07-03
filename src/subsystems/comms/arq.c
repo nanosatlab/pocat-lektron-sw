@@ -11,6 +11,7 @@
 #include "task_management.h"
 #include "types.h"
 #include "flash.h"
+#include "obdh_requests.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include <string.h>
@@ -131,14 +132,14 @@ static void ul_write_flash(transfer_type_t type, const uint8_t *data, uint32_t l
 
     switch (type) {
     case TRANSFER_TLE_UPLOAD:
-        OBDH_Write_Request(TLE_ADDR, data, len);
+        obdh_write_request(TLE_ADDR, data, len);
         if (adcs != NULL) {
             xTaskNotify(adcs, N_ADCS_NEW_TLE, eSetBits);
         }
         printf("ARQ: TLE written %lu B\r\n", (unsigned long)len);
         break;
     case TRANSFER_ADCS_CALIBRATION:
-        OBDH_Write_Request(CALIBRATION_ADDR, data, len);
+        obdh_write_request(CALIBRATION_ADDR, data, len);
         if (adcs != NULL) {
             xTaskNotify(adcs, N_ADCS_NEW_CALIBRATION, eSetBits);
         }
@@ -146,7 +147,7 @@ static void ul_write_flash(transfer_type_t type, const uint8_t *data, uint32_t l
         break;
     case TRANSFER_FLIGHT_PARAMS:
         if (len > 8u) { len = 8u; }
-        OBDH_Write_Request(RFI_CONFIG_ADDR, data, len);
+        obdh_write_request(RFI_CONFIG_ADDR, data, len);
         printf("ARQ: flight params written %lu B\r\n", (unsigned long)len);
         break;
     default:
@@ -176,7 +177,7 @@ static void arq_send_data_block(transfer_type_t type, uint8_t session_id,
                                  bool is_retx)
 {
     uint8_t block_data[ARQ_BLOCK_SIZE];
-    OBDH_Read_Request(dl_block_addr(type, base_addr, block_idx, block_size),
+    obdh_read_request(dl_block_addr(type, base_addr, block_idx, block_size),
                       block_data, actual_size);
 
     /* DATA payload: [SESSION_ID][BLOCK_INDEX_HI][BLOCK_INDEX_LO][data...] */
@@ -758,7 +759,7 @@ void arq_run_dl(QueueHandle_t rx_q)
             if (rem != 0u) { actual = rem; }
         }
         uint8_t blk_buf[ARQ_BLOCK_SIZE];
-        OBDH_Read_Request(dl_block_addr(ttype, base_addr, blk, bsize), blk_buf, actual);
+        obdh_read_request(dl_block_addr(ttype, base_addr, blk, bsize), blk_buf, actual);
         crc = crc32_update(crc, blk_buf, actual);
         health_kick(HEALTH_BIT_TRANSCEIVER);
     }

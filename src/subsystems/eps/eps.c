@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "health.h"
 #include "flash.h"
+#include "obdh_requests.h"
 #include "notifications.h"
 #include "task_management.h"
 
@@ -62,7 +63,7 @@ static void process_eps(void)
 
     if (notifications & N_EPS_NEW_THRESHOLDS) {
         uint8_t thresholds[3] = {0}; // TODO define default theshholds in case of read failure
-        OBDH_Read_Request(EPS_THRESHOLDS_ADDR, thresholds, 3); 
+        obdh_read_request(EPS_THRESHOLDS_ADDR, thresholds, 3); 
         // Thresholds are now in the thresholds array, in the order: 
         // thresholds[0]: nominal
         // thresholds[1]: contingency

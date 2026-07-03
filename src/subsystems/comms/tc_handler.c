@@ -13,6 +13,7 @@
 #include "main.h"
 #include "time.h"
 #include "flash.h"
+#include "obdh_requests.h"
 #include <string.h>
 #include <stdint.h>
 
@@ -167,12 +168,12 @@ void tc_process(const AirFrame_t *frame)
         break;
 
     case TC_UPLOAD_EPS_TH:
-        OBDH_Write_Request(EPS_THRESHOLDS_ADDR, &p[2], 3);
+        obdh_write_request(EPS_THRESHOLDS_ADDR, &p[2], 3);
         notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_NEW_THRESHOLDS);
         break;
 
     case TC_UPLOAD_PL_CONFIG:
-        OBDH_Write_Request(RFI_CONFIG_ADDR, &p[2], 8);
+        obdh_write_request(RFI_CONFIG_ADDR, &p[2], 8);
         break;
 
     case TC_REQUEST_BEACON_NOW:

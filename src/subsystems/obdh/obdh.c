@@ -187,7 +187,7 @@ HAL_StatusTypeDef obdh_get_telemetry(uint8_t *buffer)
     }
     index=(ht_head+MAX_HT_BEACONS-ht_count)%MAX_HT_BEACONS;
     address=HT_BASE_ADDR+(index*HT_BEACON_SIZE);
-    read_state=OBDH_Read_Request(address,buffer,HT_BEACON_SIZE);
+    read_state=obdh_read_request(address,buffer,HT_BEACON_SIZE);
     if(read_state==HAL_OK)
     {
         ht_count--;
@@ -202,7 +202,7 @@ HAL_StatusTypeDef obdh_insert_telemetry(uint8_t *buffer)
     HAL_StatusTypeDef write_state;
 
     address=HT_BASE_ADDR+(ht_head*HT_BEACON_SIZE);
-    write_state=OBDH_Write_Request(address,buffer,HT_BEACON_SIZE);
+    write_state=obdh_write_request(address,buffer,HT_BEACON_SIZE);
     if (write_state==HAL_OK)
     {
         ht_head=(ht_head+1)%HT_BEACON_SIZE;

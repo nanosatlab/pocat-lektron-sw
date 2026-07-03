@@ -4,6 +4,7 @@
 #include "temperature.h"
 #include "health.h"
 #include "flash.h"
+#include "obdh_requests.h"
 #include <string.h>
 #include <stdint.h>
 
@@ -13,7 +14,7 @@ void tm_build_hk_live(uint8_t *out)
     memset(out, 0, 24);
 
     uint8_t obc_state = 0;
-    OBDH_Read_Request(CURRENT_STATE_ADDR, &obc_state, 1);
+    obdh_read_request(CURRENT_STATE_ADDR, &obc_state, 1);
 
     out[0]  = obc_state;
     out[1]  = 0x3Fu;                          /* HEALTH_FLAGS placeholder */
