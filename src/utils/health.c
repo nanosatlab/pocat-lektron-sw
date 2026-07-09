@@ -65,11 +65,17 @@ void health_config(TickType_t period)
 void health_set_expected(EventBits_t exp_bits)
 {
     lock();
+    EventBits_t added = exp_bits & ~expected_bits;
     expected_bits = exp_bits;
     unlock();
 
-    /* Restart window when mode expectations change */
-    start_new_period(xTaskGetTickCount());
+    /* Newly expected tasks get a grace period: mark their bits as kicked so
+     * the current window doesn't fault them before they've had a chance to
+     * run. They must kick on their own from the next period onward. */
+    if (added != 0 && health_eg != NULL)
+    {
+        xEventGroupSetBits(health_eg, added);
+    }
 }
 
 EventBits_t health_get_expected(void)

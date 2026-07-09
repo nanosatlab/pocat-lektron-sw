@@ -14,48 +14,36 @@
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "frame.h"
 
 /* ---- Constants ---- */
 
-#define COMMS_PKT_SIZE    48
-#define ARQ_MAX_RETRIES   3
-#define ACK_TIMEOUT_MS    4000
-
-/* Protocol identifiers (link-layer) */
-#define COMMS_MISSION_ID  0xC8
-#define COMMS_PQ_ID       0x9D
-#define COMMS_ACK_TYPE    2
+#define COMMS_QUEUE_LEN    2
 
 /* ---- Type definitions ---- */
 
-typedef enum {
-        SLEEP,
-        PROCESS,
-        TRANSMIT,
-
-} CommsState_t;
-
-
 /**
- * @brief Received packet with metadata.
+ * @brief TX queue entry (air frame with metadata for transmission).
  */
 typedef struct {
-    uint8_t  data[COMMS_PKT_SIZE];
-    uint16_t length;
-    int16_t  rssi;
-    int8_t   snr;
-} RxPacket_t;
-
-/**
- * @brief TX queue entry (packet with metadata for transmission).
- */
-typedef struct {
-    uint8_t data[COMMS_PKT_SIZE];
-    uint8_t length;
-    uint8_t tries;
-    uint8_t seq_num;
+    uint8_t frame[AIR_FRAME_MAX];
+    uint8_t frame_len;
     uint8_t needs_ack;
 } TxQueueEntry_t;
+
+/**
+ * @brief Received air frame with link-quality metadata.
+ */
+typedef struct {
+    AirFrame_t air;
+    int16_t    rssi;
+    int8_t     snr;
+} RxAirFrame_t;
+
+/**
+ * @brief Allocate the next SAT->GS frame sequence number.
+ */
+uint8_t comms_next_seq(void);
 
 /**
  * @brief Communications FreeRTOS task entry point: handles protocol logic and packet processing.

@@ -41,20 +41,20 @@
 
 /* ── OBC Task Notifications ─────────────────────────────────────────────── */
 
-#define N_OBC_EXIT_STATE_TO_NOMINAL      (1u << 0)  /**< Permission to upgrade state to NOMINAL */
-#define N_OBC_EXIT_STATE_TO_CONTINGENCY  (1u << 1)  /**< Transition state to CONTINGENCY */
-#define N_OBC_EXIT_STATE_TO_SUNSAFE      (1u << 2)  /**< Transition state to SUNSAFE */
-#define N_OBC_EXIT_STATE_TO_SURVIVAL     (1u << 3)  /**< Transition state to SURVIVAL */
-#define N_OBC_UPDATE_TIME                (1u << 4)  /**< New Unix timestamp available to sync */
-#define N_OBC_HARD_REBOOT                (1u << 5)  /**< Perform a hard reboot (including flash) */
-#define N_OBC_SOFT_REBOOT                (1u << 6)  /**< Perform a soft reboot (without clearing flash) */
-#define N_OBC_PERIPHERALS_REBOOT         (1u << 7)  /**< Reboot peripheral devices */
-#define N_OBC_EPS_FAULT_DETECTED         (1u << 8)  /**< EPS reported a PMIC fault via EXTI */
-#define N_OBC_EPS_ECLIPSE_START          (1u << 9)  /**< EPS reported !PFO power-fail (input power lost; commonly eclipse) via EXTI */
-#define N_OBC_EPS_ECLIPSE_END            (1u << 10) /**< EPS reported !PFO cleared (input power restored) via EXTI */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_NM   (1u << 0)  /**< Permission to upgrade state to NM */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_CM   (1u << 1)  /**< Transition state to CM */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_SSM  (1u << 2)  /**< Transition state to SSM */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_SM   (1u << 3)  /**< Transition state to SM */
+#define N_OBC_UPDATE_TIME                  (1u << 4)  /**< New Unix timestamp available to sync */
+#define N_OBC_HARD_REBOOT                  (1u << 5)  /**< Perform a hard reboot (including flash) */
+#define N_OBC_SOFT_REBOOT                  (1u << 6)  /**< Perform a soft reboot (without clearing flash) */
+#define N_OBC_PERIPHERALS_REBOOT           (1u << 7)  /**< Reboot peripheral devices */
+#define N_OBC_EPS_FAULT_DETECTED           (1u << 8)  /**< EPS reported a PMIC fault via EXTI */
+#define N_OBC_EPS_ECLIPSE_START            (1u << 9)  /**< EPS reported !PFO power-fail (input power lost; commonly eclipse) via EXTI */
+#define N_OBC_EPS_ECLIPSE_END              (1u << 10) /**< EPS reported !PFO cleared (input power restored) via EXTI */
 
-#define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_NOMINAL | N_OBC_EXIT_STATE_TO_CONTINGENCY | \
-                                N_OBC_EXIT_STATE_TO_SUNSAFE | N_OBC_EXIT_STATE_TO_SURVIVAL)
+#define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_OBC_STATE_NM | N_OBC_EXIT_STATE_TO_OBC_STATE_CM | \
+                                N_OBC_EXIT_STATE_TO_OBC_STATE_SSM | N_OBC_EXIT_STATE_TO_OBC_STATE_SM)
 
 /* ── COMMS Task Notifications ───────────────────────────────────────────── */
 
@@ -68,6 +68,7 @@
 
 #define N_TRANSCEIVER_RADIO_IRQ_BIT      (1u << 0)  /**< DIO1 hardware interrupt: RX_DONE or TX_DONE */
 #define N_TRANSCEIVER_TX_READY_BIT       (1u << 1)  /**< TX packet available in tx_queue */
+#define N_TRANSCEIVER_ARQ_DL_BIT         (1u << 2)  /**< Begin ARQ DL session (OBC → GS) */
 
 /* ── EPS Task Notifications ─────────────────────────────────────────────── */
 

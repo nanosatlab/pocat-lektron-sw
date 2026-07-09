@@ -25,17 +25,23 @@
 #include "log.h"
 #include "flash.h"
 #include "notifications.h"
+#include "time.h"
 
 //Variables que vaig fer servir per a la simulació, no verificats
 #define OBDH_QUEUE_LEN 10
 #define OBDH_ITEM_SIZE sizeof(obdh_request)
 
-static void setup_obc(ObcState_t currentState);
-static void process_obc(ObcState_t *currentState);
+/* ---- Private function prototypes ---- */
+
+static void setup_obc(obc_state_t currentState);
+static void process_obc(obc_state_t *currentState);
+static uint32_t process_obc_notifications(void);
+
+/* ---- Public function definitions ---- */
 
 void obc_task(void *pv_parameters) {
 
-    ObcState_t currentState = (ObcState_t)(uint32_t)pv_parameters;
+    obc_state_t currentState = (obc_state_t)(uint32_t)pv_parameters;
     setup_obc(currentState);
 
     for (;;) {
@@ -49,17 +55,19 @@ void obc_task(void *pv_parameters) {
 
 }
 
+/* ---- Private function definitions ---- */
+
 /**
  * @brief Initialize OBC task state.
  *
  * Creates the OBDH request queue, initializes the health monitoring module,
  * registers the independent watchdog handle, configures the health check
- * period, and creates each subsystem tasks in resumed or paused state according 
+ * period, and creates each subsystem tasks in resumed or paused state according
  * to the current satellite operational mode.
  *
  * @param currentState Satellite state restored at boot.
  */
-static void setup_obc(ObcState_t currentState) {
+static void setup_obc(obc_state_t currentState) {
 
     // 1. Create queues
     obdh_queue_handle = xQueueCreate(OBDH_QUEUE_LEN, OBDH_ITEM_SIZE);
@@ -77,18 +85,22 @@ static void setup_obc(ObcState_t currentState) {
     if (!state_machine_boot(currentState)) {
         printf("Error creating subsystem tasks\r\n");
     }
+
+    // 3. Persist the boot time so the beacon can report uptime as (now - boot).
+    uint32_t boot_time = time_get_unix();
+    OBDH_Write_Request(BOOT_TIME_ADDR, (const uint8_t *)&boot_time, sizeof(boot_time));
 }
 
 
 /**
  * @brief Execute one OBC task processing cycle.
  *
- * Reads pending OBC task notifications, processes them, and passes them to 
+ * Reads pending OBC task notifications, processes them, and passes them to
  * the state machine so it can evaluate possible state transitions.
  *
  * @param currentState Pointer to the current OBC state.
  */
-static void process_obc(ObcState_t *currentState) {
+static void process_obc(obc_state_t *currentState) {
 
     // Process notifications:
     uint32_t notificationValue = wait_for_notification(pdMS_TO_TICKS(2000));

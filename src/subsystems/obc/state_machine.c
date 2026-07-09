@@ -17,10 +17,12 @@
 
 #include <stdio.h>
 
-static uint32_t tasks_for_state(ObcState_t state);
-static void change_state(ObcState_t *currentState, ObcState_t newState);
+static uint32_t tasks_for_state(obc_state_t state);
+static void change_state(obc_state_t *currentState, obc_state_t newState);
 
-bool state_machine_boot(ObcState_t state)
+/* ---- Public API ---- */
+
+bool state_machine_boot(obc_state_t state)
 {
     uint32_t running = tasks_for_state(state);
     uint32_t paused  = TM_TASK_ALL & ~running;
@@ -34,28 +36,30 @@ bool state_machine_boot(ObcState_t state)
     return true;
 }
 
-void check_next_state(ObcState_t *currentState, uint32_t notificationValue)
+void check_next_state(obc_state_t *currentState, uint32_t notificationValue)
 {
     // ADD EPS LOGIC
-    if (notificationValue & N_OBC_EXIT_STATE_TO_NOMINAL) {
-        change_state(currentState, NOMINAL);
+    if (notificationValue & N_OBC_EXIT_STATE_TO_OBC_STATE_NM) {
+        change_state(currentState, OBC_STATE_NM);
     }
-    else if (notificationValue & N_OBC_EXIT_STATE_TO_CONTINGENCY) {
-        change_state(currentState, CONTINGENCY);
+    else if (notificationValue & N_OBC_EXIT_STATE_TO_OBC_STATE_CM) {
+        change_state(currentState, OBC_STATE_CM);
     }
-    else if (notificationValue & N_OBC_EXIT_STATE_TO_SUNSAFE) {
-        change_state(currentState, SUNSAFE);
+    else if (notificationValue & N_OBC_EXIT_STATE_TO_OBC_STATE_SSM) {
+        change_state(currentState, OBC_STATE_SSM);
     }
-    else if (notificationValue & N_OBC_EXIT_STATE_TO_SURVIVAL) {
-        change_state(currentState, SURVIVAL);
+    else if (notificationValue & N_OBC_EXIT_STATE_TO_OBC_STATE_SM) {
+        change_state(currentState, OBC_STATE_SM);
     }
 }
 
-ClockFreq_t freq_for_state(ObcState_t state)
+/* ---- Private ---- */
+
+ClockFreq_t freq_for_state(obc_state_t state)
 {
     switch (state) {
-        case SUNSAFE:  return CLK_FREQ_8MHZ;
-        case SURVIVAL: return CLK_FREQ_2MHZ;
+        case OBC_STATE_SSM:  return CLK_FREQ_8MHZ;
+        case OBC_STATE_SM: return CLK_FREQ_2MHZ;
         default:       return CLK_FREQ_80MHZ;
     }
 }
@@ -65,20 +69,20 @@ ClockFreq_t freq_for_state(ObcState_t state)
  * @param state OBC operational state.
  * @return Bitmask of TM_TASK_* values for tasks that should be active.
  */
-static uint32_t tasks_for_state(ObcState_t state)
+static uint32_t tasks_for_state(obc_state_t state)
 {
     switch (state) {
-        case NOMINAL:
+        case OBC_STATE_NM:
             return TM_TASK_ALL;
-        case CONTINGENCY:
+        case OBC_STATE_CM:
             // COMMS beacon only, ADCS detumbling only
             return TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_ADCS | TM_TASK_OBDH
                  | TM_TASK_TRANSCEIVER | TM_TASK_BEACON;
-        case SUNSAFE:
+        case OBC_STATE_SSM:
             // COMMS beacon only, ADCS idle
             return TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_OBDH
                  | TM_TASK_TRANSCEIVER | TM_TASK_BEACON;
-        case SURVIVAL:
+        case OBC_STATE_SM:
             // COMMS RX only, ADCS idle
             return TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_OBDH
                  | TM_TASK_TRANSCEIVER;
@@ -97,9 +101,9 @@ static uint32_t tasks_for_state(ObcState_t state)
  * @param currentState Pointer to the current OBC state.
  * @param newState State to transition into.
  */
-static void change_state(ObcState_t *currentState, ObcState_t newState)
+static void change_state(obc_state_t *currentState, obc_state_t newState)
 {
-    OBDH_Write_Request(PREVIOUS_STATE_ADDR, (uint8_t*)currentState, sizeof(ObcState_t));
+    OBDH_Write_Request(PREVIOUS_STATE_ADDR, (uint8_t*)currentState, sizeof(obc_state_t));
 
     uint32_t oldTasks = tasks_for_state(*currentState);
     uint32_t newTasks = tasks_for_state(newState);
@@ -117,5 +121,5 @@ static void change_state(ObcState_t *currentState, ObcState_t newState)
     tm_resume_tasks(newTasks);
 
     *currentState = newState;
-    OBDH_Write_Request(CURRENT_STATE_ADDR, (uint8_t*)currentState, sizeof(ObcState_t));
+    OBDH_Write_Request(CURRENT_STATE_ADDR, (uint8_t*)currentState, sizeof(obc_state_t));
 }
