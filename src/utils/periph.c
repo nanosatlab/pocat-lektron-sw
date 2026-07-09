@@ -166,6 +166,35 @@ static void periph_gpio_init(void)
 
      /* Radio GPIO pins (PC9/NRST, PA8/BUSY, PA10/DIO1, PB12/NSS) are
      configured by RadioLib through the HAL — do not touch them here. */
+
+    /* EPS pins (pin map in periph.h). The LTC4040 status outputs are
+     * open-drain active-low, so they need pull-ups to read a valid high when
+     * de-asserted; without this the pins stay in the STM32L4 analog reset
+     * state and the is_charging / has_fault / is_eclipse bits are
+     * meaningless. */
+    GPIO_InitTypeDef eps_gpio = {0};
+    eps_gpio.Mode  = GPIO_MODE_INPUT;
+    eps_gpio.Pull  = GPIO_PULLUP;
+    eps_gpio.Speed = GPIO_SPEED_FREQ_LOW;
+    eps_gpio.Pin = EPS_PIN_CHRG;  HAL_GPIO_Init(EPS_PIN_CHRG_PORT,  &eps_gpio);
+    eps_gpio.Pin = EPS_PIN_PFO;   HAL_GPIO_Init(EPS_PIN_PFO_PORT,   &eps_gpio);
+    eps_gpio.Pin = EPS_PIN_FAULT; HAL_GPIO_Init(EPS_PIN_FAULT_PORT, &eps_gpio);
+
+    /* CHRGOFF and heater: push-pull outputs, driven low before init so the
+     * boot state is safe (charger enabled, heater off). setup_eps() applies
+     * the flash-restored configuration once the EPS task starts. */
+    eps_gpio.Mode = GPIO_MODE_OUTPUT_PP;
+    eps_gpio.Pull = GPIO_NOPULL;
+    HAL_GPIO_WritePin(EPS_PIN_CHRGOFF_PORT, EPS_PIN_CHRGOFF, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(EPS_PIN_HEATER_PORT,  EPS_PIN_HEATER,  GPIO_PIN_RESET);
+    eps_gpio.Pin = EPS_PIN_CHRGOFF; HAL_GPIO_Init(EPS_PIN_CHRGOFF_PORT, &eps_gpio);
+    eps_gpio.Pin = EPS_PIN_HEATER;  HAL_GPIO_Init(EPS_PIN_HEATER_PORT,  &eps_gpio);
+
+    /* CLPROG: explicit analog input for the ADC channel (previously relied
+     * on the STM32L4 reset state being analog). */
+    eps_gpio.Mode = GPIO_MODE_ANALOG;
+    eps_gpio.Pull = GPIO_NOPULL;
+    eps_gpio.Pin  = EPS_PIN_CLPROG; HAL_GPIO_Init(EPS_PIN_CLPROG_PORT, &eps_gpio);
 }
 
 /**

@@ -5,7 +5,9 @@
  * The DS2782 register file is auto-incrementing; a single I2C transaction
  * starting at RARC (0x06) and continuing through RSAC LSB (0x15) yields a
  * temporally consistent snapshot of every register the EPS task consumes.
- * Higher-level decoding (sign extension, unit conversion) lives in eps.c.
+ * Higher-level decoding (sign extension, unit conversion) lives here too:
+ * the driver owns everything that depends on the DS2782 register layout and
+ * scale factors, so the EPS task never interprets raw bytes itself.
  */
 
 #ifndef INC_SUBSYSTEMS_EPS_DS2782_H_
@@ -14,6 +16,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "stm32l4xx_hal.h"
+#include "eps_hw.h"   /* Battery_Telemetry_t */
 
 /* I2C slave address — DS2782 fixed 7-bit address is 0110100b = 0x34
  * (confirmed by on-bench HAL_I2C_IsDeviceReady scan). The STM32 HAL I2C API
@@ -77,5 +80,25 @@ bool ds2782_probe(I2C_HandleTypeDef *hi2c);
  * @return true on HAL_OK, false on any I2C failure. Logs error on failure.
  */
 bool ds2782_read_voltage(I2C_HandleTypeDef *hi2c, uint16_t *raw_voltage_out);
+
+/**
+ * @brief Full telemetry snapshot: burst-read the register window and decode
+ *        it into a Battery_Telemetry_t (sign extension, bit alignment).
+ *
+ * TEMP and VOLT are left-justified 11-bit values in a 16-bit word; the
+ * signed 16-bit quantities (currents, ACR) are reassembled MSB-first.
+ * The raw fields keep the DS2782 native scale factors (see Battery_Telemetry_t);
+ * decode to physical units with the DS2782_Compute_*() functions below.
+ *
+ * @param hi2c I2C handle (expected: &hi2c1).
+ * @param[out] telemetry_out Decoded snapshot.
+ * @return true on success, false on any I2C failure or NULL argument.
+ */
+bool ds2782_read_telemetry(I2C_HandleTypeDef *hi2c, Battery_Telemetry_t *telemetry_out);
+
+/* Raw-to-physical conversions (DS2782 scale factors, integer-only math). */
+uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry);     /* mV */
+int16_t  DS2782_Compute_Current(const Battery_Telemetry_t *telemetry);     /* mA */
+int16_t  DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry); /* °C */
 
 #endif /* INC_SUBSYSTEMS_EPS_DS2782_H_ */

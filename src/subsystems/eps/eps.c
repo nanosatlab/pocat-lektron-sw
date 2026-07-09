@@ -14,10 +14,7 @@
 #include "notifications.h"
 #include "events.h"
 #include "main.h"
-#include "stm32l4xx.h"
 #include "task_management.h"
-#include "periph.h"
-#include "ds2782.h"
 
 // The main functionality of the EPS task is providing the OBC with battery readings on
 // it's voltage, current generated, capacity, temperature and charging status. The task
@@ -56,16 +53,10 @@ EventGroupHandle_t batteryStatus = NULL;
 // Function prototypes
 static void setup_eps(void);
 static void process_eps(void);
-static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload);
+static HAL_StatusTypeDef send_telemetry_to_obdh(EPS_Telemetry_Frame_t *frame);
 static void load_thresholds_from_flash(void);
 static void load_sampling_from_flash(void);
 static void load_heater_bands_from_flash(void);
-
-#ifdef UNIT_TEST
-bool EPS_Mock_Mode_Active(void);
-bool DS2782_Read_Mock(Battery_Telemetry_t *out);
-bool LTC4040_Read_Mock(EPS_Status_t *out);
-#endif
 
 void eps_task(void *pv_parameters)
 {
@@ -95,34 +86,8 @@ static void setup_eps(void)
         xEventGroupSetBits(batteryStatus, EV_BAT_NOMINAL);
     }
 
-    /* Configure the LTC4040 status inputs. These are open-drain, active-low PMIC
-     * outputs, so they need a pull-up to read a valid high when de-asserted.
-     * Without this the pins stay in the STM32L4 analog reset state and the
-     * is_charging / has_fault / is_eclipse bits are meaningless. */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    GPIO_InitTypeDef pmic_in = {0};
-    pmic_in.Mode  = GPIO_MODE_INPUT;
-    pmic_in.Pull  = GPIO_PULLUP;
-    pmic_in.Speed = GPIO_SPEED_FREQ_LOW;
-    pmic_in.Pin = GPIO_PIN_2; HAL_GPIO_Init(GPIOB, &pmic_in);  /* !CHRG  (PB2) */
-    pmic_in.Pin = GPIO_PIN_5; HAL_GPIO_Init(GPIOB, &pmic_in);  /* !PFO   (PB5) */
-    pmic_in.Pin = GPIO_PIN_4; HAL_GPIO_Init(GPIOC, &pmic_in);  /* !FAULT (PC4) */
-
-    /* Charger-off and heater control outputs, both written across eps.c but never
-     * configured until now. CHROFF (PA3) is reclaimed from USART2_RX (the console is
-     * transmit-only) so the charger-off path can actually drive the pin; the heater
-     * (PB10) was likewise driven blind. Push-pull, active-high; default low (charger
-     * enabled / heater off). The flash restore and heater control loop set the real
-     * states immediately below. (GPIOB clock is already enabled by the block above.) */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef eps_out = {0};
-    eps_out.Mode  = GPIO_MODE_OUTPUT_PP;
-    eps_out.Pull  = GPIO_NOPULL;
-    eps_out.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);    /* CHROFF low = charging enabled */
-    eps_out.Pin = GPIO_PIN_3;  HAL_GPIO_Init(GPIOA, &eps_out);   /* CHROFF (PA3)  */
-    eps_out.Pin = GPIO_PIN_10; HAL_GPIO_Init(GPIOB, &eps_out);   /* HEATER (PB10) */
+    /* EPS pins (PMIC inputs, CHRGOFF, heater, CLPROG) are configured centrally
+     * in periph_gpio_init() before the scheduler starts (pin map in periph.h). */
 
     // Apply the default configuration
 
@@ -133,37 +98,24 @@ static void setup_eps(void)
     else
         auto_heat_enabled = false;
 
-    // GPIOB10 OFF, eps will set it again if necessary
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+    // Heater OFF, eps will set it again if necessary
+    eps_hw_heater_set(false);
 
     // Restore charger state from flash; default to enabled on fresh flash (0xFF)
     uint8_t saved_charger_conf = 1;
     if (OBDH_Read_Request(CHARGER_CONFIG_ADDR, &saved_charger_conf, 1) == HAL_OK && saved_charger_conf != 0xFF) {
-        if (saved_charger_conf == 1)
-            EPS_Charger_Enable();
-        else
-            EPS_Charger_Disable();
+        eps_hw_charger_set(saved_charger_conf == 1);
     } else
-        EPS_Charger_Enable();
+        eps_hw_charger_set(true);
 
     // recover thresholds:
     load_thresholds_from_flash();
     load_sampling_from_flash();
     load_heater_bands_from_flash();
 
-    /* Confirm the DS2782 is on the bus at startup. Non-fatal — if the probe
-     * fails the EPS task still runs and reports battery_read_failure each
-     * cycle, but the boot log makes the wiring/address issue obvious. */
-    (void)ds2782_probe(&hi2c1);
-
-    /* Standalone voltage read as a minimum-viable sanity test, independent of
-     * the burst read. At a healthy supply you should see mV ~= measured VIN. */
-    uint16_t v_raw;
-    if (ds2782_read_voltage(&hi2c1, &v_raw)) {
-        uint16_t v_mv = (uint16_t)(((uint32_t)v_raw * 488u) / 100u);
-        printf("[DS2782] voltage test: raw=%u mV=%u\r\n",
-               (unsigned)v_raw, (unsigned)v_mv);
-    }
+    /* Boot-time self-check: probe the fuel gauge and log one voltage reading
+     * (see eps_hw_probe()). Pins and buses are already up via periph init. */
+    eps_hw_probe();
 }
 
 
@@ -221,17 +173,17 @@ static void process_eps(void)
         auto_heat_enabled = false;
         uint8_t new_conf = 0;
         OBDH_Write_Request(HEATER_CONFIG_ADDR, &new_conf, 1);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+        eps_hw_heater_set(false);
     }
 
     if (notifications & N_EPS_ENABLE_CHARGER) {
-        EPS_Charger_Enable();
+        eps_hw_charger_set(true);
         uint8_t conf = 1;
         OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
     }
 
     if (notifications & N_EPS_DISABLE_CHARGER) {
-        EPS_Charger_Disable();
+        eps_hw_charger_set(false);
         uint8_t conf = 0;
         OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
     }
@@ -244,9 +196,9 @@ static void process_eps(void)
     }
 
     // N_EPS_ECLIPSE_START / N_EPS_ECLIPSE_END (!PFO power-fail assert/clear): no
-    // software action needed. The LTC4040 handles the power path automatically;
+    // software action needed. The PMIC handles the power path automatically;
     // the !PFO state (input power lost — commonly eclipse, but not only) is reflected
-    // in telemetry via LTC4040_Read_Hardware() polling the !PFO pin each cycle.
+    // in telemetry via eps_hw_read_pmic() polling the !PFO pin each cycle.
 
     // 2. Poll battery sensor (DS2782E+) for voltage, current and capacity. This IC is
     // connected to the IC2 line 1 (SCL1,SDA1).
@@ -254,14 +206,14 @@ static void process_eps(void)
 
     static Battery_Telemetry_t battery_sensor;
     static EPS_Status_t eps_status;
-    static OBDH_Payload_t payload;
-    bool battery_ok = DS2782_Read_Hardware(&battery_sensor);
-    bool pmic_ok = LTC4040_Read_Hardware(&eps_status);
+    static EPS_Telemetry_Frame_t frame;
+    bool battery_ok = eps_hw_read_battery(&battery_sensor);
+    bool pmic_ok = eps_hw_read_pmic(&eps_status);
 
     if (battery_ok) {
-        
-        uint16_t vbat_mv = DS2782_Compute_Voltage(&battery_sensor);
-        int16_t temp_c = DS2782_Compute_Temperature(&battery_sensor);
+
+        uint16_t vbat_mv = eps_hw_battery_voltage_mv(&battery_sensor);
+        int16_t temp_c = eps_hw_battery_temp_c(&battery_sensor);
 
         // manage batteryStatus EventGroup; a state transition is significant
         important |= EPS_Update_System_State(vbat_mv);
@@ -276,7 +228,7 @@ static void process_eps(void)
 
     if (pmic_ok) {
         if (eps_status.has_fault && !eps_status.charging_disabled) {
-            EPS_Charger_Disable();
+            eps_hw_charger_set(false);
             uint8_t conf = 0;
             OBDH_Write_Request(CHARGER_CONFIG_ADDR, &conf, 1);
             important = true;
@@ -288,7 +240,7 @@ static void process_eps(void)
 
     // read heater status
     eps_status.auto_heater_enabled = auto_heat_enabled;
-    eps_status.heater_state = EPS_Heater_Read();
+    eps_status.heater_state = eps_hw_heater_get();
 
     // read status
     eps_status.battery_read_failure = !battery_ok;
@@ -304,8 +256,8 @@ static void process_eps(void)
                          ((now - last_telemetry_tick) >= pdMS_TO_TICKS(cur_period_ms));
 
     if (important || telemetry_due) {
-        EPS_Pack_Telemetry(&battery_sensor, &eps_status, &payload);
-        HAL_StatusTypeDef telem_status = send_telemetry_to_obdh(&payload);
+        eps_frame_pack(&battery_sensor, &eps_status, &frame);
+        HAL_StatusTypeDef telem_status = send_telemetry_to_obdh(&frame);
         last_telemetry_tick = now;
         printf("[EPS] tick %lu | batt_ok=%d pmic_ok=%d obdh=%d %s\r\n",
                eps_cycle_count, (int)battery_ok, (int)pmic_ok, (int)telem_status,
@@ -315,155 +267,17 @@ static void process_eps(void)
     eps_cycle_count++;
 }
 
-static HAL_StatusTypeDef send_telemetry_to_obdh(OBDH_Payload_t *payload)
+static HAL_StatusTypeDef send_telemetry_to_obdh(EPS_Telemetry_Frame_t *frame)
 {
     return OBDH_Write_Request(
-        OBDH_EPS_TELEMETRY_ADDR, 
-        (uint8_t*)payload, 
-        sizeof(OBDH_Payload_t)
+        OBDH_EPS_TELEMETRY_ADDR,
+        (uint8_t*)frame,
+        sizeof(EPS_Telemetry_Frame_t)
     );
 }
 
-// Helper functions:
-
-void EPS_Heater_Enable(void) {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-}
-
-void EPS_Heater_Disable(void) {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
-}
-
-bool EPS_Heater_Read(void) {
-    return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10));
-}
-
-void EPS_Charger_Enable(void) {
-    // pin CHGOFF (PA3), LOW charging enabled
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
-}
-
-void EPS_Charger_Disable(void) {
-    // pin CHGOFF (PA3), HIGH charging disabled
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);
-}
-
-
-bool DS2782_Read_Hardware(Battery_Telemetry_t *telemetry_out) {
-    if (telemetry_out == NULL) return false;
-#ifdef UNIT_TEST
-    if (EPS_Mock_Mode_Active()) return DS2782_Read_Mock(telemetry_out);
-#endif
-
-    uint8_t raw[DS2782_BURST_LEN];
-    if (!ds2782_burst_read(&hi2c1, raw)) {
-        return false;
-    }
-
-    /* Indexing convention: raw[i] holds register (0x06 + i). */
-    telemetry_out->raw_relative_cap    =  raw[0];
-    telemetry_out->raw_standby_rel_cap =  raw[1];
-    telemetry_out->raw_avg_current     = (int16_t)(((uint16_t)raw[2] << 8) | raw[3]);
-    /* TEMP and VOLT are left-justified 11-bit values in a 16-bit word. */
-    telemetry_out->raw_temperature     = (int16_t)(((uint16_t)raw[4] << 8) | raw[5]) >> 5;
-    telemetry_out->raw_voltage         = (uint16_t)((((uint16_t)raw[6] << 8) | raw[7]) >> 5);
-    telemetry_out->raw_current         = (int16_t)(((uint16_t)raw[8] << 8) | raw[9]);
-    telemetry_out->raw_acr             = (int16_t)(((uint16_t)raw[10] << 8) | raw[11]);
-    telemetry_out->raw_active_abs_cap  = ((uint16_t)raw[12] << 8) | raw[13];
-    telemetry_out->raw_standby_abs_cap = ((uint16_t)raw[14] << 8) | raw[15];
-
-    return true;
-}
-
-bool LTC4040_Read_Hardware(EPS_Status_t *pmic_out) {
-    if (pmic_out == NULL) return false;
-#ifdef UNIT_TEST
-    if (EPS_Mock_Mode_Active()) return LTC4040_Read_Mock(pmic_out);
-#endif
-    pmic_out->is_charging      = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET); // !CHRG (PB2)
-    pmic_out->has_fault        = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4) == GPIO_PIN_RESET); // !FAULT (PC4)
-    pmic_out->is_eclipse       = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET); // !PFO (PB5) power-fail: low = input power lost
-    pmic_out->charging_disabled = (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3) == GPIO_PIN_SET);  // CHROFF (PA3)
-
-    // CLPROG (PA4) — LTC4040 solar input current monitor via ADC1 channel 9.
-    // An ADC failure does not invalidate the GPIO reads, so we continue. On
-    // failure we publish 0xFFFF rather than 0: the ADC is 12-bit (valid range
-    // 0x0000–0x0FFF), so 0xFFFF is out of band and lets ground software tell a
-    // failed conversion from a genuine "no input current" reading of 0.
-    uint32_t adc_val = 0;
-    if (adc_read_channel(ADC_CHANNEL_9, &adc_val) == HAL_OK) {
-        pmic_out->raw_clprog_adc = (uint16_t)adc_val;
-    } else {
-        pmic_out->raw_clprog_adc = 0xFFFF;
-    }
-
-    return true;
-}
-
-// Compute functions and payload logic
-
-uint16_t DS2782_Compute_Voltage(const Battery_Telemetry_t *telemetry) {
-    // millivolts: raw * 4.88 mV/LSB (max raw 1023 -> 4992 mV, fits uint16_t)
-    return (uint16_t)(((uint32_t)telemetry->raw_voltage * 488u) / 100u);
-}
-
-int16_t DS2782_Compute_Current(const Battery_Telemetry_t *telemetry) {
-    return (int16_t)(((int32_t)telemetry->raw_current * 5) / 32);
-}
-
-int16_t DS2782_Compute_Temperature(const Battery_Telemetry_t *telemetry) {
-    // degrees Celsius: raw * 0.125 C/LSB (truncates toward zero)
-    return (int16_t)(telemetry->raw_temperature / 8);
-}
-
-void EPS_Pack_Telemetry(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic, OBDH_Payload_t *payload_out) {
-    // Safety check: Ensure pointers are not null before accessing memory
-    if (batt == NULL || pmic == NULL || payload_out == NULL) {
-        return; 
-    }
-
-    // --- raw I2C Battery Data ---
-    payload_out->vbat_raw        = batt->raw_voltage;
-    payload_out->temp_raw        = batt->raw_temperature;
-    payload_out->rel_cap_raw     = batt->raw_relative_cap;
-    payload_out->current_raw     = batt->raw_current;
-    payload_out->avg_current_raw = batt->raw_avg_current;
-    payload_out->acr_raw         = batt->raw_acr;
-    payload_out->aac_raw         = batt->raw_active_abs_cap;
-    payload_out->sac_raw         = batt->raw_standby_abs_cap;
-    payload_out->rsrc_raw        = batt->raw_standby_rel_cap;
-
-    // --- Analog PMIC Data ---
-    payload_out->clprog_adc  = pmic->raw_clprog_adc;
-
-    // --- Boolean Logic ---
-    // (0000 0000)
-    payload_out->system_status = 0x00; 
-    if (pmic->is_charging) {
-        payload_out->system_status |= (1 << 0);
-    }
-    if (pmic->has_fault) {
-        payload_out->system_status |= (1 << 1);
-    }
-    if (pmic->is_eclipse) {  // bit2: !PFO power-fail (input power lost; commonly eclipse)
-        payload_out->system_status |= (1 << 2);
-    }
-    if (pmic->charging_disabled) {
-        payload_out->system_status |= (1 << 3);
-    }
-    if (pmic->auto_heater_enabled) {
-        payload_out->system_status |= (1 << 4);
-    }
-    if (pmic->heater_state) {
-        payload_out->system_status |= (1 << 5);
-    }
-    if (pmic->battery_read_failure) {
-        payload_out->system_status |= (1 << 6);
-    }
-    if (pmic->pmic_read_failure) {
-        payload_out->system_status |= (1 << 7);
-    }
-}
+// Hardware access lives in eps_hw_pocat.c / ds2782.c / ltc4040.c; the
+// telemetry frame layout and packing live in eps_frame.c.
 
 /**
  * @brief Update batteryStatus event group based on measured voltage.
@@ -529,9 +343,9 @@ void EPS_Heater_Control(int16_t temp_c)
     if (!auto_heat_enabled)
         return;
     if (temp_c < heater_hysteresis_c[0])
-        EPS_Heater_Enable();
+        eps_hw_heater_set(true);
     else if (temp_c > heater_hysteresis_c[1])
-        EPS_Heater_Disable();
+        eps_hw_heater_set(false);
 }
 
 /** Load thresholds from flash; keep current values if the data is implausible. */
@@ -586,7 +400,7 @@ static void load_heater_bands_from_flash(void)
  */
 void EPS_Fault_IRQHandler(void)
 {
-    EPS_Charger_Disable();
+    eps_hw_charger_set(false);
 
     BaseType_t woken = pdFALSE;
 
@@ -612,7 +426,7 @@ void EPS_Fault_IRQHandler(void)
  */
 void EPS_PFO_IRQHandler(void)
 {
-    bool is_eclipse_start = (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET);
+    bool is_eclipse_start = eps_hw_pfo_is_asserted();
 
     uint32_t eps_notif = is_eclipse_start ? N_EPS_ECLIPSE_START : N_EPS_ECLIPSE_END;
     uint32_t obc_notif = is_eclipse_start ? N_OBC_EPS_ECLIPSE_START : N_OBC_EPS_ECLIPSE_END;

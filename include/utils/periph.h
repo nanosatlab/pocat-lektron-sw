@@ -41,6 +41,25 @@ extern ADC_HandleTypeDef hadc1;
 /** @brief Global I2C1 handle. Used for DS2872 battery sensor. */
 extern I2C_HandleTypeDef hi2c1;
 
+/* ── EPS board pins (LTC4040 PMIC + battery heater) ─────────────────────────
+ * Single source of truth for the EPS pin map. periph_gpio_init() puts these
+ * pins in a defined state at boot, before any task runs; the EPS hardware
+ * layer (eps_hw_pocat.c, ltc4040.c) reads and drives them through the same
+ * macros. The LTC4040 status outputs are open-drain and active-low. */
+#define EPS_PIN_CHRG_PORT       GPIOB        /**< !CHRG: charging status */
+#define EPS_PIN_CHRG            GPIO_PIN_2
+#define EPS_PIN_PFO_PORT        GPIOB        /**< !PFO: power-fail (input power lost) */
+#define EPS_PIN_PFO             GPIO_PIN_5
+#define EPS_PIN_FAULT_PORT      GPIOC        /**< !FAULT: charger fault */
+#define EPS_PIN_FAULT           GPIO_PIN_4
+#define EPS_PIN_CHRGOFF_PORT    GPIOA        /**< CHRGOFF: high = charging disabled */
+#define EPS_PIN_CHRGOFF         GPIO_PIN_3
+#define EPS_PIN_CLPROG_PORT     GPIOA        /**< CLPROG: input-current monitor (analog) */
+#define EPS_PIN_CLPROG          GPIO_PIN_4
+#define EPS_ADC_CHANNEL_CLPROG  ADC_CHANNEL_9
+#define EPS_PIN_HEATER_PORT     GPIOB        /**< Battery heater: push-pull, active-high */
+#define EPS_PIN_HEATER          GPIO_PIN_10
+
 /**
  * @brief Initialize all board peripherals for a system clock frequency.
  * @param freq System clock selection.

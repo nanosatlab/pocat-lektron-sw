@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# Usage: ./build.sh [--mock] [--clean]
-#   --mock   Build with the mock radio (no hardware required)
-#   --clean  Remove the build directory before building (force full rebuild)
+# Usage: ./build.sh [--mock] [--eps-tests] [--clean]
+#   --mock       Build with the mock radio (no hardware required)
+#   --eps-tests  Build the on-target EPS test firmware (pocat_eps_tests.elf)
+#   --clean      Remove the build directory before building (force full rebuild)
 
 RADIO_MOCK=OFF
 EPS_TESTS=OFF
@@ -10,7 +11,7 @@ CLEAN=0
 for arg in "$@"; do
     case "$arg" in
         --mock)  RADIO_MOCK=ON ;;
-        --tests) EPS_TESTS=ON ;;
+        --eps-tests) EPS_TESTS=ON ;;
         --clean) CLEAN=1 ;;
     esac
 done
