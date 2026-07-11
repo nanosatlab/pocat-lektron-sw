@@ -90,6 +90,66 @@ void flash_read(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
     memcpy(data, (const void *)data_addr, n_bytes);
 }
 
+HAL_StatusTypeDef flash_program(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
+
+    if (((data_addr % 8u) != 0u) || ((n_bytes % 8u) != 0u)) {
+        return HAL_ERROR;
+    }
+    if (n_bytes == 0u) {
+        return HAL_OK;
+    }
+
+    /* Check that target is erased */
+    for (uint32_t i = 0; i < n_bytes; i += 8u) {
+        uint64_t current;
+        memcpy(&current, (const void *)(data_addr + i), sizeof(current));
+        if (current != UINT64_MAX) {
+            return HAL_ERROR;
+        }
+    }
+
+    HAL_FLASH_Unlock(); 
+
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); 
+
+    for (uint32_t i = 0; i < n_bytes; i += 8u) {
+        uint64_t doubleWord;
+        memcpy(&doubleWord, data + i, sizeof(doubleWord));
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, data_addr + i, doubleWord) != HAL_OK) {
+            HAL_FLASH_Lock();
+            printf("Error programming flash at address 0x%08lX, error code %lu\n", (unsigned long)(data_addr + i), (unsigned long)HAL_FLASH_GetError());
+            return HAL_ERROR;
+        }
+    }
+
+    HAL_FLASH_Lock(); // Lock the Flash to disable the flash control register access (protect against unwanted operation).
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef flash_erase_page(uint32_t page_addr) {
+
+    HAL_FLASH_Unlock();
+
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); 
+
+    FLASH_EraseInitTypeDef EraseInitStruct = {
+        .TypeErase = FLASH_TYPEERASE_PAGES,
+        .Banks     = get_bank(page_addr),
+        .Page      = get_page(page_addr),
+        .NbPages   = 1,
+    };
+
+    uint32_t PAGEError;
+    HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&EraseInitStruct, &PAGEError);
+
+    HAL_FLASH_Lock(); // Lock the Flash to disable the flash control register access (protect against unwanted operation).
+
+    if (status != HAL_OK) {
+        printf("Error erasing flash page at address 0x%08lX, error code %lu\n", (unsigned long)page_addr, (unsigned long)PAGEError);
+    }
+    return status;
+}
+
 /**
   * @brief  Gets the page of a given address
   * @param  Addr: Address of the FLASH Memory

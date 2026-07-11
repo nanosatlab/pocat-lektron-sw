@@ -16,6 +16,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "stm32l4xx_hal.h"
+
 #include "obc.h"
 #include "definitions.h"
 
@@ -78,7 +80,12 @@
 #define MAGNETOMETER_ADDR 			0x0803010F      // 8
 #define PHOTODIODES_ADDR 			0x08030117      // 8
 
-#define TELEMETRY_LEGACY_ADDR		0x080FEFFF // 4096kb dedicated enabling stores of 89 old data.
+//HISTORIC TELEMETRY CIRCULAR QUEUE (POCKET+ compressed beacon blocks, see ht_handling.h)
+//Region size TBD: 8 KB for now. Grow by moving HT_BASE_ADDR down and raising HT_REGION_SIZE by whole
+//2 KB pages
+#define HT_BASE_ADDR				0x080FE000 // last 4 pages (8 KB) of flash: 64 slots x 128 bytes
+#define HT_REGION_SIZE				0x00002000
+//TELEMETRY_LEGACY_ADDR (0x080FEFFF) removed: it fell inside the HT queue region and was only used by reference/ code.
 
 
 //TIME ADDR
@@ -148,5 +155,24 @@ void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
   * @param  n_bytes: Number of bytes to read.
   */
 void flash_read(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
+
+/**
+  * @brief  Programs a byte buffer into already-erased flash, without erasing.
+  * @details Writes doublewords directly with HAL_FLASH_Program. The destination
+  *          must read as erased (all 0xFF).
+  * @param  data_addr: Destination start address (must be 8-byte aligned).
+  * @param  data: Pointer to the source buffer.
+  * @param  n_bytes: Number of bytes to program (must be a multiple of 8).
+  * @retval HAL_OK on success; HAL_ERROR on bad alignment, non-erased target
+  *         or HAL programming failure.
+  */
+HAL_StatusTypeDef flash_program(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
+
+/**
+  * @brief  Erases the single 2 KB flash page containing the given address.
+  * @param  page_addr: Any address inside the page to erase.
+  * @retval HAL status of the erase operation.
+  */
+HAL_StatusTypeDef flash_erase_page(uint32_t page_addr);
 
 #endif /* INC_FLASH_H_ */
