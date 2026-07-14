@@ -50,16 +50,30 @@ HAL_StatusTypeDef obdh_read_request(uint32_t address, uint8_t *data, size_t len)
     return obdh_submit_request(&request);
 }
 
-HAL_StatusTypeDef obdh_store_ht_request(const uint8_t *slot)
+HAL_StatusTypeDef obdh_program_request(uint32_t address, const uint8_t *data, size_t len)
 {
-    if (slot == NULL)
+    if (data == NULL || len == 0)
         return HAL_ERROR;
 
     obdh_request request = {
-        .op      = FLASH_STORE_HT,
-        .addr    = 0,              /* slot address is chosen by OBDH from its queue state */
-        .len     = HT_SLOT_SIZE,
-        .buf.src = slot,
+        .op      = FLASH_PROGRAM,
+        .addr    = address,
+        .len     = len,
+        .buf.src = data,
+    };
+    return obdh_submit_request(&request);
+}
+
+HAL_StatusTypeDef obdh_erase_program_request(uint32_t address, const uint8_t *data, size_t len)
+{
+    if (data == NULL || len == 0)
+        return HAL_ERROR;
+
+    obdh_request request = {
+        .op      = FLASH_ERASE_PROGRAM,
+        .addr    = address,
+        .len     = len,
+        .buf.src = data,
     };
     return obdh_submit_request(&request);
 }

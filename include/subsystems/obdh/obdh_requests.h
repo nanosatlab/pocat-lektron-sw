@@ -49,15 +49,36 @@ HAL_StatusTypeDef obdh_write_request(uint32_t address, const uint8_t *data, size
 HAL_StatusTypeDef obdh_read_request(uint32_t address, uint8_t *data, size_t length);
 
 /**
- * @brief Store one built historic-telemetry block in the circular queue.
+ * @brief Program a buffer into already-erased flash.
  *
- * Enqueues a FLASH_STORE_HT request and blocks until it completes.
+ * Enqueues a FLASH_PROGRAM request and blocks until it completes. No erase is
+ * performed: the target must read as erased (all 0xFF), the address must be
+ * 8-byte aligned and the length a multiple of 8 (see flash_program()).
  *
- * @param slot Built block of HT_SLOT_SIZE bytes (see ht_handling.h); its seq
- * field is assigned by OBDH.
+ * @param address Flash address to program at.
+ * @param data Data to be programmed.
+ * @param length Length of the data in bytes.
  * @return HAL_StatusTypeDef Status of the operation: HAL_OK / HAL_ERROR from
  * OBDH, HAL_BUSY if the request queue stayed full (request not enqueued).
  */
-HAL_StatusTypeDef obdh_store_ht_request(const uint8_t *slot);
+HAL_StatusTypeDef obdh_program_request(uint32_t address, const uint8_t *data, size_t length);
+
+/**
+ * @brief Erase the flash page containing the address, then program a buffer
+ * at that address, as one OBDH operation (no other request can interleave
+ * between the erase and the program).
+ *
+ * Enqueues a FLASH_ERASE_PROGRAM request and blocks until it completes. The
+ * erase affects the WHOLE page containing the address, so this must only be
+ * used by the module that owns every byte of that page. Same alignment
+ * requirements as obdh_program_request().
+ *
+ * @param address Flash address to program at (its page is erased first).
+ * @param data Data to be programmed.
+ * @param length Length of the data in bytes.
+ * @return HAL_StatusTypeDef Status of the operation: HAL_OK / HAL_ERROR from
+ * OBDH, HAL_BUSY if the request queue stayed full (request not enqueued).
+ */
+HAL_StatusTypeDef obdh_erase_program_request(uint32_t address, const uint8_t *data, size_t length);
 
 #endif /* INC_OBDH_REQUESTS_H_ */
