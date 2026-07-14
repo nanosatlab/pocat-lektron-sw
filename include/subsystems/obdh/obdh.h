@@ -18,19 +18,17 @@
 
 
 #define OBDH_TELEMETRY_PERIOD_MS 10000 //To be defined
-#define MAX_HT_BEACONS 10 //Arbitrary for testing, to be discussed
-#define HT_BEACON_SIZE 16 // following PoCat TM_TC DATABASE, this might change
-#define HT_BASE_ADDR 0x080FE000 //To be defined
-#define HT_POINTER_ADDR 0x080FD000
 
 
 /**
  * @brief Flash operation type.
  */
 typedef enum {
-    FLASH_READ = 0,  /**< Read data from flash into the destination buffer. */
-    FLASH_WRITE = 1  /**< Write source buffer data to flash. */
-} read_write;
+    FLASH_READ = 0,    /**< Read data from flash into the destination buffer. */
+    FLASH_WRITE = 1,   /**< Write source buffer data to flash (read-modify-erase-rewrite of each page touched). */
+    FLASH_PROGRAM = 2, /**< Program source buffer into already-erased flash, no erase. */
+    FLASH_ERASE = 3    /**< Erase the 2 KB page containing addr; len and buf are unused. */
+} obdh_flash_op;
 
 /**
  * @brief Flash access request processed by the OBDH task.
@@ -40,7 +38,7 @@ typedef enum {
  * resulting HAL status carried as the notification value.
  */
 typedef struct {
-    read_write op;       // Operació: llegir o escriure
+    obdh_flash_op op;    // Operació: llegir, escriure, programar o esborrar
     uint32_t addr;       // Adreça de la Flash
     size_t len;          // Longitud en bytes
     union {
@@ -70,8 +68,5 @@ extern CircularFlashHandler telemetry_handler;
  * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
  */
 void obdh_task(void *pv_parameters);
-void obdh_save_pointers_flash(void);
-HAL_StatusTypeDef obdh_get_telemetry(uint8_t *buffer);
-HAL_StatusTypeDef obdh_insert_telemetry(uint8_t *buffer);
 
 #endif /* INC_OBDH_H_ */
