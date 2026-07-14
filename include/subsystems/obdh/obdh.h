@@ -24,10 +24,9 @@
  * @brief Flash operation type.
  */
 typedef enum {
-    FLASH_READ = 0,    /**< Read data from flash into the destination buffer. */
-    FLASH_WRITE = 1,   /**< Write source buffer data to flash (read-modify-erase-rewrite of each page touched). */
-    FLASH_PROGRAM = 2, /**< Program source buffer into already-erased flash, no erase. */
-    FLASH_ERASE = 3    /**< Erase the 2 KB page containing addr; len and buf are unused. */
+    FLASH_READ = 0,     /**< Read data from flash into the destination buffer. */
+    FLASH_WRITE = 1,    /**< Write source buffer data to flash (read-modify-erase-rewrite of each page touched). */
+    FLASH_STORE_HT = 2  /**< Store one built HT block in the circular queue; OBDH picks the slot and erases pages when needed (addr unused). */
 } obdh_flash_op;
 
 /**
@@ -42,22 +41,11 @@ typedef struct {
     uint32_t addr;       // Adreça de la Flash
     size_t len;          // Longitud en bytes
     union {
-        const uint8_t *src;  // FLASH_WRITE: dades a escriure (només lectura)
+        const uint8_t *src;  // FLASH_WRITE and FLASH_STORE_HT: dades a escriure
         uint8_t       *dst;  // FLASH_READ:  buffer a omplir
     } buf;
     TaskHandle_t client; // Tarea que demana l'operació (per notificar-la)
-    uint32_t token;      // Identifies this request so a late/stale completion can be rejected
 } obdh_request;
-
-/*
- * The OBDH completion notification (sent on OBDH_NOTIFY_IDX) packs the request
- * token and the HAL status into one 32-bit value, so a requester can tell its
- * own completion apart from a late one left over from a request that already
- * timed out:  value = (token << OBDH_STATUS_BITS) | status.
- */
-#define OBDH_STATUS_BITS  4u
-#define OBDH_STATUS_MASK  0x0Fu
-#define OBDH_TOKEN_MASK   (0xFFFFFFFFu >> OBDH_STATUS_BITS)   /* 28-bit token space */
 
 /** @brief Queue used to send flash access requests to the OBDH task. */
 extern QueueHandle_t obdh_queue_handle;
