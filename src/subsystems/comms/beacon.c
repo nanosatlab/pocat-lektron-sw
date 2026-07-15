@@ -8,6 +8,7 @@
 #include "temperature.h"
 #include "flash.h"
 #include "obdh_requests.h"
+#include "ht_handling.h"
 #include "health.h"
 #include "task_management.h"
 #include "types.h"
@@ -72,6 +73,8 @@ static void transmit_beacon(void)
     uint8_t body[19];
     build_beacon_body(body);
 
+    fill_ht_from_it(body);
+
     uint8_t air_buf[AIR_FRAME_MAX];
     uint8_t frame_len = air_encode(air_buf, AIR_BEACON, 0x00u,
                                    comms_next_seq(), body, 19u);
@@ -102,6 +105,8 @@ void beacon_set_period(uint32_t period_ms)
 void beacon_task(void *pv_parameters)
 {
     (void)pv_parameters;
+
+    ht_init();
 
     beacon_timer = xTimerCreate("beacon", pdMS_TO_TICKS(g_beacon_period_ms),
                                 pdTRUE, NULL, beacon_timer_cb);

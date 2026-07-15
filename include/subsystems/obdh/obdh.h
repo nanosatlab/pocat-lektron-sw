@@ -13,7 +13,6 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
-#include "ht_handling.h"
 
 
 
@@ -22,11 +21,15 @@
 
 /**
  * @brief Flash operation type.
+ *
+ * All operations are generic (address + buffer + length): OBDH knows nothing
+ * about what its clients store.
  */
 typedef enum {
-    FLASH_READ = 0,     /**< Read data from flash into the destination buffer. */
-    FLASH_WRITE = 1,    /**< Write source buffer data to flash (read-modify-erase-rewrite of each page touched). */
-    FLASH_STORE_HT = 2  /**< Store one built HT block in the circular queue; OBDH picks the slot and erases pages when needed (addr unused). */
+    FLASH_READ = 0,          /**< Read data from flash into the destination buffer. */
+    FLASH_WRITE = 1,         /**< Write source buffer data to flash (read-modify-erase-rewrite of each page touched). */
+    FLASH_PROGRAM = 2,       /**< Program source buffer into already-erased flash at addr (no erase; fails if the target is not erased). */
+    FLASH_ERASE_PROGRAM = 3  /**< Erase the page containing addr, then program the source buffer at addr. */
 } obdh_flash_op;
 
 /**
@@ -41,7 +44,7 @@ typedef struct {
     uint32_t addr;       // Adreça de la Flash
     size_t len;          // Longitud en bytes
     union {
-        const uint8_t *src;  // FLASH_WRITE and FLASH_STORE_HT: dades a escriure
+        const uint8_t *src;  // FLASH_WRITE / FLASH_PROGRAM / FLASH_ERASE_PROGRAM: dades a escriure
         uint8_t       *dst;  // FLASH_READ:  buffer a omplir
     } buf;
     TaskHandle_t client; // Tarea que demana l'operació (per notificar-la)
@@ -49,7 +52,6 @@ typedef struct {
 
 /** @brief Queue used to send flash access requests to the OBDH task. */
 extern QueueHandle_t obdh_queue_handle;
-extern CircularFlashHandler telemetry_handler;
 
 /**
  * @brief OBDH FreeRTOS task entry point.

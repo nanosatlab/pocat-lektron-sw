@@ -138,12 +138,13 @@ extern SemaphoreHandle_t xMutex;
   * @param  data_addr: Destination start address in flash.
   * @param  data: Pointer to the source buffer.
   * @param  n_bytes: Number of bytes to write.
+  * @retval HAL_OK on success, HAL_ERROR if an erase or program step failed.
   * @todo   Consider FLASH_TYPEPROGRAM_FAST (256-byte row programming) in the future.
   * @todo   This was implemented to support multi-page writes; if that turns out
   *         not to be necessary, the function can be simplified back to a single page.
   * @todo   Review __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
   */
-void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
+HAL_StatusTypeDef flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
 
 /**
   * @brief  Reads a block of bytes from internal flash into a RAM buffer.
