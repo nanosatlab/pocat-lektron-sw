@@ -19,8 +19,8 @@ static uint32_t get_page(uint32_t Addr);
 static uint32_t get_bank(uint32_t Addr);
 
 
-void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
-	
+HAL_StatusTypeDef flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
+
     static uint8_t  dataSave[FLASH_PAGE_SIZE];
 
 	  HAL_FLASH_Unlock(); // Unlock the Flash to enable the flash control register access
@@ -29,7 +29,7 @@ void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
 
     if (n_bytes == 0) {
       HAL_FLASH_Lock();
-      return;
+      return HAL_OK;
     }
 
     /* Read-modify-write one page at a time, so only a single FLASH_PAGE_SIZE
@@ -67,7 +67,7 @@ void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
         {
             HAL_FLASH_Lock();
             printf("Error erasing flash page at address 0x%08lX, error code %lu\n", (unsigned long)page_addr, (unsigned long)PAGEError);
-            return;
+            return HAL_ERROR;
         }
 
         /* Write the page back, one doubleword at a time */
@@ -77,13 +77,13 @@ void flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes) {
             if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, page_addr + i, doubleWord) != HAL_OK) {
                 HAL_FLASH_Lock();
                 printf("Error programming flash at address 0x%08lX, error code %lu\n", (unsigned long)(page_addr + i), (unsigned long)HAL_FLASH_GetError());
-                return;
+                return HAL_ERROR;
             }
         }
     }
 
     HAL_FLASH_Lock(); // Lock the Flash to disable the flash control register access (protectagainst unwanted operation).
-
+    return HAL_OK;
 }
 
 void flash_read(uint32_t data_addr, uint8_t *data, uint16_t n_bytes) {
