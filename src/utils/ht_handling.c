@@ -6,6 +6,9 @@
  * @todo The beacons are currently being stored in compressed form, but
  * the layout in which they are stored is the worst case scenario for POCKET+ compression.
  * This should be revised.
+ * @todo using safeStartPocket() right now, but look into default startPocket.
+ * @todo What should we do in the case in which the compressed packets are larger than the uncompressed packets?
+ * @todo Revise headers
  */
 
 #include "ht_handling.h"
@@ -15,53 +18,38 @@
 #include <string.h>
 #include <stdio.h>
 
-static uint8_t ht_temporal_buffer[POCKET_PLUS_PERIOD][HT_BEACON_SIZE];
-static uint8_t temporal_count = 0;
+static uint8_t  ht_block[HT_SLOT_SIZE];   /* The block being filled */
+static uint16_t ht_block_used = 0;        /* payload bytes used */
+static uint8_t  ht_block_count = 0;       /* beacons in the open block */
+static int      ht_block_compressing = 0; /* records whether safeStartPocket() succeeded with the current block */
 
 /**
  * @brief RAM-only circular queue state (rebuilt by ht_init(), never persisted).
- *
- * Private to this module. Unlocked: only ever touched from the single task
- * that calls ht_init() and fill_ht_from_it() -- see the concurrency note in
- * ht_handling.h.
  */
-typedef struct {
+static struct {
     int current_ht_count; /**< Number of occupied slots. */
     int reading_pointer;  /**< Slot index of the oldest block. */
     int writing_pointer;  /**< Slot index the next block will be written to. */
     uint32_t next_seq;    /**< Sequence number the next block will be stamped with. */
-} CircularFlashHandler;
-
-static CircularFlashHandler ht_queue;
+} ht_queue;
 
 /**
  * @brief Pack a byte buffer into the big-endian 32-bit word array POCKET+ expects.
+ * @details size must be a multiple of 4
+ *          (beacons are zero-padded to HT_STORED_PACKET_SIZE for this).
  * @return Length of the word array.
  */
-static uint_fast16_t pocket_plus_get_binary_data(const uint8_t *binaryBuffer, uint32_t *binaryData, uint_fast16_t size)
+static uint_fast16_t pocket_plus_get_binary_data(const uint8_t *bytes, uint32_t *words, uint_fast16_t size)
 {
-    uint_fast16_t arrayLenght = (size + 3) / 4; //lenght for the 32 bit uint32_t array.
-    memset(binaryData, 0, sizeof(*binaryData) * arrayLenght);
+    uint_fast16_t n_words = size / 4;
 
-    uint_fast8_t i = 0; //counter the bitshift. (i = 0 -> bitshift 8, i = 1 -> bitshift 16 ...) must be reseted when reaching 4
-    uint32_t bytesToInt = 0; //variable for casting 4 bytes into one 32 bit unsigned integer
-    int_fast16_t currentWord = arrayLenght - 1;
-
-    for (int_fast32_t currentByte = size - 1; currentByte >= 0; currentByte--) {
-
-        bytesToInt |= binaryBuffer[currentByte] << (i * 8);
-        i += 1;
-        if (i == 4) {
-            memcpy(binaryData + currentWord, &bytesToInt, sizeof(*binaryData));
-            bytesToInt = 0;
-            i = 0;
-            currentWord -= 1;
-        }
+    for (uint_fast16_t w = 0; w < n_words; w++) {
+        words[w] = ((uint32_t)bytes[4 * w]     << 24) |
+                   ((uint32_t)bytes[4 * w + 1] << 16) |
+                   ((uint32_t)bytes[4 * w + 2] << 8)  |
+                    (uint32_t)bytes[4 * w + 3];
     }
-    if ((i < 4) && (currentWord == 0)) {
-        memcpy(binaryData + currentWord, &bytesToInt, sizeof(*binaryData));
-    }
-    return arrayLenght;
+    return n_words;
 }
 
 /**
@@ -69,20 +57,14 @@ static uint_fast16_t pocket_plus_get_binary_data(const uint8_t *binaryBuffer, ui
  */
 static int ht_slot_header_valid(const ht_slot_header *header)
 {
-    return (header->format == HT_FORMAT_POCKET_V2) && (header->count >= 1) && (header->count <= POCKET_PLUS_PERIOD) &&
-           (header->data_len >= HT_BEACON_SIZE) && (header->data_len <= HT_SLOT_PAYLOAD_SIZE);
+    return (header->format == HT_FORMAT_POCKET_V3) && (header->count >= 1) && (header->count <= HT_SLOT_MAX_BEACONS) &&
+           (header->data_len >= HT_STORED_PACKET_SIZE) && (header->data_len <= HT_SLOT_PAYLOAD_SIZE);
 }
 
 /**
  * @brief Drop from the queue accounting any occupied blocks contained in the
  * flash page holding the given slot (the oldest ones, which a full circular
  * queue was about to overwrite anyway).
- *
- * Pure accounting -- the actual erase is requested from OBDH by the caller.
- * Called when a page erase is decided, BEFORE the request is submitted:
- * conservative on failure (blocks in a possibly-not-erased page are still
- * dropped; the boot scan restores flash truth) and idempotent, so a failed
- * store retried at the same page does not double-count.
  */
 static void ht_account_page_erase(int slot_index)
 {
@@ -104,19 +86,11 @@ static void ht_account_page_erase(int slot_index)
  * @brief Store one built block in the circular queue through OBDH flash
  * requests (the calls block until OBDH completes them).
  *
- * Picks the slot from the queue state. On entering a fresh page the store is
- * one FLASH_ERASE_PROGRAM request -- erase and program as a single OBDH
- * operation, so the page pays one erase per queue lap and nothing can
- * interleave between the two. Mid-page slots are plain FLASH_PROGRAM requests
- * into space erased when the page was entered.
+ * A FLASH_PROGRAM failure means the target slot was not erased: 
+ * skip to the next page boundary, which takes the
+ * erase+program path, and retry once there.
  *
- * A FLASH_PROGRAM failure means the target slot was not erased (e.g. torn by
- * a power cut mid-write): skip to the next page boundary, which takes the
- * erase+program path, and retry once there. A FLASH_ERASE_PROGRAM failure is
- * a hardware-level error: the store is aborted (writing_pointer unchanged, so
- * the next store retries the same page).
- *
- * @param slot Built HT_SLOT_SIZE block, seq already stamped.
+ * @param slot Finished HT_SLOT_SIZE block, header already included.
  * @return 0 on success, -1 on failure.
  */
 static int ht_store_block(const uint8_t *slot)
@@ -134,7 +108,7 @@ static int ht_store_block(const uint8_t *slot)
                 written = 1;
             } else {
                 ht_queue.writing_pointer = (((ht_queue.writing_pointer / (int)HT_SLOTS_PER_PAGE) + 1)
-                                            * (int)HT_SLOTS_PER_PAGE) % (int)HT_NUM_SLOTS;
+                                            * (int)HT_SLOTS_PER_PAGE) % (int)HT_NUM_SLOTS; // go to the next page and retry
             }
         }
     }
@@ -150,79 +124,42 @@ static int ht_store_block(const uint8_t *slot)
 }
 
 /**
- * @brief Compress the staged beacons into block(s) and store them in the
- * circular queue (ht_store_block(), via OBDH flash requests).
+ * @brief Close the in-progress block and store it in the circular queue
+ * (ht_store_block(), via OBDH flash requests).
  *
- * Called from fill_ht_from_it() once POCKET_PLUS_PERIOD beacons are staged.
- * The first staged beacon becomes the POCKET+ reference (stored raw); the
- * rest are appended compressed. If a block fills up (poor compression), the
- * remaining beacons start a new block so no beacon is ever dropped by
- * compression overflow.
+ * Stamps the header (epoch taken from the raw reference beacon at the start
+ * of the payload, seq from the queue state) and resets the staging state.
+ * The block is discarded on store failure too, so staging never backs up.
  *
- * @return 0 on success, -1 if a store failed (staged beacons are discarded
- *         either way so staging never overflows).
+ * @return 0 on success or nothing to flush, -1 if the store failed.
  */
-static int save_ht_to_circular_storage(void)
+static int ht_flush_block(void)
 {
-    uint8_t start = 0;
-    int result = 0;
+    if (ht_block_count == 0)
+        return 0;
 
-    while (start < temporal_count) {
-        uint8_t slot[HT_SLOT_SIZE];
-        uint8_t *payload = slot + HT_SLOT_HEADER_SIZE;
-        uint16_t used = 0;
-        uint8_t count = 0;
+    const uint8_t *ref = ht_block + HT_SLOT_HEADER_SIZE;
+    ht_slot_header header = {
+        .epoch    = ((uint32_t)ref[1] << 24) | ((uint32_t)ref[2] << 16) |
+                    ((uint32_t)ref[3] << 8)  |  (uint32_t)ref[4],
+        .seq      = ht_queue.next_seq,
+        .data_len = ht_block_used,
+        .count    = ht_block_count,
+        .format   = HT_FORMAT_POCKET_V3,
+    };
+    memcpy(ht_block, &header, HT_SLOT_HEADER_SIZE);
 
-        memset(slot, 0xFF, sizeof(slot)); /* unused tail keeps the erased pattern */
+    int result = ht_store_block(ht_block);
 
-        /* First beacon of the block goes in raw: it is the POCKET+ reference
-           the decompressor needs to bootstrap the stream. */
-        memcpy(payload, ht_temporal_buffer[start], HT_BEACON_SIZE);
-        used = HT_BEACON_SIZE;
-        count = 1;
+    if (result == 0)
+        printf("HT: block stored, %u beacons in %u payload bytes\n",
+               (unsigned)header.count, (unsigned)header.data_len);
+    else
+        printf("HT: block store FAILED, %u beacons dropped\n", (unsigned)header.count);
 
-        uint32_t words[HT_BEACON_SIZE / 4];
-        pocket_plus_get_binary_data(ht_temporal_buffer[start], words, HT_BEACON_SIZE);
-
-        if (safeStartPocket(words, HT_BEACON_SIZE, POCKET_PLUS_PERIOD) != 0) {
-            for (uint8_t i = start + 1; i < temporal_count; i++) {
-                uint8_t cbuf[HT_BEACON_SIZE * 4]; /* compressPacket needs 4x the packet size */
-
-                pocket_plus_get_binary_data(ht_temporal_buffer[i], words, HT_BEACON_SIZE);
-                int_fast16_t clen = compressPacket(cbuf, words);
-
-                /* Compression overflow or slot full: close this block and let
-                   the remaining beacons start the next one (with a fresh
-                   reference), so nothing is dropped. */
-                if ((clen < 0) || ((uint16_t)(used + 1 + clen) > HT_SLOT_PAYLOAD_SIZE))
-                    break;
-
-                payload[used] = (uint8_t)clen;
-                memcpy(&payload[used + 1], cbuf, (size_t)clen);
-                used += 1 + (uint16_t)clen;
-                count++;
-            }
-        }
-
-        const uint8_t *ref = ht_temporal_buffer[start];
-        ht_slot_header header = {
-            .epoch    = ((uint32_t)ref[1] << 24) | ((uint32_t)ref[2] << 16) |
-                        ((uint32_t)ref[3] << 8)  |  (uint32_t)ref[4],
-            .seq      = ht_queue.next_seq, 
-            .data_len = used,
-            .count    = count,
-            .format   = HT_FORMAT_POCKET_V2,
-        };
-        memcpy(slot, &header, HT_SLOT_HEADER_SIZE);
-
-        if (ht_store_block(slot) != 0) {
-            result = -1;
-            break;
-        }
-
-        start += count;
-    }
-
+    ht_block_used = 0;
+    ht_block_count = 0;
+    ht_block_compressing = 0;
     return result;
 }
 
@@ -233,6 +170,11 @@ void ht_init(void)
     int newest_slot = -1;
     int oldest_slot = -1;
     int used = 0;
+
+    /* Discard any half-built block */
+    ht_block_used = 0;
+    ht_block_count = 0;
+    ht_block_compressing = 0;
 
     for (int i = 0; i < (int)HT_NUM_SLOTS; i++) {
         ht_slot_header header;
@@ -270,12 +212,34 @@ void ht_init(void)
 
 void fill_ht_from_it(const uint8_t *it)
 {
-    memset(ht_temporal_buffer[temporal_count], 0, HT_BEACON_SIZE);
-    memcpy(ht_temporal_buffer[temporal_count], it, HT_BEACON_RAW_SIZE);
-    temporal_count++;
+    uint8_t beacon[HT_STORED_PACKET_SIZE];
+    uint32_t words[HT_STORED_PACKET_SIZE / 4];
 
-    if (temporal_count >= POCKET_PLUS_PERIOD) {
-        save_ht_to_circular_storage();
-        temporal_count = 0;
+    /* Zero-pad the raw body to HT_STORED_PACKET_SIZE */
+    memset(beacon, 0, sizeof(beacon));
+    memcpy(beacon, it, HT_BEACON_SIZE);
+    pocket_plus_get_binary_data(beacon, words, HT_STORED_PACKET_SIZE);
+
+    /* Append to the open block while the compressed beacon still fits */
+    if ((ht_block_count > 0) && ht_block_compressing) {
+        uint8_t cbuf[HT_STORED_PACKET_SIZE * 4]; /* compressPacket needs 4x the packet size */
+        int_fast16_t clen = compressPacket(cbuf, words);
+
+        if ((clen >= 0) && ((uint16_t)(ht_block_used + clen) <= HT_SLOT_PAYLOAD_SIZE)) {
+            uint8_t *payload = ht_block + HT_SLOT_HEADER_SIZE;
+
+            memcpy(&payload[ht_block_used], cbuf, (size_t)clen);
+            ht_block_used += (uint16_t)clen;
+            ht_block_count++;
+            return;
+        }
     }
+
+    ht_flush_block();
+
+    memset(ht_block, 0xFF, sizeof(ht_block));
+    memcpy(ht_block + HT_SLOT_HEADER_SIZE, beacon, HT_STORED_PACKET_SIZE);
+    ht_block_used = HT_STORED_PACKET_SIZE;
+    ht_block_count = 1;
+    ht_block_compressing = (safeStartPocket(words, HT_STORED_PACKET_SIZE, POCKET_PLUS_UPDATE_RATE) != 0);
 }
