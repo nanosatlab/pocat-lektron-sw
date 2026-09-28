@@ -66,12 +66,22 @@ ctrlp.root
 #html
 *.html
 
-#metadata and settings
-
-.settings
-.metadata
-
 #Debug folder
 Debug
+
 #.resources
 .vscode
+.cache
+
+#build
+build
+
+#DOCU
+res/doc/out/*
+
+# Doxygen generated documentation
+docs/html/
+docs/latex/
+
+CLAUDE.md
+include/subsystems/comms/psk.h
