@@ -1,0 +1,43 @@
+Start testing: Oct 02 12:51 UTC
+----------------------------------------------------------
+1/1 Testing: HT_Handling_Tests
+1/1 Test: HT_Handling_Tests
+Command: "/app/build_test/test/test_ht_handling"
+Directory: /app/build_test/test
+"HT_Handling_Tests" start time: Oct 02 12:51 UTC
+Output:
+----------------------------------------------------------
+/app/test/suites/test_ht_handling.c:203:test_init_virgin_flash:PASS
+/app/test/suites/test_ht_handling.c:204:test_init_finds_correct_pointers:PASS
+/app/test/suites/test_ht_handling.c:205:test_init_full_and_wrapped:PASS
+/app/test/suites/test_ht_handling.c:72:test_init_seq_counter_wrap:FAIL: Expected 0 Was 2:Oldest should be 0xFFFFFFFD at slot 0
+/app/test/suites/test_ht_handling.c:207:test_init_ignores_0xFFFFFFFF:PASS
+/app/test/suites/test_ht_handling.c:208:test_init_duplicate_seq:PASS
+/app/test/suites/test_ht_handling.c:209:test_init_corrupt_middle_slot:PASS
+HT: block stored, 5 beacons in 100 payload bytes
+HT: block stored, 5 beacons in 100 payload bytes
+/app/test/suites/test_ht_handling.c:212:test_erase_only_on_page_boundaries:PASS
+HT: block stored, 5 beacons in 100 payload bytes
+/app/test/suites/test_ht_handling.c:213:test_queue_wraparound:PASS
+HT: block stored, 5 beacons in 100 payload bytes
+/app/test/suites/test_ht_handling.c:214:test_rp_in_another_page:PASS
+HT: block stored, 5 beacons in 100 payload bytes
+/app/test/suites/test_ht_handling.c:157:test_eviction_jumps_page:FAIL: Expected 32 Was 18:CRITICAL BUG: Reading pointer did not jump past the destroyed page!
+HT: block store FAILED, 5 beacons dropped
+/app/test/suites/test_ht_handling.c:168:test_bad_sector_deadlock:FAIL: Expected 16 Was 0:CRITICAL BUG: Queue deadlocked on bad sector!
+HT: block store FAILED, 5 beacons dropped
+/app/test/suites/test_ht_handling.c:219:test_torn_write_recovery:PASS
+/app/test/suites/test_ht_handling.c:220:test_ram_loss_at_reset:PASS
+
+-----------------------
+14 Tests 3 Failures 0 Ignored 
+FAIL
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"HT_Handling_Tests" end time: Oct 02 12:51 UTC
+"HT_Handling_Tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 02 12:51 UTC

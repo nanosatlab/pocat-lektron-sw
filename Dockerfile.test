@@ -1,0 +1,16 @@
+FROM ubuntu:22.04
+
+# Prevent interactive timezone prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install the native C compiler (GCC), Make, and CMake
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /app
+
+# By default, run the test script when the container starts
+CMD ["bash", "run_tests.sh"]

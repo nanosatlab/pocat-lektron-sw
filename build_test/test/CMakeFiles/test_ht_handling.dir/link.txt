@@ -1,0 +1,1 @@
+/usr/bin/cc -g CMakeFiles/test_ht_handling.dir/suites/test_ht_handling.c.o CMakeFiles/test_ht_handling.dir/support/fake_flash_memory.c.o CMakeFiles/test_ht_handling.dir/mocks/mock_obdh_requests.c.o CMakeFiles/test_ht_handling.dir/mocks/mock_pocket_plus.c.o -o test_ht_handling  libunity.a 

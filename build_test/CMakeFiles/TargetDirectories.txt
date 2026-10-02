@@ -1,0 +1,9 @@
+/app/build_test/CMakeFiles/pocat_lektron_sw.elf.dir
+/app/build_test/CMakeFiles/test.dir
+/app/build_test/CMakeFiles/edit_cache.dir
+/app/build_test/CMakeFiles/rebuild_cache.dir
+/app/build_test/test/CMakeFiles/unity.dir
+/app/build_test/test/CMakeFiles/test_ht_handling.dir
+/app/build_test/test/CMakeFiles/test.dir
+/app/build_test/test/CMakeFiles/edit_cache.dir
+/app/build_test/test/CMakeFiles/rebuild_cache.dir

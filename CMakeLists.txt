@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Load toolchain
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain.cmake)
+# Load toolchain only if we are not building native tests
+if(NOT BUILD_TESTING)
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/toolchain.cmake)
+endif()
 
 project(pocat_lektron_sw)
 set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Src)
@@ -168,3 +170,10 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
 )
 
+
+# --- Native Testing Infrastructure ---
+option(BUILD_TESTING "Build unit tests (requires native compiler)" OFF)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(test)
+endif()
