@@ -12,5 +12,5 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory
 WORKDIR /app
 
-# By default, run the test script when the container starts
-CMD ["bash", "run_tests.sh"]
+# Run the test script when the container starts; arguments given to `docker run` are passed to it
+ENTRYPOINT ["bash", "run_tests.sh"]

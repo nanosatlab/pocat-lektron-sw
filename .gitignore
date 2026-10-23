@@ -75,6 +75,7 @@ Debug
 
 #build
 build
+build_test/
 
 #DOCU
 res/doc/out/*
