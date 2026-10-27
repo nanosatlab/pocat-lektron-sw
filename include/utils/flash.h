@@ -1,13 +1,17 @@
 /**
  * @file flash.h
- * @brief Internal flash memory address map and access helpers.
+ * @brief Internal flash driver.
  * @details
- * Defines the firmware flash address map and declares raw flash access helpers.
- * For task-safe access at runtime use the OBDH-mediated request functions in
- * obdh_requests.h instead.
+ * Programs, erases and reads internal flash inside the regions of flash_map.h.
+ * Each call names a region and an offset inside it, and the driver refuses any
+ * range outside that region (spec FLS-DRV-010). For task-safe access at runtime
+ * use the OBDH-mediated request functions in obdh_requests.h instead.
+ *
+ * The old address map below, with flash_write() and flash_read_old(), stays
+ * until the parameter store replaces it (step 4 of docs/FLASH-USAGE-SPECIFICATION.md §10).
  * @author Medir Segura
  * @date 2023-01-17
- * @note Modified on 2026-07-03.
+ * @note Modified on 2026-10-27.
  */
 
 #ifndef INC_FLASH_H_
@@ -20,6 +24,7 @@
 
 #include "obc.h"
 #include "definitions.h"
+#include "flash_map.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -27,7 +32,13 @@
 #include "queue.h"
 #include "semphr.h"
 
-// Memory map
+// Old memory map, replaced by flash_map.h. Do not add addresses here: these are
+// deleted once the parameter store has taken over their contents.
+
+// The three pages of bank 1 that the old addresses use (0x08030000-0x080317FF).
+// flash_write() and flash_read_old() refuse anything outside them.
+#define OLD_MAP_BASE				0x08030000u
+#define OLD_MAP_SIZE				0x00001800u
 
 #define PHOTO_ADDR 					0x08040000
 #define COMMS_CONFIG_ADDR
@@ -80,14 +91,6 @@
 #define MAGNETOMETER_ADDR 			0x0803010F      // 8
 #define PHOTODIODES_ADDR 			0x08030117      // 8
 
-//HISTORIC TELEMETRY CIRCULAR QUEUE (POCKET+ compressed beacon blocks, see ht_handling.h)
-//Region size TBD: 8 KB for now. Grow by moving HT_BASE_ADDR down and raising HT_REGION_SIZE by whole
-//2 KB pages
-#define HT_BASE_ADDR				0x080FE000 // last 4 pages (8 KB) of flash: 64 slots x 128 bytes
-#define HT_REGION_SIZE				0x00002000
-//TELEMETRY_LEGACY_ADDR (0x080FEFFF) removed: it fell inside the HT queue region and was only used by reference/ code.
-
-
 //TIME ADDR
 #define PL_TIME_ADDR 				0x08030111 	//4 bytes (GS -> PAYLOAD CAMERA)
 #define PL_RF_TIME_ADDR				0x0803011C	//8 bytes (GS -> PAYLOAD RF)
@@ -130,15 +133,53 @@ extern EventGroupHandle_t xEventGroup;
 extern QueueHandle_t FLASH_Queue;
 extern SemaphoreHandle_t xMutex;
 
+/* ---- Driver: regions of flash_map.h ---- */
+
 /**
-  * @brief  Writes a byte buffer to internal flash, spanning multiple pages if needed.
+  * @brief  Reads bytes from a region into a RAM buffer.
+  * @details Internal flash is memory-mapped, so the read is a plain copy.
+  *          Access is serialized through the OBDH queue at runtime.
+  * @param  region: Region of flash_map.h.
+  * @param  offset: First byte to read, counted from the start of the region.
+  * @param  data: Destination buffer (must hold at least n_bytes).
+  * @param  n_bytes: Number of bytes to read.
+  * @retval HAL_OK; HAL_ERROR if the range is not inside the region (nothing is copied).
+  */
+HAL_StatusTypeDef flash_read(flash_region_id_t region, uint32_t offset, uint8_t *data, uint32_t n_bytes);
+
+/**
+  * @brief  Programs a byte buffer into already-erased flash of a region, without erasing.
+  * @details Writes doublewords directly with HAL_FLASH_Program. The destination
+  *          must read as erased (all 0xFF).
+  * @param  region: Region of flash_map.h. Unit data, written on the ground, is refused.
+  * @param  offset: Destination, counted from the start of the region (must be a multiple of 8).
+  * @param  data: Pointer to the source buffer.
+  * @param  n_bytes: Number of bytes to program (must be a multiple of 8).
+  * @retval HAL_OK on success; HAL_ERROR if the range is not inside the region, on
+  *         bad alignment, non-erased target or HAL programming failure.
+  */
+HAL_StatusTypeDef flash_program(flash_region_id_t region, uint32_t offset, const uint8_t *data, uint32_t n_bytes);
+
+/**
+  * @brief  Erases the 2 KB page of a region that contains the given offset.
+  * @param  region: Region of flash_map.h. Unit data, written on the ground, is refused.
+  * @param  offset: Any offset inside the page to erase, counted from the start of the region.
+  * @retval HAL status of the erase operation; HAL_ERROR if the offset is not inside the region.
+  */
+HAL_StatusTypeDef flash_erase_page(flash_region_id_t region, uint32_t offset);
+
+/* ---- Old map: deleted with the old addresses in step 4 ---- */
+
+/**
+  * @brief  Writes a byte buffer to the old map pages, spanning multiple pages if needed.
   * @details Each flash page touched by the destination range is read into RAM,
   *          updated with the new bytes, erased, then programmed back one
   *          doubleword at a time, using a single page-sized RAM buffer.
   * @param  data_addr: Destination start address in flash.
   * @param  data: Pointer to the source buffer.
   * @param  n_bytes: Number of bytes to write.
-  * @retval HAL_OK on success, HAL_ERROR if an erase or program step failed.
+  * @retval HAL_OK on success; HAL_ERROR if the range is not inside the old map
+  *         pages (OLD_MAP_BASE, OLD_MAP_SIZE) or an erase or program step failed.
   * @todo   Consider FLASH_TYPEPROGRAM_FAST (256-byte row programming) in the future.
   * @todo   This was implemented to support multi-page writes; if that turns out
   *         not to be necessary, the function can be simplified back to a single page.
@@ -147,33 +188,15 @@ extern SemaphoreHandle_t xMutex;
 HAL_StatusTypeDef flash_write(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
 
 /**
-  * @brief  Reads a block of bytes from internal flash into a RAM buffer.
-  * @details Internal flash is memory-mapped, so the read is a plain copy.
-  *          Access is serialized through the OBDH queue at runtime; the
-  *          remaining direct callers run at boot/setup with no contention.
+  * @brief  Reads bytes from the old map pages into a RAM buffer.
+  * @details Access is serialized through the OBDH queue at runtime; the one
+  *          direct caller (main) runs before the scheduler starts.
   * @param  data_addr: Source start address in flash.
   * @param  data: Destination buffer (must hold at least n_bytes).
   * @param  n_bytes: Number of bytes to read.
+  * @retval HAL_OK; HAL_ERROR if the range is not inside the old map pages
+  *         (OLD_MAP_BASE, OLD_MAP_SIZE); nothing is copied.
   */
-void flash_read(uint32_t data_addr, uint8_t *data, uint16_t n_bytes);
-
-/**
-  * @brief  Programs a byte buffer into already-erased flash, without erasing.
-  * @details Writes doublewords directly with HAL_FLASH_Program. The destination
-  *          must read as erased (all 0xFF).
-  * @param  data_addr: Destination start address (must be 8-byte aligned).
-  * @param  data: Pointer to the source buffer.
-  * @param  n_bytes: Number of bytes to program (must be a multiple of 8).
-  * @retval HAL_OK on success; HAL_ERROR on bad alignment, non-erased target
-  *         or HAL programming failure.
-  */
-HAL_StatusTypeDef flash_program(uint32_t data_addr, const uint8_t *data, uint16_t n_bytes);
-
-/**
-  * @brief  Erases the single 2 KB flash page containing the given address.
-  * @param  page_addr: Any address inside the page to erase.
-  * @retval HAL status of the erase operation.
-  */
-HAL_StatusTypeDef flash_erase_page(uint32_t page_addr);
+HAL_StatusTypeDef flash_read_old(uint32_t data_addr, uint8_t *data, uint32_t n_bytes);
 
 #endif /* INC_FLASH_H_ */

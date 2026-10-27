@@ -13,6 +13,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
+#include "flash_map.h"
 
 
 
@@ -22,14 +23,15 @@
 /**
  * @brief Flash operation type.
  *
- * All operations are generic (address + buffer + length): OBDH knows nothing
- * about what its clients store.
+ * All operations are generic (region + offset + buffer + length): OBDH knows
+ * nothing about what its clients store.
  */
 typedef enum {
-    FLASH_READ = 0,          /**< Read data from flash into the destination buffer. */
-    FLASH_WRITE = 1,         /**< Write source buffer data to flash (read-modify-erase-rewrite of each page touched). */
-    FLASH_PROGRAM = 2,       /**< Program source buffer into already-erased flash at addr (no erase; fails if the target is not erased). */
-    FLASH_ERASE_PROGRAM = 3  /**< Erase the page containing addr, then program the source buffer at addr. */
+    FLASH_READ = 0,          /**< Read data from a region into the destination buffer. */
+    FLASH_WRITE = 1,         /**< Old map: write source buffer data at an absolute address (read-modify-erase-rewrite of each page touched). */
+    FLASH_PROGRAM = 2,       /**< Program source buffer into already-erased flash at offset (no erase; fails if the target is not erased). */
+    FLASH_ERASE_PROGRAM = 3, /**< Erase the page containing offset, then program the source buffer at offset. */
+    FLASH_READ_OLD = 4       /**< Old map: read data at an absolute address into the destination buffer. */
 } obdh_flash_op;
 
 /**
@@ -38,11 +40,15 @@ typedef enum {
  * Requesters send this structure to obdh_queue_handle. The OBDH task performs
  * the selected operation and notifies client on OBDH_NOTIFY_IDX with the
  * resulting HAL status carried as the notification value.
+ *
+ * The old-map operations (FLASH_WRITE, FLASH_READ_OLD) ignore region and carry
+ * an absolute address in offset. They are deleted in step 4 of the flash plan.
  */
 typedef struct {
-    obdh_flash_op op;    // Operació: llegir, escriure, programar o esborrar
-    uint32_t addr;       // Adreça de la Flash
-    size_t len;          // Longitud en bytes
+    obdh_flash_op op;         // Operació: llegir, escriure, programar o esborrar
+    flash_region_id_t region; // Regió de flash_map.h
+    uint32_t offset;          // Posició dins la regió (adreça absoluta per a les operacions del mapa antic)
+    size_t len;               // Longitud en bytes
     union {
         const uint8_t *src;  // FLASH_WRITE / FLASH_PROGRAM / FLASH_ERASE_PROGRAM: dades a escriure
         uint8_t       *dst;  // FLASH_READ:  buffer a omplir

@@ -76,24 +76,27 @@ static void process_obdh(void) {
         switch (request.op)
         {
         case FLASH_READ:
-            flash_read(request.addr, request.buf.dst, request.len);
-            status = HAL_OK;
+            status = flash_read(request.region, request.offset, request.buf.dst, request.len);
             break;
 
         case FLASH_WRITE:
-            status = flash_write(request.addr, request.buf.src, request.len);
+            status = flash_write(request.offset, request.buf.src, request.len);
             break;
 
         case FLASH_PROGRAM:
-            status = flash_program(request.addr, request.buf.src, request.len);
+            status = flash_program(request.region, request.offset, request.buf.src, request.len);
             break;
 
         case FLASH_ERASE_PROGRAM:
-            status = flash_erase_page(request.addr);
+            status = flash_erase_page(request.region, request.offset);
             if (status == HAL_OK)
             {
-                status = flash_program(request.addr, request.buf.src, request.len);
+                status = flash_program(request.region, request.offset, request.buf.src, request.len);
             }
+            break;
+
+        case FLASH_READ_OLD:
+            status = flash_read_old(request.offset, request.buf.dst, request.len);
             break;
 
         default:

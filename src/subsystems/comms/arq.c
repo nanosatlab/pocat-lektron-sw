@@ -177,8 +177,9 @@ static void arq_send_data_block(transfer_type_t type, uint8_t session_id,
                                  bool is_retx)
 {
     uint8_t block_data[ARQ_BLOCK_SIZE];
-    obdh_read_request(dl_block_addr(type, base_addr, block_idx, block_size),
-                      block_data, actual_size);
+    memset(block_data, 0xFF, sizeof(block_data)); /* a refused read (outside the old map pages) sends erased-flash bytes */
+    obdh_read_old_request(dl_block_addr(type, base_addr, block_idx, block_size),
+                          block_data, actual_size);
 
     /* DATA payload: [SESSION_ID][BLOCK_INDEX_HI][BLOCK_INDEX_LO][data...] */
     uint8_t payload[3u + ARQ_BLOCK_SIZE];
@@ -759,7 +760,8 @@ void arq_run_dl(QueueHandle_t rx_q)
             if (rem != 0u) { actual = rem; }
         }
         uint8_t blk_buf[ARQ_BLOCK_SIZE];
-        obdh_read_request(dl_block_addr(ttype, base_addr, blk, bsize), blk_buf, actual);
+        memset(blk_buf, 0xFF, sizeof(blk_buf)); /* same bytes as arq_send_data_block() sent */
+        obdh_read_old_request(dl_block_addr(ttype, base_addr, blk, bsize), blk_buf, actual);
         crc = crc32_update(crc, blk_buf, actual);
         health_kick(HEALTH_BIT_TRANSCEIVER);
     }

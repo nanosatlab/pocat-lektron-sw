@@ -13,7 +13,6 @@
 
 #include "ht_handling.h"
 #include "obdh_requests.h"
-#include "flash.h" /* memory map only (HT_BASE_ADDR / HT_REGION_SIZE / FLASH_PAGE_SIZE); the driver is never called from here */
 #include "compression.h"
 #include <string.h>
 #include <stdio.h>
@@ -97,14 +96,14 @@ static int ht_store_block(const uint8_t *slot)
 {
     int written = 0;
     for (uint8_t attempt = 0; (attempt < 2) && !written; attempt++) {
-        uint32_t addr = HT_BASE_ADDR + (uint32_t)ht_queue.writing_pointer * HT_SLOT_SIZE;
+        uint32_t offset = (uint32_t)ht_queue.writing_pointer * HT_SLOT_SIZE;
         if ((ht_queue.writing_pointer % (int)HT_SLOTS_PER_PAGE) == 0) {
             ht_account_page_erase(ht_queue.writing_pointer);
-            if (obdh_erase_program_request(addr, slot, HT_SLOT_SIZE) != HAL_OK)
+            if (obdh_erase_program_request(FLASH_REGION_HT, offset, slot, HT_SLOT_SIZE) != HAL_OK)
                 return -1;
             written = 1;
         } else {
-            if (obdh_program_request(addr, slot, HT_SLOT_SIZE) == HAL_OK) {
+            if (obdh_program_request(FLASH_REGION_HT, offset, slot, HT_SLOT_SIZE) == HAL_OK) {
                 written = 1;
             } else {
                 ht_queue.writing_pointer = (((ht_queue.writing_pointer / (int)HT_SLOTS_PER_PAGE) + 1)
@@ -179,7 +178,7 @@ void ht_init(void)
     for (int i = 0; i < (int)HT_NUM_SLOTS; i++) {
         ht_slot_header header;
 
-        if (obdh_read_request(HT_BASE_ADDR + (uint32_t)i * HT_SLOT_SIZE, (uint8_t *)&header, sizeof(header)) != HAL_OK)
+        if (obdh_read_request(FLASH_REGION_HT, (uint32_t)i * HT_SLOT_SIZE, (uint8_t *)&header, sizeof(header)) != HAL_OK)
             continue;
 
         if (!ht_slot_header_valid(&header))

@@ -29,51 +29,68 @@ HAL_StatusTypeDef obdh_write_request(uint32_t address, const uint8_t *data, size
 
     obdh_request request = {
         .op      = FLASH_WRITE,
-        .addr    = address,
+        .offset  = address,
         .len     = len,
         .buf.src = data,
     };
     return obdh_submit_request(&request);
 }
 
-HAL_StatusTypeDef obdh_read_request(uint32_t address, uint8_t *data, size_t len)
+HAL_StatusTypeDef obdh_read_request(flash_region_id_t region, uint32_t offset, uint8_t *data, size_t len)
 {
     if (data == NULL || len == 0)
         return HAL_ERROR;
 
     obdh_request request = {
         .op      = FLASH_READ,
-        .addr    = address,
+        .region  = region,
+        .offset  = offset,
         .len     = len,
         .buf.dst = data,
     };
     return obdh_submit_request(&request);
 }
 
-HAL_StatusTypeDef obdh_program_request(uint32_t address, const uint8_t *data, size_t len)
+HAL_StatusTypeDef obdh_program_request(flash_region_id_t region, uint32_t offset, const uint8_t *data, size_t len)
 {
     if (data == NULL || len == 0)
         return HAL_ERROR;
 
     obdh_request request = {
         .op      = FLASH_PROGRAM,
-        .addr    = address,
+        .region  = region,
+        .offset  = offset,
         .len     = len,
         .buf.src = data,
     };
     return obdh_submit_request(&request);
 }
 
-HAL_StatusTypeDef obdh_erase_program_request(uint32_t address, const uint8_t *data, size_t len)
+HAL_StatusTypeDef obdh_erase_program_request(flash_region_id_t region, uint32_t offset, const uint8_t *data, size_t len)
 {
     if (data == NULL || len == 0)
         return HAL_ERROR;
 
     obdh_request request = {
         .op      = FLASH_ERASE_PROGRAM,
-        .addr    = address,
+        .region  = region,
+        .offset  = offset,
         .len     = len,
         .buf.src = data,
+    };
+    return obdh_submit_request(&request);
+}
+
+HAL_StatusTypeDef obdh_read_old_request(uint32_t address, uint8_t *data, size_t len)
+{
+    if (data == NULL || len == 0)
+        return HAL_ERROR;
+
+    obdh_request request = {
+        .op      = FLASH_READ_OLD,
+        .offset  = address,
+        .len     = len,
+        .buf.dst = data,
     };
     return obdh_submit_request(&request);
 }
@@ -85,7 +102,7 @@ HAL_StatusTypeDef obdh_erase_program_request(uint32_t address, const uint8_t *da
  * dedicated flash notification index (OBDH_NOTIFY_IDX) until OBDH returns the
  * completion carrying the HAL status.
  *
- * @param request Flash request with op/addr/len/buf already populated.
+ * @param request Flash request with op/region/offset/len/buf already populated.
  * @retval HAL_OK / HAL_ERROR  Status reported by the OBDH task for the operation.
  * @retval HAL_BUSY            Request queue still full after the send timeout.
  */

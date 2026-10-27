@@ -14,7 +14,7 @@ void tm_build_hk_live(uint8_t *out)
     memset(out, 0, 24);
 
     uint8_t obc_state = 0;
-    obdh_read_request(CURRENT_STATE_ADDR, &obc_state, 1);
+    obdh_read_old_request(CURRENT_STATE_ADDR, &obc_state, 1);
 
     out[0]  = obc_state;
     out[1]  = 0x3Fu;                          /* HEALTH_FLAGS placeholder */
