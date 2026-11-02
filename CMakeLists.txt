@@ -168,6 +168,10 @@ target_link_options(${EXECUTABLE} PRIVATE
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>
+    # Test firmware (eps_mock.c, test_eps.c, UNIT_TEST hooks) must never reach
+    # the flight image; the check fails the build and deletes the ELF if it does.
+    COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DELF=$<TARGET_FILE:${EXECUTABLE}>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/check_flight_symbols.cmake
 )
 
 # ── On-target EPS test firmware ─────────────────────────────────────────────
