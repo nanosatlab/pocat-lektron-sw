@@ -12,6 +12,26 @@
  * Neither the EPS task logic nor the OBDH task interprets these bytes; the
  * EPS task only decides WHEN to emit a frame (sampling period or significant
  * change) and fills it via eps_frame_pack().
+ *
+ * Byte offsets (little-endian, packed, total 19 bytes):
+ *    0  vbat_raw        u16   4.88 mV/LSB   (mV = raw * 488 / 100)
+ *    2  temp_raw        i16   0.125 C/LSB   (whole C = raw / 8)
+ *    4  rel_cap_raw     u8    RARC, 1 %/LSB
+ *    5  current_raw     i16   0.10417 mA/LSB (15 mOhm R9)
+ *    7  avg_current_raw i16   0.10417 mA/LSB, 28 s window
+ *    9  acr_raw         i16   0.4167 mAh/LSB (6.25 uVh / 15 mOhm)
+ *   11  aac_raw         u16   RAAC, 1.6 mAh/LSB
+ *   13  sac_raw         u16   RSAC, 1.6 mAh/LSB
+ *   15  rsrc_raw        u8    RSRC, 1 %/LSB
+ *   16  clprog_adc      u16   12-bit ADC counts (0..4095), 0xFFFF = read failed
+ *   18  system_status   u8    status bitfield (see below)
+ *
+ * The comms housekeeping builders (beacon, TM_HK_LIVE) read this blob back
+ * from the OBDH mailbox and decode offsets 0 (BATT_V), 2 (TEMP_BATT), 5
+ * (BATT_I) and 18 (EPS flags) by hand, without including this header.
+ * eps_frame.c pins those offsets and the 19-byte size with _Static_assert so
+ * any layout change breaks the build here rather than silently corrupting the
+ * downlink.
  */
 
 #ifndef INC_SUBSYSTEMS_EPS_EPS_FRAME_H_
@@ -31,8 +51,8 @@ typedef struct {
     int16_t  current_raw;      // instantaneous current (signed)
     int16_t  avg_current_raw;  // IAVG (28 s averaged current, signed)
     int16_t  acr_raw;          // ACR (accumulated charge, signed)
-    uint16_t aac_raw;          // RAAC (active absolute capacity, mAh)
-    uint16_t sac_raw;          // RSAC (standby absolute capacity, mAh)
+    uint16_t aac_raw;          // RAAC (active absolute capacity, 1.6 mAh/LSB)
+    uint16_t sac_raw;          // RSAC (standby absolute capacity, 1.6 mAh/LSB)
     uint8_t  rsrc_raw;         // RSRC (standby relative capacity, %)
 
     // 2. Analog Power Manager Data (LTC4040 ADC) - 2 Bytes

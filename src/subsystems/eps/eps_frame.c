@@ -6,6 +6,21 @@
 #include "eps_frame.h"
 #include <stddef.h>
 
+/* The comms housekeeping builders decode this blob by raw byte offset without
+ * including eps_frame.h. Pin the offsets and size they depend on so a layout
+ * change breaks the build here, at the source of truth, instead of silently
+ * shifting TEMP_BATT / BATT_I / EPS-flags on the downlink. */
+_Static_assert(sizeof(EPS_Telemetry_Frame_t) == 19,
+               "EPS ground frame must stay 19 bytes (ground decode tables)");
+_Static_assert(offsetof(EPS_Telemetry_Frame_t, vbat_raw) == 0,
+               "BATT_V decode offset drifted (comms tm_builder.c)");
+_Static_assert(offsetof(EPS_Telemetry_Frame_t, temp_raw) == 2,
+               "TEMP_BATT decode offset drifted (comms tm_builder.c)");
+_Static_assert(offsetof(EPS_Telemetry_Frame_t, current_raw) == 5,
+               "BATT_I decode offset drifted (comms tm_builder.c)");
+_Static_assert(offsetof(EPS_Telemetry_Frame_t, system_status) == 18,
+               "EPS-flags decode offset drifted (comms tm_builder.c)");
+
 void eps_frame_pack(const Battery_Telemetry_t *batt, const EPS_Status_t *pmic,
                     EPS_Telemetry_Frame_t *frame_out)
 {

@@ -187,9 +187,9 @@ void tc_process(const AirFrame_t *frame)
     }
 
     case TC_REQUEST_HK_LIVE: {
-        uint8_t body[24];
+        uint8_t body[TM_HK_LIVE_LEN];
         tm_build_hk_live(body);
-        enqueue_tm(TM_HK_LIVE, body, 24u, tc_id, frame->seq);
+        enqueue_tm(TM_HK_LIVE, body, TM_HK_LIVE_LEN, tc_id, frame->seq);
         break;
     }
 

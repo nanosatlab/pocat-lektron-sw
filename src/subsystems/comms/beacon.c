@@ -1,6 +1,7 @@
 #include "beacon.h"
 #include "frame.h"
 #include "comms.h"
+#include "tm_builder.h"
 #include "lora_cfg.h"
 #include "notifications.h"
 #include "obc.h"
@@ -21,6 +22,9 @@ uint32_t g_beacon_period_ms = BEACON_PERIOD_MS;
 
 static TimerHandle_t beacon_timer = NULL;
 
+/* §6.6 beacon body length. BATT_I is the full int16 current (2 bytes). */
+#define BEACON_BODY_LEN  20u
+
 static void beacon_timer_cb(TimerHandle_t xTimer)
 {
     (void)xTimer;
@@ -32,7 +36,7 @@ static void beacon_timer_cb(TimerHandle_t xTimer)
 
 static uint8_t build_beacon_body(uint8_t *body)
 {
-    memset(body, 0, 19);
+    memset(body, 0, BEACON_BODY_LEN);
 
     uint32_t epoch = time_get_unix();
     uint8_t obc_state = 0;
@@ -43,6 +47,11 @@ static uint8_t build_beacon_body(uint8_t *body)
     OBDH_Read_Request(BOOT_TIME_ADDR, (uint8_t *)&boot_time, sizeof(boot_time));
     uint32_t uptime_s = (epoch >= boot_time) ? (epoch - boot_time) : 0u;
 
+    uint16_t batt_mv = 0;
+    uint8_t batt_temp = 0;
+    int16_t batt_i_raw = 0;
+    tm_read_eps_summary(&batt_mv, &batt_temp, &batt_i_raw, NULL);
+
     body[0]  = AIR_BODY_VER;
     body[1]  = (uint8_t)(epoch >> 24);
     body[2]  = (uint8_t)(epoch >> 16);
@@ -51,29 +60,30 @@ static uint8_t build_beacon_body(uint8_t *body)
     body[5]  = obc_state;
     body[6]  = 0x3Fu;                           /* HEALTH_FLAGS placeholder */
     body[7]  = (uint8_t)mcu_get_temperature();
-    body[8]  = 0x00u;                           /* TEMP_BATT dummy */
-    body[9]  = (uint8_t)(mcu_get_vdda_mv() / 100u);
-    body[10] = 0x00u;                           /* BATT_I dummy */
-    body[11] = 0x00u;                           /* DEPLOY */
-    body[12] = g_last_tc_id;
-    body[13] = g_last_tc_rc;
-    body[14] = lora_cfg_current_id();           /* §9 active CFG_ID */
-    body[15] = (uint8_t)(uptime_s >> 24);
-    body[16] = (uint8_t)(uptime_s >> 16);
-    body[17] = (uint8_t)(uptime_s >> 8);
-    body[18] = (uint8_t)(uptime_s);
+    body[8]  = batt_temp;                       /* TEMP_BATT (whole C, signed) */
+    body[9]  = tm_encode_batt_v(batt_mv);       /* BATT_V: 2.000 V + code*10 mV */
+    body[10] = (uint8_t)((uint16_t)batt_i_raw >> 8); /* BATT_I: raw int16 BE */
+    body[11] = (uint8_t)((uint16_t)batt_i_raw);
+    body[12] = 0x00u;                           /* DEPLOY */
+    body[13] = g_last_tc_id;
+    body[14] = g_last_tc_rc;
+    body[15] = lora_cfg_current_id();           /* §9 active CFG_ID */
+    body[16] = (uint8_t)(uptime_s >> 24);
+    body[17] = (uint8_t)(uptime_s >> 16);
+    body[18] = (uint8_t)(uptime_s >> 8);
+    body[19] = (uint8_t)(uptime_s);
 
-    return 19u;
+    return BEACON_BODY_LEN;
 }
 
 static void transmit_beacon(void)
 {
-    uint8_t body[19];
+    uint8_t body[BEACON_BODY_LEN];
     build_beacon_body(body);
 
     uint8_t air_buf[AIR_FRAME_MAX];
     uint8_t frame_len = air_encode(air_buf, AIR_BEACON, 0x00u,
-                                   comms_next_seq(), body, 19u);
+                                   comms_next_seq(), body, BEACON_BODY_LEN);
 
     TxQueueEntry_t entry;
     memset(&entry, 0, sizeof(entry));
