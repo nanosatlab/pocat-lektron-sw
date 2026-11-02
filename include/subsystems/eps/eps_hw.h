@@ -23,11 +23,11 @@
 /** @brief Raw battery telemetry snapshot as delivered by the fuel gauge. */
 typedef struct {
     uint16_t raw_voltage;             // 4.88 mV/LSB
-    int16_t  raw_current;             // 0.15625 mA/LSB (10mΩ sense) — instantaneous
+    int16_t  raw_current;             // 0.10417 mA/LSB (15 mΩ R9) — instantaneous
     int16_t  raw_temperature;         // 0.125 ºC/LSB
     uint8_t  raw_relative_cap;        // 1% State of Charge — RARC (active)
-    int16_t  raw_avg_current;         // 0.15625 mA/LSB (10mΩ sense) — IAVG, 28 s window
-    int16_t  raw_acr;                 // 0.625 mAh/LSB (10mΩ sense) — accumulated charge in/out
+    int16_t  raw_avg_current;         // 0.10417 mA/LSB (15 mΩ R9) — IAVG, 28 s window
+    int16_t  raw_acr;                 // 0.4167 mAh/LSB (15 mΩ R9) — accumulated charge in/out
     uint16_t raw_active_abs_cap;      // 1.6 mAh/LSB — RAAC (active absolute capacity)
     uint16_t raw_standby_abs_cap;     // 1.6 mAh/LSB — RSAC (standby absolute capacity)
     uint8_t  raw_standby_rel_cap;     // 1% — RSRC (standby relative capacity)
@@ -90,10 +90,12 @@ int16_t  eps_hw_battery_temp_c(const Battery_Telemetry_t *telemetry);
 
 /* --- Mock injection API (defined in eps_mock.c, UNIT_TEST builds only) --- */
 
+#ifdef UNIT_TEST
 void DS2782_Set_Mock_Mode(bool enable);
 void DS2782_Set_Mock_Values(const Battery_Telemetry_t *v);
 void DS2782_Set_Mock_Fail(bool fail);
 void LTC4040_Set_Mock_Values(const EPS_Status_t *v);
 void LTC4040_Set_Mock_Fail(bool fail);
+#endif
 
 #endif /* INC_SUBSYSTEMS_EPS_EPS_HW_H_ */
