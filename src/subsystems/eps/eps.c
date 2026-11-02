@@ -39,7 +39,16 @@ static bool         auto_heat_enabled  = false;
 // Stored in flash as 1 byte each in units of 100 mV (matches the 3-byte TC format).
 static uint16_t thresholds_mv[3] = {3700, 3300, 3000}; // [0] nominal, [1] contingency, [2] sunsafe
 static int8_t   heater_hysteresis_c[2] = {0, 5};       // ON below [0], OFF above [1]
-static uint16_t sampling_period_100ms  = 10;           // 10 x 100 ms = 1 s default
+// Default telemetry period. Each telemetry write erases a whole 2 KB flash page
+// (rated 10k cycles), so the period sets the page lifetime: 30 min plus event
+// writes is ~90 erases/day, ~4 months. Sensors are still polled every EPS_TICK_MS.
+// The on-target tests read the mailbox right after injecting values, so they
+// keep a 1 s period.
+#ifdef UNIT_TEST
+static uint16_t sampling_period_100ms  = 10;           // 10 x 100 ms = 1 s
+#else
+static uint16_t sampling_period_100ms  = 18000;        // 18000 x 100 ms = 30 min
+#endif
 
 // Tick of the last telemetry write; drives the periodic-telemetry timer. Telemetry
 // is written every sampling_period OR immediately on a significant change.
