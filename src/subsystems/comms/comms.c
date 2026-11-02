@@ -26,6 +26,7 @@
 #include "types.h"
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #define COMMS_HEALTH_KICK_MS   2000u
 
@@ -41,17 +42,29 @@ uint8_t comms_next_seq(void)
     return s_seq++;
 }
 
-void comms_task(void *pv_parameters)
+void comms_init(void)
 {
-    (void)pv_parameters;
-
+    /* Create the shared RX/TX queues here, during OBC setup, BEFORE any
+     * subsystem task is created. transceiver_task caches these handles once at
+     * startup, and comms and transceiver run at the same priority (4), so
+     * either may start first. Creating the queues up front, like the OBDH
+     * queue in setup_obc(), makes the handles valid regardless of task start
+     * order. */
     rx_queue = xQueueCreate(COMMS_QUEUE_LEN, sizeof(RxAirFrame_t));
     tx_queue = xQueueCreate(COMMS_QUEUE_LEN, sizeof(TxQueueEntry_t));
 
     if (rx_queue == NULL || tx_queue == NULL) {
-        return;
+        printf("ERROR: Could not create comms queues\n");
+        while (1);
     }
+}
 
+void comms_task(void *pv_parameters)
+{
+    (void)pv_parameters;
+
+    /* rx_queue/tx_queue are created in comms_init() during OBC setup, before
+     * any subsystem task runs, so they are guaranteed valid here. */
     deferred_notifications = 0;
 
     for (;;) {

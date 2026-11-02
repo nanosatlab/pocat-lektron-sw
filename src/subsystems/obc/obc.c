@@ -77,6 +77,10 @@ static void setup_obc(obc_state_t currentState) {
         while(1);
     }
 
+    /* Create the comms RX/TX queues before the subsystem tasks are created, so
+     * transceiver_task always caches valid handles. */
+    comms_init();
+
     health_init();
     health_register_iwdg(&hiwdg);
     health_config(pdMS_TO_TICKS(5000));

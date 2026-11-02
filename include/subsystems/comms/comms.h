@@ -46,6 +46,15 @@ typedef struct {
 uint8_t comms_next_seq(void);
 
 /**
+ * @brief Create the comms RX/TX queues.
+ *
+ * Must be called once during OBC setup, before the comms and transceiver tasks
+ * are created, so both tasks observe valid queue handles regardless of the
+ * order in which they start.
+ */
+void comms_init(void);
+
+/**
  * @brief Communications FreeRTOS task entry point: handles protocol logic and packet processing.
  * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
  */
