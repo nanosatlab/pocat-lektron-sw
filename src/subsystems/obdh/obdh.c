@@ -14,6 +14,7 @@
 #include "main.h"
 #include "queue.h"
 #include "flash.h"
+#include "param_store.h"
 #include "notifications.h"
 #include "task_management.h"
 
@@ -97,6 +98,10 @@ static void process_obdh(void) {
 
         case FLASH_READ_OLD:
             status = flash_read_old(request.offset, request.buf.dst, request.len);
+            break;
+
+        case FLASH_PARAM_WRITE:
+            status = param_store_write(request.param_id, request.buf.src, request.len);
             break;
 
         default:

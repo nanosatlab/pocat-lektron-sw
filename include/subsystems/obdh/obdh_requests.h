@@ -80,6 +80,20 @@ HAL_StatusTypeDef obdh_program_request(flash_region_id_t region, uint32_t offset
  */
 HAL_StatusTypeDef obdh_erase_program_request(flash_region_id_t region, uint32_t offset, const uint8_t *data, size_t length);
 
+/**
+ * @brief Stores a parameter value through the OBDH task; use param_set() or param_reset() instead.
+ *
+ * Enqueues a FLASH_PARAM_WRITE request and blocks until param_store_write()
+ * has run in the OBDH task.
+ *
+ * @param id Parameter ID (param_store.h).
+ * @param data The new value.
+ * @param length The parameter's size.
+ * @return HAL_StatusTypeDef Status of the operation: param_store_write()'s
+ * result, HAL_BUSY if the request queue stayed full (request not enqueued).
+ */
+HAL_StatusTypeDef obdh_param_write_request(uint8_t id, const uint8_t *data, size_t length);
+
 /* ---- Old map: deleted with the old addresses in step 4 ---- */
 
 /**

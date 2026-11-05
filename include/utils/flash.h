@@ -143,7 +143,8 @@ extern SemaphoreHandle_t xMutex;
   * @param  offset: First byte to read, counted from the start of the region.
   * @param  data: Destination buffer (must hold at least n_bytes).
   * @param  n_bytes: Number of bytes to read.
-  * @retval HAL_OK; HAL_ERROR if the range is not inside the region (nothing is copied).
+  * @retval HAL_OK; HAL_ERROR if the range is not inside the region (nothing is
+  *         copied) or an ECC double error hit the bytes read (they are wrong).
   */
 HAL_StatusTypeDef flash_read(flash_region_id_t region, uint32_t offset, uint8_t *data, uint32_t n_bytes);
 
@@ -167,6 +168,33 @@ HAL_StatusTypeDef flash_program(flash_region_id_t region, uint32_t offset, const
   * @retval HAL status of the erase operation; HAL_ERROR if the offset is not inside the region.
   */
 HAL_StatusTypeDef flash_erase_page(flash_region_id_t region, uint32_t offset);
+
+/* ---- ECC errors ---- */
+
+/** @brief Flash ECC events since boot (spec FLS-INT-040, FLS-INT-070). */
+typedef struct {
+    uint32_t detections;    /**< Double errors outside the program image, each one an NMI. */
+    uint32_t corrections;   /**< Corrected single errors noticed by the driver's reads. */
+    uint32_t last_address;  /**< Address of the last double error; 0 if none. */
+} flash_ecc_stats_t;
+
+/**
+  * @brief  Handles a flash ECC double error; NMI_Handler calls it first.
+  * @details Two flipped bits in a doubleword raise an NMI (RM0351 §3.3.2).
+  *          Inside the program image the software itself is damaged, so the
+  *          MCU resets. Anywhere else (data regions, old map pages, system
+  *          memory) the error is counted, the flag is cleared and the NMI
+  *          returns: the reader got wrong bytes, its CRC rejects them and
+  *          flash_read() reports HAL_ERROR. No flash is written here (spec FLS-INT-040).
+  * @retval true if the NMI was an ECC double error outside the program image;
+  *         false if the NMI has another cause.
+  */
+bool flash_ecc_nmi(void);
+
+/**
+  * @brief  Returns the ECC event counters, for flash health telemetry.
+  */
+flash_ecc_stats_t flash_ecc_stats(void);
 
 /* ---- Old map: deleted with the old addresses in step 4 ---- */
 
@@ -195,7 +223,8 @@ HAL_StatusTypeDef flash_write(uint32_t data_addr, const uint8_t *data, uint16_t 
   * @param  data: Destination buffer (must hold at least n_bytes).
   * @param  n_bytes: Number of bytes to read.
   * @retval HAL_OK; HAL_ERROR if the range is not inside the old map pages
-  *         (OLD_MAP_BASE, OLD_MAP_SIZE); nothing is copied.
+  *         (OLD_MAP_BASE, OLD_MAP_SIZE; nothing is copied) or an ECC double
+  *         error hit the bytes read.
   */
 HAL_StatusTypeDef flash_read_old(uint32_t data_addr, uint8_t *data, uint32_t n_bytes);
 

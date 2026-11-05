@@ -31,7 +31,8 @@ typedef enum {
     FLASH_WRITE = 1,         /**< Old map: write source buffer data at an absolute address (read-modify-erase-rewrite of each page touched). */
     FLASH_PROGRAM = 2,       /**< Program source buffer into already-erased flash at offset (no erase; fails if the target is not erased). */
     FLASH_ERASE_PROGRAM = 3, /**< Erase the page containing offset, then program the source buffer at offset. */
-    FLASH_READ_OLD = 4       /**< Old map: read data at an absolute address into the destination buffer. */
+    FLASH_READ_OLD = 4,      /**< Old map: read data at an absolute address into the destination buffer. */
+    FLASH_PARAM_WRITE = 5    /**< Store a parameter value with param_store_write() (param_set(), param_reset()). */
 } obdh_flash_op;
 
 /**
@@ -48,6 +49,7 @@ typedef struct {
     obdh_flash_op op;         // Operació: llegir, escriure, programar o esborrar
     flash_region_id_t region; // Regió de flash_map.h
     uint32_t offset;          // Posició dins la regió (adreça absoluta per a les operacions del mapa antic)
+    uint8_t param_id;         // FLASH_PARAM_WRITE: identificador del paràmetre
     size_t len;               // Longitud en bytes
     union {
         const uint8_t *src;  // FLASH_WRITE / FLASH_PROGRAM / FLASH_ERASE_PROGRAM: dades a escriure

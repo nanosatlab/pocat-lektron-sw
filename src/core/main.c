@@ -21,6 +21,7 @@
 #include "log.h"
 #include "time.h"
 #include "flash.h"
+#include "param_store.h"
 
 /** @brief Handle for the OBC FreeRTOS task*/
 static TaskHandle_t obc_task_handle;
@@ -45,6 +46,9 @@ int main(void)
 {
 
   HAL_Init();
+
+  /* Persistent parameters into RAM: reads flash only, before anything else needs them */
+  param_store_init();
 
   obc_state_t bootState;
   flash_read_old(CURRENT_STATE_ADDR, (uint8_t*)&bootState, sizeof(obc_state_t));

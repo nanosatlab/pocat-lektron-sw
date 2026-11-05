@@ -18,25 +18,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
-
-/* ---- CRC-32/ISO-HDLC (poly 0x04C11DB7 reflected, init 0xFFFFFFFF) ---- */
-
-static uint32_t crc32_update(uint32_t crc, const uint8_t *data, uint32_t len)
-{
-    for (uint32_t i = 0u; i < len; i++) {
-        crc ^= data[i];
-        for (int j = 0; j < 8; j++) {
-            if (crc & 1u) {
-                crc = (crc >> 1) ^ 0xEDB88320u;
-            } else {
-                crc >>= 1;
-            }
-        }
-    }
-    return crc;
-}
-
-static uint32_t crc32_finish(uint32_t crc) { return crc ^ 0xFFFFFFFFu; }
+#include "crc32.h"
 
 /* ---- Session state ---- */
 

@@ -31,8 +31,19 @@ static const flash_region_t regions[FLASH_REGION_COUNT] = {
 #undef FLASH_REGION_ENTRY
 };
 
+/* Linker script symbols: the program image ends with the initial values of .data */
+extern uint32_t _sidata, _sdata, _edata;
+
+#define SYSTEM_MEMORY_BASE  0x1FFF0000u   /**< System memory (bootloader, OTP), where SYSF_ECC errors lie (RM0351 §3.3.1). */
+
+static volatile uint32_t ecc_detections;
+static volatile uint32_t ecc_corrections;
+static volatile uint32_t ecc_last_address;
+
 static bool region_range(flash_region_id_t region, uint32_t offset, uint32_t n_bytes, bool write, uint32_t *addr);
 static bool old_map_range(uint32_t addr, uint32_t n_bytes);
+static HAL_StatusTypeDef copy_checked(uint8_t *data, uint32_t addr, uint32_t n_bytes);
+static void clear_ecc_correction(void);
 static uint32_t get_page(uint32_t Addr);
 static uint32_t get_bank(uint32_t Addr);
 
@@ -44,8 +55,7 @@ HAL_StatusTypeDef flash_read(flash_region_id_t region, uint32_t offset, uint8_t 
         return HAL_ERROR;
     }
 
-    memcpy(data, (const void *)data_addr, n_bytes);
-    return HAL_OK;
+    return copy_checked(data, data_addr, n_bytes);
 }
 
 HAL_StatusTypeDef flash_program(flash_region_id_t region, uint32_t offset, const uint8_t *data, uint32_t n_bytes) {
@@ -117,6 +127,43 @@ HAL_StatusTypeDef flash_erase_page(flash_region_id_t region, uint32_t offset) {
         printf("Error erasing flash page at address 0x%08lX, error code %lu\n", (unsigned long)page_addr, (unsigned long)PAGEError);
     }
     return status;
+}
+
+/* ---- ECC errors ---- */
+
+bool flash_ecc_nmi(void) {
+
+    uint32_t eccr = FLASH->ECCR;
+    if ((eccr & FLASH_ECCR_ECCD) == 0u) {
+        return false;
+    }
+
+    uint32_t addr = eccr & FLASH_ECCR_ADDR_ECC;   // byte address of the doubleword inside its bank
+    if ((eccr & FLASH_ECCR_SYSF_ECC) != 0u) {
+        addr += SYSTEM_MEMORY_BASE;
+    } else {
+        addr += ((eccr & FLASH_ECCR_BK_ECC) != 0u) ? FLASH_MAP_BANK2_START : FLASH_CODE_BASE;
+    }
+
+    uint32_t image_end = (uint32_t)&_sidata + ((uint32_t)&_edata - (uint32_t)&_sdata);
+    if ((addr >= FLASH_CODE_BASE) && (addr < image_end)) {
+        NVIC_SystemReset();   // the program image is damaged
+    }
+
+    ecc_last_address = addr;
+    ecc_detections++;
+    FLASH->ECCR = (eccr & FLASH_ECCR_ECCIE) | FLASH_ECCR_ECCD;   // write 1 to clear ECCD only
+    return true;
+}
+
+flash_ecc_stats_t flash_ecc_stats(void) {
+
+    flash_ecc_stats_t stats = {
+        .detections   = ecc_detections,
+        .corrections  = ecc_corrections,
+        .last_address = ecc_last_address,
+    };
+    return stats;
 }
 
 /* ---- Old map: deleted with the old addresses in step 4 ---- */
@@ -199,8 +246,7 @@ HAL_StatusTypeDef flash_read_old(uint32_t data_addr, uint8_t *data, uint32_t n_b
         return HAL_ERROR;
     }
 
-    memcpy(data, (const void *)data_addr, n_bytes);
-    return HAL_OK;
+    return copy_checked(data, data_addr, n_bytes);
 }
 
 /**
@@ -244,6 +290,42 @@ static bool old_map_range(uint32_t addr, uint32_t n_bytes)
 {
   return (addr >= OLD_MAP_BASE) && (addr - OLD_MAP_BASE <= OLD_MAP_SIZE) &&
          (n_bytes <= OLD_MAP_SIZE - (addr - OLD_MAP_BASE));
+}
+
+/**
+  * @brief  Copies bytes out of flash and tells whether an ECC double error hit them.
+  * @details While the ECC correction flag (ECCC) is set, a double error raises no
+  *          NMI (RM0351 §3.3.2), so the flag is cleared before the copy. The
+  *          barriers make a pending NMI run before the counter is checked.
+  * @param  data: Destination buffer.
+  * @param  addr: Source address in flash.
+  * @param  n_bytes: Number of bytes.
+  * @retval HAL_OK; HAL_ERROR if flash_ecc_nmi() counted a double error during the copy.
+  */
+static HAL_StatusTypeDef copy_checked(uint8_t *data, uint32_t addr, uint32_t n_bytes)
+{
+  clear_ecc_correction();
+  uint32_t detections = ecc_detections;
+
+  memcpy(data, (const void *)addr, n_bytes);
+  __DSB();
+  __ISB();
+
+  clear_ecc_correction();
+  return (ecc_detections == detections) ? HAL_OK : HAL_ERROR;
+}
+
+/**
+  * @brief  Counts and clears a pending ECC correction (ECCC), so the next double error raises the NMI.
+  */
+static void clear_ecc_correction(void)
+{
+  uint32_t eccr = FLASH->ECCR;
+  if ((eccr & FLASH_ECCR_ECCC) != 0u)
+  {
+    ecc_corrections++;
+    FLASH->ECCR = (eccr & FLASH_ECCR_ECCIE) | FLASH_ECCR_ECCC;   // write 1 to clear ECCC only
+  }
 }
 
 /**
