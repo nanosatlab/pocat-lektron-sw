@@ -170,6 +170,18 @@ void fake_rtos_fire_timer(TimerHandle_t t)
     if (t->cb) t->cb(t);
 }
 
+TickType_t fake_rtos_timer_period(TimerHandle_t t)
+{
+    configASSERT(t != NULL);
+    return t->period;
+}
+
+bool fake_rtos_timer_active(TimerHandle_t t)
+{
+    configASSERT(t != NULL);
+    return t->active;
+}
+
 /* ---------------------------------------------------------------- blocking rule */
 
 typedef bool (*cond_fn)(const void *ctx);

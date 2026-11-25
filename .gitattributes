@@ -1,0 +1,5 @@
+# Shell scripts and Dockerfiles run inside Linux containers: bash fails on CRLF
+# line endings ("$'\r': command not found"), so keep them LF on every OS,
+# whatever core.autocrlf is set to.
+*.sh          text eol=lf
+Dockerfile*   text eol=lf

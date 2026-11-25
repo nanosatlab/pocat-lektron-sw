@@ -4,7 +4,9 @@
 > Part A is the overview (about 10 minutes to read). Part B is the spec that was implemented.
 > For day-to-day use (commands, conventions, current known-issues table) read `test/README.md`, which is kept up to date. This document records the design decisions.
 >
-> **Decisions taken:** MVP approved as designed. Production bugs are only documented as `KNOWN BUG` tests, never fixed from test work. Sanitizers are on. The ctest name changed to `test_ht_handling`. No `.gitattributes` was added. `build_test/` was removed from git tracking.
+> **Decisions taken:** MVP approved as designed. Production bugs are only documented as `KNOWN BUG` tests, never fixed from test work. Sanitizers are on. The ctest name changed to `test_ht_handling`. No `.gitattributes` was added at the time; one was added later (2026-10-23, still untracked as of 2026-11-12) with `*.sh text eol=lf` and `Dockerfile* text eol=lf`, which answers open question A8.6. `build_test/` was removed from git tracking.
+>
+> **Later phases:** the Phase 2 suites (`test_health`, `test_obdh`, `test_tc_handler`) and the Phase 3 batch (`test_lora_cfg`, `test_obc`, `test_subsystem_tasks`, `test_beacon`, `test_saw`, `test_arq` uplink, `test_ht_compression`) are specified in `docs/testing/test-design-phase3.md` and listed in `test/README.md`.
 >
 > **Outcome:**
 > - The 4 new suites pass, with 4 `KNOWN BUG` tests ignored: KB-1, KB-3 ×2 and KI-4. With their IGNORE line removed, each one fails for the stated reason. ASan catches the KB-1 overflow.

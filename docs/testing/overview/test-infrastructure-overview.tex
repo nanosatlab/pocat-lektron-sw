@@ -1,0 +1,1279 @@
+% =====================================================================
+%  PoCAT Lektron SW: infraestructura de tests de host i Docker
+%  Document d'estudi i font de figures per a l'equip (Nanosatlab, UPC).
+%
+%  Compilació (Docker, sense instal·lar res al PC), des d'aquesta carpeta:
+%    PowerShell:
+%      docker run --rm -v "${PWD}:/data" -w /data dxjoke/tectonic-docker `
+%        tectonic test-infrastructure-overview.tex
+%    Git Bash:
+%      MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W)":/data -w /data \
+%        dxjoke/tectonic-docker tectonic test-infrastructure-overview.tex
+%  Tectonic no deixa fitxers auxiliars (.aux, .log) per defecte.
+%
+%  Dades verificades contra el repo el 2026-11-12 (branca obdh-compression).
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+% Tectonic compila amb XeTeX: fonts OpenType amb Unicode complet.
+\usepackage{fontspec}
+\usepackage[catalan,shorthands=off]{babel}
+\setmainfont{texgyreheros}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+  ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\setsansfont{texgyreheros}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+  ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\setmonofont{DejaVuSansMono}[Extension=.ttf, BoldFont=*-Bold, ItalicFont=*-Oblique,
+  BoldItalicFont=*-BoldOblique, Scale=0.86]
+\usepackage[a4paper,margin=1.8cm,headheight=14pt]{geometry}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,arrows.meta,calc,backgrounds,shapes.geometric}
+\usepackage{pdflscape}
+\usepackage{booktabs,tabularx,longtable,array,multirow}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{3em}
+\captionsetup{font=small,labelfont=bf,margin=0pt,justification=raggedright,singlelinecheck=false}
+
+% ---------------------------------------------------------------- codi en línia
+% \_ permet un salt de línia després del guió baix (identificadors llargs a les taules).
+\DeclareRobustCommand{\_}{\textunderscore\allowbreak}
+\newcommand{\cd}[1]{\texttt{#1}}
+\newcommand{\PWD}{\$\{PWD\}}
+
+\lstset{basicstyle=\ttfamily\small,columns=fullflexible,keepspaces=true,
+        frame=single,rulecolor=\color{black!40},backgroundcolor=\color{black!3},
+        xleftmargin=4pt,xrightmargin=4pt,aboveskip=6pt,belowskip=6pt,
+        showstringspaces=false,upquote=false}
+
+% ---------------------------------------------------------------- paleta
+% Pensada per llegir-se també en gris: cada categoria té una lluminositat diferent
+% i, a més, un tipus de vora diferent (gruixuda / fina / discontínua).
+\definecolor{cProdD}{HTML}{1F4E79}   % blau fosc: vores del codi de producció
+\definecolor{cProdL}{HTML}{DCE8F4}   % blau molt clar: codi de producció
+\definecolor{cFakeD}{HTML}{8A5200}   % ocre fosc: vores dels fakes
+\definecolor{cFakeL}{HTML}{F0B65E}   % ocre mitjà: fakes de test
+\definecolor{cGrey}{HTML}{555555}
+\definecolor{cBg}{HTML}{F1F1F1}
+\definecolor{cCovFull}{HTML}{2B6596} % cobertura: té suite (fosc)
+\definecolor{cCovPart}{HTML}{A7C6E2} % cobertura: parcial (mitjà)
+\definecolor{cWarn}{HTML}{9E2A2B}    % marques de decisió / avís
+
+\tikzset{
+  every node/.style={font=\sffamily},
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, minimum height=8mm, line width=0.7pt},
+  prod/.style={box, fill=cProdL, draw=cProdD, line width=1.2pt},
+  real/.style={box, fill=white, draw=black!80, line width=0.9pt},
+  fake/.style={box, fill=cFakeL, draw=cFakeD, line width=0.9pt},
+  stub/.style={box, fill=white, draw=cFakeD, dashed, line width=0.9pt},
+  ghost/.style={box, fill=white, draw=black!35, dash pattern=on 2pt off 2pt, text=black!55, line width=0.6pt},
+  tool/.style={box, fill=cBg, draw=cGrey},
+  img/.style={box, fill=black!14, draw=black!75, line width=1pt},
+  outp/.style={box, fill=white, draw=black!75, line width=1pt, double, double distance=1pt},
+  head/.style={align=center, font=\sffamily\bfseries\large},
+  note/.style={align=left, font=\sffamily\small, text=black!75},
+  arr/.style={-{Stealth[length=2.6mm,width=2mm]}, line width=0.9pt, draw=black!75},
+  darr/.style={arr, dashed},
+  container/.style={draw=black!60, fill=black!4, rounded corners=4pt, line width=0.8pt, inner sep=3mm},
+  covfull/.style={box, fill=cCovFull, draw=black!85, text=white, line width=0.9pt},
+  covpart/.style={box, fill=cCovPart, draw=black!85, line width=0.9pt},
+  covnone/.style={box, fill=white, draw=black!85, dashed, line width=0.9pt},
+  hw/.style={box, fill=black!8, draw=black!50, line width=0.6pt, font=\sffamily\itshape},
+  decision/.style={diamond, aspect=2.4, draw=black!80, fill=white, line width=0.9pt, align=center, inner sep=0pt, text width=3.3cm, font=\sffamily\small},
+  card/.style={box, fill=white, draw=black!70, align=left, text width=5.3cm, font=\sffamily\small, inner sep=5pt},
+  deccard/.style={card, draw=cWarn, line width=1.6pt},
+  tag/.style={fill=cWarn, text=white, font=\sffamily\bfseries\scriptsize, inner sep=2pt, rounded corners=1pt},
+  tagu/.style={fill=black!70, text=white, font=\sffamily\bfseries\scriptsize, inner sep=2pt, rounded corners=1pt},
+}
+
+% ---------------------------------------------------------------- capçaleres
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small PoCAT Lektron SW · Infraestructura de tests}
+\fancyhead[R]{\small\nouppercase{\leftmark}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% Figura gran a pàgina sencera, apaïsada (es pot projectar com una diapositiva).
+\newenvironment{slidefig}{\begin{landscape}\thispagestyle{plain}\begin{figure}[p]\centering}{\end{figure}\end{landscape}}
+
+\begin{document}
+
+% =====================================================================
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+{\Huge\bfseries Infraestructura de tests de host\\[4pt] i Docker de PoCAT Lektron\par}
+\vspace{0.8cm}
+{\Large Què hi ha, com funciona i què falta\par}
+\vspace{1.6cm}
+\begin{tabular}{@{}ll@{}}
+Repositori & \cd{pocat-lektron-sw}, branca \cd{obdh-compression}\\
+Estat de referència & 12/11/2026 (HEAD \cd{b233846} + canvis sense commit)\\
+Equip & Nanosatlab, UPC\\
+\end{tabular}
+\vspace{1.6cm}
+
+\begin{minipage}{0.82\textwidth}
+\small
+\textbf{Com llegir aquest document.} Va de més conceptual a més detallat. Les
+seccions 1 a 3 donen la idea general; les 4 a 8 expliquen les peces una per una;
+la 9 recull els punts febles i el que queda per fer; la 10 és una recepta per
+afegir una suite. Cada figura gran és en una pàgina pròpia (apaïsada quan cal) i
+es pot projectar sola: el peu de figura diu què cal retenir-ne.
+
+\medskip
+\textbf{Fonts.} Tot s'ha comprovat contra el codi del repositori (\cd{test/},
+\cd{run\_tests.sh}, els dos \cd{Dockerfile}, \cd{build.sh}, \cd{test/README.md},
+\cd{docs/testing/}). Els resultats d'execució són els de l'última execució
+completa verificada (12/11/2026, 15 suites). Els noms de codi, fitxers i
+comandes es deixen tal com són, en \cd{monoespai}.
+\end{minipage}
+\vfill
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+% =====================================================================
+\section{Resum en una pàgina}
+
+\begin{center}
+\begin{tikzpicture}[tile/.style={box, minimum width=3.05cm, minimum height=2.1cm, text width=2.8cm, line width=1pt}]
+\node[tile, fill=black!80, text=white] (a) at (0,0)    {{\fontsize{24}{26}\selectfont\bfseries 15}\\[2pt] suites};
+\node[tile, fill=cCovFull, text=white] (b) at (3.35,0) {{\fontsize{24}{26}\selectfont\bfseries 253}\\[2pt] tests};
+\node[tile, fill=cCovPart] (c) at (6.7,0)  {{\fontsize{24}{26}\selectfont\bfseries 232}\\[2pt] passen};
+\node[tile, fill=cFakeL, draw=cFakeD] (d) at (10.05,0) {{\fontsize{24}{26}\selectfont\bfseries 19}\\[2pt] ignorats\\{\footnotesize (KNOWN BUG)}};
+\node[tile, fill=white, draw=cWarn, line width=1.6pt] (e) at (13.4,0) {{\fontsize{24}{26}\selectfont\bfseries 2}\\[2pt] fallen a posta\\{\footnotesize (KI-10, KI-11)}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Què és.} Un banc de proves que compila el codi de vol real (els \cd{.c}
+de \cd{src/}) amb el \cd{gcc} natiu, dins d'un contenidor Docker, i hi
+substitueix tot el que depèn del maquinari: FreeRTOS, l'HAL de l'STM32, la flash
+i la ràdio. Així es pot provar la lògica (màquina d'estats, pausa de tasques,
+flash via OBDH, telecomandes, ARQ, telemetria històrica...) en segons, sense
+placa, i injectant fallades impossibles de provocar al banc.
+
+\textbf{Què hi ha.}
+\begin{itemize}
+\item Dos pipelines Docker: \cd{Dockerfile} + \cd{build.sh} compilen el firmware ARM;
+      \cd{Dockerfile.test} + \cd{run\_tests.sh} compilen i executen els tests (secció~\ref{sec:docker}).
+\item 15 suites Unity (8 de comms, 4 d'OBC, 1 d'OBDH, 1 de subsistemes, 1 d'infraestructura),
+      totes amb AddressSanitizer i UBSan i un límit de 60\,s per suite.
+\item Un FreeRTOS fals d'un sol fil (\cd{fake\_rtos}) que detecta deadlocks, tres fakes de flash,
+      un enllaç de ràdio scriptat (\cd{fake\_link}) i un entorn de comms fals (\cd{fake\_comms\_env}).
+\item 26 problemes coneguts de producció (KB-1..KB-3, KI-4..KI-26) documentats; 19 tests
+      els reprodueixen i estan marcats \cd{KNOWN BUG} perquè no trenquin l'execució.
+\end{itemize}
+
+\textbf{Estat de l'última execució completa.} 14 de 15 suites passen. Les dues
+úniques fallades són les esperades de \cd{test\_ht\_handling} (KI-10 i KI-11).
+Per això una execució completa \emph{sempre} acaba amb codi de sortida diferent de 0.
+
+\textbf{Què falta (resum; detall a la secció~\ref{sec:roadmap}).}
+\begin{itemize}
+\item \textbf{Res de la feina nova té commit.} Només 5 suites hi són (v2.0/v2.1);
+      les altres 10 suites, 3 fakes nous, \cd{.gitattributes} i \cd{test-design-phase3.md} només són al disc.
+\item Decisions del propietari: convertir KI-10/KI-11 en ignorats, afegir CI, fer que
+      \cd{fake\_obdh\_requests} apliqui les regles reals de la flash, i escriure els tests
+      de baixada de \cd{test\_arq} (KI-23).
+\item Una sospita sense confirmar: l'OBDH es pausa a cada canvi d'estat i això podria
+      bloquejar una tasca que espera la flash.
+\item Mòduls sense cap suite: \cd{transceiver.c}, \cd{comms.c}, \cd{flash.c}, els wrappers de RadioLib i
+      les utilitats lligades a l'HAL. La baixada d'\cd{arq.c} tampoc té tests.
+\end{itemize}
+
+\textbf{Les comandes que necessita un company} (PowerShell, a l'arrel del repo, amb Docker Desktop obert):
+\begin{lstlisting}
+docker build -t pocat-tests -f Dockerfile.test .     # un cop
+docker run --rm -v "${PWD}:/app" pocat-tests          # totes les suites
+docker run --rm -v "${PWD}:/app" pocat-tests --label obc
+docker run --rm -v "${PWD}:/app" pocat-tests test_tc_handler -f LORA
+\end{lstlisting}
+
+\clearpage
+% =====================================================================
+\section{Els dos pipelines Docker}\label{sec:docker}
+
+El repositori té dues imatges Docker independents. Les dues munten el
+repositori a \cd{/app}, però fan coses oposades: una compila per a l'ARM i
+l'altra compila per al PC.
+
+\begin{itemize}
+\item \textbf{Firmware} (\cd{Dockerfile} \ensuremath{\rightarrow} imatge \cd{pocat-build-env}): Ubuntu 22.04,
+  \cd{cmake}, \cd{make}, \cd{git}, \cd{python3} i l'Arm GNU Toolchain 13.2.rel1 a \cd{/opt/arm-gcc}.
+  Fixa \cd{ENV POCAT\_PSK} a una clau de desenvolupament i acaba amb \cd{CMD ["bash","build.sh"]}.
+\item \textbf{Tests} (\cd{Dockerfile.test} \ensuremath{\rightarrow} imatge \cd{pocat-tests}): Ubuntu 22.04,
+  \cd{build-essential} (gcc natiu) i \cd{cmake}. Acaba amb
+  \cd{ENTRYPOINT ["bash","run\_tests.sh"]}.
+\end{itemize}
+
+La diferència entre \cd{CMD} i \cd{ENTRYPOINT} té una conseqüència pràctica:
+\begin{itemize}
+\item A la imatge de tests, tot el que escrius després del nom de la imatge va directament a
+      \cd{run\_tests.sh} (\cd{--list}, \cd{--label obc}, \cd{test\_obc -l}...).
+\item A la imatge de firmware, el que escrius \emph{substitueix} el \cd{CMD}. Per passar flags
+      a \cd{build.sh} cal repetir l'ordre sencera:\\
+      \cd{docker run --rm -v "\PWD:/app" pocat-build-env bash build.sh --mock}
+\end{itemize}
+
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+\toprule
+Flag de \cd{build.sh} & Efecte\\
+\midrule
+\cd{--mock} & \cd{cmake -DRADIO\_MOCK=ON}: defineix la macro \cd{RADIO\_MOCK}. Tots els wrappers de RadioLib es compilen, però el \cd{\#ifdef}/\cd{\#ifndef RADIO\_MOCK} de cada fitxer deixa actiu només \cd{radiolib\_wrapper\_mock.c} (ràdio simulada: imprimeix la configuració i els paquets TX; la recepció sempre fa timeout). Probablement no compila (KI-7, no verificat).\\
+\cd{--clean} & Esborra \cd{build/} abans de compilar (recompilació completa).\\
+\cd{--test-instr} & \cd{cmake -DPOCAT\_TEST\_INSTRUMENTATION=ON}: temps en microsegons (TIM5) del càlcul del tag d'autenticació i de l'escaneig CAD, per USART2. Només per a campanyes de banc.\\
+\bottomrule
+\end{tabularx}
+\caption{Flags de \cd{build.sh}. Es poden combinar.}
+\end{table}
+
+\textbf{La PSK.} \cd{build.sh} exigeix \cd{POCAT\_PSK} amb exactament 32 xifres
+hexadecimals (16 bytes) i genera \cd{include/subsystems/comms/psk.h} a partir de
+\cd{psk.h.in} amb \cd{sed}. Aquest fitxer és generat: no s'edita i no es fa
+commit (és a \cd{.gitignore}). La imatge porta una PSK de desenvolupament; per a
+una altra clau: \cd{docker run -e POCAT\_PSK=<32 hex> ...}. Els tests \emph{no}
+fan servir aquesta clau: el CMake de \cd{test/} genera un \cd{psk.h} propi amb
+la clau \cd{00 01 ... 0F} dins de \cd{build\_test/}, que té prioritat al camí d'includes.
+
+\textbf{Carregar a la placa.} \cd{./flash.sh} converteix l'ELF a \cd{.bin} amb
+\cd{arm-none-eabi-objcopy} i el grava a \cd{0x08000000} amb \cd{st-flash}. S'executa
+fora del contenidor, en una màquina amb aquestes eines i la Nucleo connectada.
+
+\textbf{Finals de línia.} \cd{.gitattributes} (nou, sense commit) força LF a
+\cd{*.sh} i \cd{Dockerfile*}, perquè \cd{bash} dins del contenidor falla amb CRLF
+(\cd{\$'\textbackslash r': command not found}). Per això \cd{git status} mostra
+\cd{Dockerfile}, \cd{build.sh} i \cd{flash.sh} com a modificats encara que el
+contingut és idèntic a HEAD.
+
+% ---------------------------------------------------------------- FIGURA 1
+\begin{slidefig}
+\begin{tikzpicture}[node distance=4mm,
+  colbox/.style={text width=10.9cm, align=left},
+  cmd/.style={tool, colbox},
+  ]
+\def\xL{5.9}\def\xR{18.7}
+\node[tool, text width=24.1cm, align=center, font=\sffamily\small] (repo) at (12.3,0)
+  {\textbf{Repositori al PC (Windows)}: les dues imatges el munten a \cd{/app} amb
+   \cd{-v "\PWD:/app"}. Les cometes calen perquè el camí té espais (\cd{2nd Repo}).};
+
+\node[head] (Lh) at (\xL,-1.15) {Firmware ARM per a l'STM32};
+\node[head] (Rh) at (\xR,-1.15) {Tests de host (gcc natiu)};
+
+% ---- esquerra
+\node[cmd, below=3mm of Lh] (L1) {\ttfamily docker build -t pocat-build-env .\\
+  {\sffamily\small un cop, o quan canvia el \cd{Dockerfile}}};
+\node[img, colbox, below=of L1] (L2) {\textbf{Imatge \cd{pocat-build-env}}: Ubuntu 22.04 · Arm GNU 13.2.rel1
+  a \cd{/opt/arm-gcc} · \cd{ENV POCAT\_PSK} (clau de desenvolupament) · \cd{CMD bash build.sh}};
+\node[cmd, below=of L2] (L3) {\ttfamily docker run --rm -v "\PWD:/app" pocat-build-env\\
+  {\sffamily\small amb flags: afegir \cd{bash build.sh --mock --clean --test-instr}}};
+\node[box, fill=white, draw=black!60, colbox, below=7mm of L3, font=\sffamily\small, minimum height=3.3cm] (L4)
+  {\textbf{\normalsize Dins del contenidor: \cd{build.sh}}\\[2pt]
+   1. Comprova \cd{POCAT\_PSK}: exactament 32 xifres hex (si no, error)\\
+   2. \cd{sed} sobre \cd{psk.h.in} \ensuremath{\rightarrow} \cd{include/subsystems/comms/psk.h}\\
+   3. Si hi ha \cd{--clean}: \cd{rm -rf build}\\
+   4. \cd{cmake ..} amb el toolchain ARM i les opcions\\\phantom{4. }\cd{-DRADIO\_MOCK} i \cd{-DPOCAT\_TEST\_INSTRUMENTATION}\\
+   5. \cd{make -j4}};
+\node[outp, colbox, below=7mm of L4] (L5) {\textbf{Sortida}: \cd{build/pocat\_lektron\_sw.elf}};
+\node[real, colbox, below=of L5, font=\sffamily\small] (L6) {\cd{./flash.sh}: ELF \ensuremath{\rightarrow} \cd{.bin} i \cd{st-flash write} a \cd{0x08000000}.
+  Fora del Docker, a la màquina amb la Nucleo connectada.};
+
+% ---- dreta
+\node[cmd, below=3mm of Rh] (R1) {\ttfamily docker build -t pocat-tests -f Dockerfile.test .\\
+  {\sffamily\small un cop, o quan canvia el \cd{Dockerfile.test}}};
+\node[img, colbox, below=of R1] (R2) {\textbf{Imatge \cd{pocat-tests}}: Ubuntu 22.04 · \cd{build-essential} (gcc natiu)
+  + \cd{cmake} · \cd{ENTRYPOINT bash run\_tests.sh}};
+\node[cmd, below=of R2] (R3) {\ttfamily docker run --rm -v "\PWD:/app" pocat-tests [args]\\
+  {\sffamily\small \cd{ENTRYPOINT}: els arguments passen tal qual a \cd{run\_tests.sh}}};
+\node[box, fill=white, draw=black!60, colbox, below=7mm of R3, font=\sffamily\small, minimum height=3.3cm] (R4)
+  {\textbf{\normalsize Dins del contenidor: \cd{run\_tests.sh}}\\[2pt]
+   1. \cd{mkdir -p build\_test} i esborra \cd{CMakeCache.txt}\\
+   2. \cd{cmake -DBUILD\_TESTING=ON ..}: sense toolchain ARM; PSK de test \cd{00..0F}\\
+   3. \cd{make pocat\_tests}: Unity + 15 suites, amb ASan i UBSan\\
+   4. \cd{ctest} o un sol binari de suite, segons els arguments\\
+   \phantom{5.}};
+\node[outp, colbox, below=7mm of R4] (R5) {\textbf{Sortida}: PASS / FAIL / IGNORE per test, resum de \cd{ctest} i codi de sortida};
+\node[real, colbox, below=of R5, font=\sffamily\small] (R6) {\cd{build\_test/}: sortida generada, ignorada per git.
+  No hi compilis mai el target per defecte: és el firmware.};
+
+\begin{scope}[on background layer]
+  \node[container, fit=(L4)] {};
+  \node[container, fit=(R4)] {};
+\end{scope}
+\foreach \a/\b in {L1/L2,L2/L3,L3/L4,L4/L5,L5/L6,R1/R2,R2/R3,R3/R4,R4/R5}
+  \draw[arr] (\a) -- (\b);
+\draw[darr] (R5) -- (R6);
+\end{tikzpicture}
+\caption{Els dos pipelines Docker. \textbf{Què cal retenir:} les dues imatges munten el mateix
+repositori però compilen per a màquines diferents. L'esquerra produeix l'ELF per a l'STM32 i
+necessita la PSK; la dreta compila els tests amb el gcc del PC i els executa a l'instant.
+A la imatge de firmware els flags van després de \cd{bash build.sh}; a la de tests van directament
+després del nom de la imatge.}
+\label{fig:docker}
+\end{slidefig}
+
+% =====================================================================
+\section{La idea central: el mateix codi, un altre entorn}\label{sec:idea}
+
+Un test de host no prova una còpia ni una simulació del firmware: compila
+\emph{el mateix fitxer \cd{.c}} que va a l'STM32. El truc és canviar el que hi ha
+a sota.
+
+\begin{enumerate}
+\item \textbf{La suite fa \cd{\#include} del \cd{.c} de producció} (convenció R1). Per exemple,
+  \cd{test\_obc.c} conté \cd{\#include "obc.c"}, \cd{"state\_machine.c"},
+  \cd{"task\_management.c"} i \cd{"health.c"}. Així el test veu les variables i funcions
+  \cd{static} del mòdul i les pot inspeccionar o reiniciar. Els fitxers sense estat
+  (\cd{notifications.c}, \cd{frame.c}...) s'enllacen amb \cd{SOURCES}. Mai les dues coses
+  per al mateix fitxer, o hi hauria símbols duplicats.
+\item \textbf{Els stubs fan ombra a les capçaleres reals.} El camí d'includes posa davant
+  \cd{test/mocks/stubs\_rtos/} (\cd{FreeRTOS.h}, \cd{task.h}, \cd{queue.h}, ...) i
+  \cd{test/mocks/stubs\_hal/} (\cd{stm32l4xx\_hal.h}, \cd{stm32l476xx.h}). Quan el codi fa
+  \cd{\#include "FreeRTOS.h"}, rep la versió de test, que només declara tipus i prototips.
+\item \textbf{Els fakes implementen aquells prototips.} \cd{fake\_rtos.c} implementa
+  \cd{xTaskCreate}, \cd{xQueueSend}, \cd{xTaskNotify}...; \cd{fake\_hal.c} defineix els
+  handles (\cd{hiwdg}, \cd{huart4}...); \cd{fake\_obdh\_requests.c} implementa
+  \cd{obdh\_write\_request} sobre una imatge de flash en RAM; i així amb la resta.
+\end{enumerate}
+
+L'ordre exacte del camí d'includes (de \cd{test/CMakeLists.txt}) és:
+\begin{enumerate}[label=\arabic*.]
+\item els \cd{INCLUDES} propis de la suite: per exemple \cd{stubs\_project/} a \cd{test\_ht\_handling},
+  o el directori \cd{src} de RadioLib a les suites que inclouen \cd{lora\_cfg.c};
+\item el \cd{psk.h} de test generat;
+\item \cd{test/support}, \cd{test/mocks}, \cd{stubs\_hal}, \cd{stubs\_rtos};
+\item les capçaleres reals del projecte (\cd{include/...});
+\item els directoris de \cd{src/}, perquè les suites puguin fer \cd{\#include "x.c"}.
+\end{enumerate}
+
+\textbf{Què no pot dir un test de host.} Res sobre temps reals, prioritats,
+preempció, interrupcions, mida de les piles ni perifèrics. A més, el host és de
+64 bits i l'STM32 de 32 (\cd{long} i \cd{size\_t} tenen mides diferents).
+
+% ---------------------------------------------------------------- FIGURA 2
+\begin{slidefig}
+\begin{tikzpicture}[
+  row/.style={text width=8.6cm, minimum height=1.2cm},
+  ]
+\def\xL{4.7}\def\xR{19.7}\def\xM{12.2}\def\dy{1.5}
+\node[head] at (\xL,0.9) {Firmware real (STM32L476RG)};
+\node[head] at (\xR,0.9) {Executable de test (PC, dins Docker)};
+
+\node[real, row] (l1) at (\xL,0)       {Punt d'entrada: \cd{main.c} \ensuremath{\rightarrow} planificador \ensuremath{\rightarrow} tasques};
+\node[tool, row] (r1) at (\xR,0)       {Suite \cd{test\_<mòdul>.c}: \cd{main()} de \cd{pocat\_test\_main.h} + Unity};
+\node[prod, row] (l2) at (\xL,-\dy)    {\textbf{Codi de producció}: \cd{src/subsystems/*/*.c}, \cd{src/utils/*.c}};
+\node[prod, row] (r2) at (\xR,-\dy)    {\textbf{El mateix \cd{.c}}, inclòs amb \cd{\#include "x.c"}};
+\node[prod, row] (l3) at (\xL,-2*\dy)  {Capçaleres del projecte (\cd{include/})};
+\node[prod, row] (r3) at (\xR,-2*\dy)  {Les mateixes capçaleres (\cd{include/})};
+\node[real, row] (l4) at (\xL,-3*\dy)  {FreeRTOS: planificador, cues, notificacions, grups d'esdeveniments, timers};
+\node[fake, row] (r4) at (\xR,-3*\dy)  {\cd{stubs\_rtos/*.h} + \cd{fake\_rtos.c}: un sol fil, ho registra tot, simula els bloquejos};
+\node[real, row] (l5) at (\xL,-4*\dy)  {HAL STM32 + CMSIS; rellotges (\cd{clock.c}, \cd{periph.c})};
+\node[fake, row] (r5) at (\xR,-4*\dy)  {\cd{stubs\_hal/*.h} + \cd{fake\_hal.c}; \cd{fake\_clock.c}};
+\node[real, row] (l6) at (\xL,-5*\dy)  {Flash: \cd{obdh\_requests.c} \ensuremath{\rightarrow} tasca OBDH \ensuremath{\rightarrow} \cd{flash.c} \ensuremath{\rightarrow} flash de 1\,MB};
+\node[fake, row] (r6) at (\xR,-5*\dy)  {\cd{fake\_obdh\_requests}, \cd{fake\_flash\_driver} o \cd{mock\_obdh\_requests}: flash en RAM};
+\node[real, row] (l7) at (\xL,-6*\dy)  {Ràdio: RadioLib + SX1262 (SPI, DIO1) i la resta de comms};
+\node[fake, row] (r7) at (\xR,-6*\dy)  {\cd{fake\_link} (enllaç scriptat) + \cd{fake\_comms\_env}};
+\node[hw, row] (l8) at (\xL,-7*\dy)    {Cortex-M4F, 32 bits, temps real};
+\node[hw, row] (r8) at (\xR,-7*\dy)    {Procés Linux x86-64, 64 bits, ASan + UBSan};
+
+\foreach \i in {2,3}{
+  \draw[line width=1.6pt, cProdD] (l\i.east) -- (r\i.west) node[midway, fill=white, inner sep=2pt, font=\sffamily\bfseries\small, text=cProdD] {idèntic};
+}
+\foreach \i in {1,4,5,6,7,8}{
+  \draw[arr] (l\i.east) -- (r\i.west) node[midway, fill=white, inner sep=2pt, font=\sffamily\small] {substituït per};
+}
+% llegenda
+\begin{scope}[shift={(0.4,-12.0)}]
+  \node[prod, minimum width=1cm, minimum height=5mm] (k1) at (0,0) {};
+  \node[note, right=1mm of k1] {codi de producció (no es toca)};
+  \node[real, minimum width=1cm, minimum height=5mm] (k2) at (6.6,0) {};
+  \node[note, right=1mm of k2] {infraestructura real};
+  \node[fake, minimum width=1cm, minimum height=5mm] (k3) at (11.8,0) {};
+  \node[note, right=1mm of k3] {fake o stub de test};
+  \node[hw, minimum width=1cm, minimum height=5mm] (k4) at (17.2,0) {};
+  \node[note, right=1mm of k4] {màquina on s'executa};
+\end{scope}
+\end{tikzpicture}
+\caption{Substitució de capes. \textbf{Què cal retenir:} les dues files blaves són les mateixes a banda
+i banda, és a dir, el codi que es prova és exactament el que vola. Tot el que hi ha a sota (sistema
+operatiu, HAL, flash, ràdio) es canvia per peces de test que s'executen al PC i que el test pot
+controlar i inspeccionar.}
+\label{fig:stack}
+\end{slidefig}
+
+Un exemple real de com s'arrenca una suite (\cd{test\_obc.c}, simplificat):
+\begin{lstlisting}[language=C]
+#include "fake_rtos.h"           /* el FreeRTOS fals                    */
+#include "fake_obdh_requests.h"  /* la flash falsa, vista des de l'OBDH */
+#include "sim_tasks.h"
+#include "obc.c"                 /* R1: el codi de producció sota prova  */
+#include "state_machine.c"
+#include "task_management.c"
+#include "health.c"
+
+void setUp(void) {
+    fake_rtos_reset();                               /* objectes RTOS nets       */
+    fake_rtos_set_block_hook(sim_tasks_run_pending); /* les tasques responen     */
+    fake_obdh_reset();                               /* flash a 0xFF             */
+    /* ... i reiniciar els static dels .c inclosos (R2) */
+}
+\end{lstlisting}
+
+% =====================================================================
+\section{Capes del disseny i fakes}\label{sec:fakes}
+
+\subsection{Les quatre capes del disseny}
+
+El disseny (\cd{docs/testing/test-design.md}) planteja quatre capes. Només les
+dues primeres existeixen.
+
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X l@{}}
+\toprule
+Capa & Què és & Estat\\
+\midrule
+1 & Tests unitaris per mòdul, amb fakes compartits. Una suite per mòdul i una línia de CMake per suite. & Feta (15 suites)\\
+2 & Catàleg de telecomandes: \cd{test\_tc\_handler}, un test \cd{test\_TC\_<NOM>\_...} per cada TC\_ID. Comprova quina tasca es notifica, què s'escriu a la flash i quina TM o NACK es posa a la cua. & Feta (55 tests)\\
+3 & Simulador interactiu al PC (\cd{test/sim/pocat\_sim.c}) que llegeix ordres de \cd{stdin} sobre els fakes de la capa 2. & No començada (opcional)\\
+4 & Consola de depuració a la placa (\cd{POCAT\_DEBUG\_CONSOLE}), compilada fora dels builds de vol. Ganxo previst: \cd{TC\_OBC\_DEBUG\_MODE} (0x73). & No començada; necessita KI-7 o la ràdio real\\
+\bottomrule
+\end{tabularx}
+\caption{Capes del disseny de tests.}
+\end{table}
+
+\textbf{Noms.} \cd{fake\_*} és una implementació simplificada que funciona i té
+una API per controlar-la i inspeccionar-la. \cd{stub\_*} no fa res (només fa que
+enllaci). \cd{mock\_*} són els fitxers de la primera suite, \cd{test\_ht\_handling}, que
+han conservat el nom.
+
+\textbf{Què s'enllaça sempre.} \cd{pocat\_add\_suite()} afegeix \cd{fake\_rtos.c} i
+\cd{fake\_hal.c} a totes les suites (a les taules, ``R''), tret que es passi
+\cd{NO\_FAKES}. Només \cd{test\_ht\_handling} ho fa, perquè fa servir fakes més antics.
+
+\textbf{Símbols \emph{weak}.} \cd{stub\_task\_entries.c} defineix les 7 funcions
+d'entrada de tasca (\cd{payload\_task}... \cd{beacon\_task}) com a
+\cd{\_\_attribute\_\_((weak))}. Si una suite inclou la tasca real (per exemple
+\cd{obdh.c}), la definició real guanya sense error de símbol duplicat. \cd{fake\_comms\_env.c}
+fa el mateix amb els globals del beacon, \cd{beacon\_set\_period()}, \cd{arq\_begin\_dl()} i
+\cd{arq\_arm\_ul()}: per això \cd{test\_beacon} i \cd{test\_arq} poden compilar el \cd{beacon.c}
+o l'\cd{arq.c} reals.
+
+% ---------------------------------------------------------------- FIGURA 3
+\begin{slidefig}
+\begin{tikzpicture}[
+  rm/.style={real, text width=6.4cm, minimum height=0.95cm, font=\sffamily\small},
+  fk/.style={fake, text width=6.4cm, minimum height=0.95cm, font=\sffamily\small},
+  sk/.style={stub, text width=6.4cm, minimum height=0.95cm, font=\sffamily\small},
+  su/.style={note, text width=7.4cm, font=\sffamily\small},
+  grp/.style={font=\sffamily\bfseries, rotate=90, anchor=center},
+  ]
+\def\xa{4.5}\def\xb{12.3}\def\xc{20.2}\def\dy{1.12}
+\node[head, font=\sffamily\bfseries] at (\xa,0.85) {Mòdul real substituït};
+\node[head, font=\sffamily\bfseries] at (\xb,0.85) {Fake / stub de test};
+\node[head, font=\sffamily\bfseries] at (\xc,0.85) {Suites que el fan servir};
+
+% grup A
+\node[rm] (a1) at (\xa,0)        {FreeRTOS: capçaleres i nucli};
+\node[fk] (b1) at (\xb,0)        {\cd{stubs\_rtos/*.h} + \cd{fake\_rtos.c}};
+\node[su] (c1) at (\xc,0)        {totes (\cd{ht\_handling} només els stubs antics)};
+\node[rm] (a2) at (\xa,-\dy)     {HAL STM32: capçaleres i handles};
+\node[fk] (b2) at (\xb,-\dy)     {\cd{stubs\_hal/*.h} + \cd{fake\_hal.c}};
+\node[su] (c2) at (\xc,-\dy)     {totes (\cd{fake\_hal.c}: totes menys \cd{ht\_handling})};
+\node[rm] (a3) at (\xa,-2*\dy)   {\cd{clock.c}, \cd{periph.c}};
+\node[fk] (b3) at (\xb,-2*\dy)   {\cd{fake\_clock}: comptadors i últims valors};
+\node[su] (c3) at (\xc,-2*\dy)   {\cd{state\_machine}, \cd{obc}};
+\node[rm] (a4) at (\xa,-3*\dy)   {Les tasques responent a PAUSE / RESUME};
+\node[fk] (b4) at (\xb,-3*\dy)   {\cd{sim\_tasks}: block hook \cd{sim\_tasks\_run\_pending}};
+\node[su] (c4) at (\xc,-3*\dy)   {\cd{task\_management}, \cd{state\_machine}, \cd{obc}};
+\node[rm] (a5) at (\xa,-4*\dy)   {Les 7 funcions d'entrada de tasca};
+\node[sk] (b5) at (\xb,-4*\dy)   {\cd{stub\_task\_entries.c} (buides, \emph{weak})};
+\node[su] (c5) at (\xc,-4*\dy)   {\cd{task\_management}, \cd{state\_machine}, \cd{obdh}, \cd{tc\_handler}, \cd{obc}, \cd{subsystem\_tasks}, \cd{beacon}, \cd{arq}};
+% grup B
+\node[rm] (a6) at (\xa,-5.25*\dy){\cd{obdh\_requests.c} + tasca OBDH + \cd{flash.c}};
+\node[fk] (b6) at (\xb,-5.25*\dy){\cd{fake\_obdh\_requests} (permissiu, 1\,MB)};
+\node[su] (c6) at (\xc,-5.25*\dy){\cd{state\_machine}, \cd{obc}, \cd{tc\_handler}, \cd{subsystem\_tasks}, \cd{beacon}, \cd{arq}, \cd{ht\_compression}};
+\node[rm] (a7) at (\xa,-6.25*\dy){\cd{flash.c} (driver)};
+\node[fk] (b7) at (\xb,-6.25*\dy){\cd{fake\_flash\_driver} (estricte, 1\,MB)};
+\node[su] (c7) at (\xc,-6.25*\dy){\cd{obdh} (l'OBDH i \cd{obdh\_requests.c} reals)};
+\node[rm] (a8) at (\xa,-7.25*\dy){\cd{obdh\_requests} (regió HT) + \cd{flash.h}};
+\node[fk] (b8) at (\xb,-7.25*\dy){\cd{mock\_obdh\_requests} + \cd{fake\_flash\_memory} + \cd{stubs\_project/flash.h}};
+\node[su] (c8) at (\xc,-7.25*\dy){\cd{ht\_handling}};
+% grup C
+\node[rm] (a9) at (\xa,-8.5*\dy) {\cd{comms.c}, \cd{beacon.c}, \cd{arq.c}, \cd{time.c}, \cd{temperature.c}, config. de RadioLib};
+\node[fk] (b9) at (\xb,-8.5*\dy) {\cd{fake\_comms\_env} (enregistradors; part \emph{weak})};
+\node[su] (c9) at (\xc,-8.5*\dy) {\cd{tc\_handler}, \cd{lora\_cfg}, \cd{beacon}, \cd{saw}, \cd{arq}};
+\node[rm] (a10) at (\xa,-9.5*\dy){SX1262 + IRQ DIO1 (API asíncrona de RadioLib)};
+\node[fk] (b10) at (\xb,-9.5*\dy){\cd{fake\_link}: estació de terra programable};
+\node[su] (c10) at (\xc,-9.5*\dy){\cd{saw}, \cd{arq}};
+\node[rm] (a11) at (\xa,-10.5*\dy){\cd{compression.c} (POCKET+)};
+\node[fk] (b11) at (\xb,-10.5*\dy){\cd{mock\_pocket\_plus}: sempre 20 bytes};
+\node[su] (c11) at (\xc,-10.5*\dy){\cd{ht\_handling}, \cd{beacon} (\cd{ht\_compression} usa el real)};
+
+\foreach \i in {1,...,11}{ \draw[arr] (b\i.west) -- (a\i.east); \draw[black!40, line width=0.6pt] (b\i.east) -- (c\i.west); }
+
+\node[grp] at (0.35,-2*\dy)    {Nucli i tasques};
+\node[grp] at (0.35,-6.25*\dy) {Flash};
+\node[grp] at (0.35,-9.5*\dy)  {Comms i altres};
+\draw[black!50, line width=1pt] (0.75,0.45) -- (0.75,-4.45*\dy);
+\draw[black!50, line width=1pt] (0.75,-4.8*\dy) -- (0.75,-7.7*\dy);
+\draw[black!50, line width=1pt] (0.75,-8.05*\dy) -- (0.75,-10.95*\dy);
+\end{tikzpicture}
+\caption{Mapa de fakes. Cada fletxa va del fake al mòdul real que substitueix; a la dreta, les suites
+que l'enllacen (sense el prefix \cd{test\_}). Vora contínua: fake amb comportament; vora discontínua:
+stub buit. \textbf{Què cal retenir:} \cd{fake\_rtos} i \cd{fake\_hal} són la base de gairebé tot; la flash
+té tres models diferents segons la suite (figura~\ref{fig:flash}); i les comms es proven amb un entorn
+i un enllaç de ràdio falsos que fan de satèl·lit i d'estació de terra.}
+\label{fig:fakes}
+\end{slidefig}
+
+\subsection{Com funciona \texorpdfstring{\cd{fake\_rtos}}{fake\_rtos}}
+
+\cd{fake\_rtos.c} (500 línies) implementa l'API de FreeRTOS que fa servir el
+firmware: tasques, notificacions indexades, cues, grups d'esdeveniments, mutexos,
+timers de programari, seccions crítiques, \cd{vTaskSuspendAll} i el tick. Té tres
+diferències respecte del FreeRTOS real:
+
+\begin{enumerate}
+\item \textbf{No s'executa res en paral·lel.} \cd{xTaskCreate} apunta la tasca (nom,
+  prioritat, pila, número) però \emph{mai} n'executa la funció. La tasca ``en execució''
+  és la que tria el test amb \cd{fake\_rtos\_set\_current\_task()}; al principi és el mateix test.
+\item \textbf{Els bloquejos se simulen} (figura~\ref{fig:rtos}). Quan una crida hauria
+  d'esperar, el fake crida un \emph{block hook} una vegada; si després tampoc es pot complir,
+  avança el tick i retorna timeout, o bé, si l'espera era \cd{portMAX\_DELAY}, fa fallar el test
+  amb ``deadlock'', perquè al satèl·lit aquella tasca quedaria penjada per sempre.
+\item \textbf{Ho apunta tot.} Cada notificació queda al registre (destí, índex, valor, acció).
+  El test pot preguntar \cd{fake\_rtos\_bits\_sent\_to(t)}, \cd{fake\_rtos\_queue\_items(q)},
+  \cd{fake\_rtos\_timer\_period(t)}, etc.
+\end{enumerate}
+
+També permet injectar fallades (\cd{fake\_rtos\_fail\_task\_create\_at(n)},
+\cd{fake\_rtos\_fail\_next\_queue\_create()}, \cd{fake\_rtos\_fail\_next\_event\_group\_create()}).
+\cd{configASSERT} fa fallar el test amb fitxer i línia; com al FreeRTOS real, salta per
+exemple amb \cd{xQueueCreate} de longitud 0. El \cd{tearDown()} de cada suite comprova que
+\cd{fake\_rtos\_critical\_depth()} i \cd{fake\_rtos\_suspend\_all\_depth()} tornen a 0.
+
+\textbf{\cd{sim\_tasks}: el block hook més usat.} Quan l'OBC pausa tasques, envia
+\cd{N\_TASK\_PAUSE} i espera els ACK en un grup d'esdeveniments. Com que cap tasca
+s'executa sola, l'ACK no arribaria mai. \cd{sim\_tasks\_run\_pending()} resol això: per
+a cada tasca viva amb una notificació pendent, la fa ``actual'', llegeix la notificació
+amb \cd{wait\_for\_notification()} i la passa a \cd{tm\_check\_pause()}, que envia l'ACK.
+Amb \cd{sim\_tasks\_set\_unresponsive(mask)} es pot simular una tasca encallada.
+
+% ---------------------------------------------------------------- FIGURA 4
+\begin{figure}[p]
+\centering
+\begin{tikzpicture}[
+  act/.style={box, fill=white, draw=black!80, text width=5.4cm, font=\sffamily\small},
+  okn/.style={box, fill=cCovPart, draw=black!80, text width=4.3cm, font=\sffamily\small},
+  bad/.style={box, fill=white, draw=cWarn, line width=1.6pt, text width=4.3cm, font=\sffamily\small},
+  lbl/.style={font=\sffamily\small\bfseries, fill=white, inner sep=1.5pt},
+  ]
+\node[act, fill=cFakeL, draw=cFakeD] (s) at (0,0) {\textbf{Crida que pot bloquejar}\\
+  \cd{xQueueReceive} / \cd{xQueueSend}, \cd{xEventGroupWaitBits}, \cd{xTaskNotifyWait}, \cd{xSemaphoreTake}};
+\node[decision] (d1) at (0,-2.5) {Es pot complir ja?};
+\node[okn] (o1) at (6.0,-2.5) {Retorna èxit};
+\node[decision] (d2) at (0,-5.0) {Timeout = 0?};
+\node[okn] (o0) at (6.0,-5.0) {Retorna fallada a l'instant (no crida el hook)};
+\node[act] (h) at (0,-7.6) {Crida el \textbf{block hook} una sola vegada (mai de forma reentrant).
+  Ex.: \cd{sim\_tasks\_run\_pending} deixa que les tasques responguin a PAUSE/RESUME};
+\node[decision] (d3) at (0,-10.2) {Es pot complir ara?};
+\node[okn] (o2) at (6.0,-10.2) {Retorna èxit};
+\node[decision] (d4) at (0,-12.7) {Timeout = \cd{portMAX\_DELAY}?};
+\node[bad] (dl) at (6.0,-12.7) {\textbf{El test falla}: ``\cd{fake\_rtos: deadlock in <api>}''.
+  Amb \cd{fake\_rtos\_expect\_deadlock(true)} només s'apunta};
+\node[act] (to) at (0,-15.2) {Avança el tick tants ticks com el timeout i retorna ``timeout''};
+
+\draw[arr] (s) -- (d1);
+\draw[arr] (d1) -- node[lbl, above] {sí} (o1);
+\draw[arr] (d1) -- node[lbl, right] {no} (d2);
+\draw[arr] (d2) -- node[lbl, above] {sí} (o0);
+\draw[arr] (d2) -- node[lbl, right] {no} (h);
+\draw[arr] (h) -- (d3);
+\draw[arr] (d3) -- node[lbl, above] {sí} (o2);
+\draw[arr] (d3) -- node[lbl, right] {no} (d4);
+\draw[arr] (d4) -- node[lbl, above] {sí} (dl);
+\draw[arr] (d4) -- node[lbl, right] {no} (to);
+
+\node[box, fill=cBg, draw=cGrey, align=left, text width=5.0cm, font=\sffamily\small, anchor=north] (rules) at (-6.6,0.6)
+  {\textbf{Regles del fake}\\[3pt]
+   · \cd{xTaskCreate} apunta la tasca però no l'executa mai.\\[2pt]
+   · La tasca ``en execució'' la tria el test amb \cd{fake\_rtos\_set\_current\_task()}.\\[2pt]
+   · \cd{vTaskDelay} només avança el tick.\\[2pt]
+   · Els timers només es disparen amb \cd{fake\_rtos\_fire\_timer()}.\\[2pt]
+   · 1 tick = 1\,ms, com al satèl·lit.\\[2pt]
+   · \cd{configASSERT} fa fallar el test amb fitxer i línia.};
+\end{tikzpicture}
+\caption{Com resol \cd{fake\_rtos} una crida que bloquejaria (funció \cd{block\_until} de
+\cd{fake\_rtos.c}). \textbf{Què cal retenir:} un test mai es queda penjat. O bé el hook fa
+``córrer'' les altres tasques i l'espera es compleix, o bé el temps salta fins al timeout, o bé, si
+l'espera era infinita, el test falla dient on hi hauria hagut un deadlock al satèl·lit.}
+\label{fig:rtos}
+\end{figure}
+
+\subsection{Els tres fakes de flash}
+
+Al firmware, cap tasca toca \cd{flash.c} directament: totes criden
+\cd{obdh\_read/write/program/erase\_program\_request}, que posen la petició a la cua de
+la tasca OBDH i esperen la resposta a la notificació d'índex 1. Als tests, aquest camí
+es talla a tres alçades diferents, amb regles diferents (figura~\ref{fig:flash}). És
+important saber-ho: el mateix codi pot passar amb un fake i fallar amb un altre.
+
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+ & \cd{fake\_flash\_driver} & \cd{fake\_obdh\_requests} & \cd{mock\_obdh\_requests} + \cd{fake\_flash\_memory}\\
+\midrule
+Substitueix & \cd{flash.c} & \cd{obdh\_requests.c} (i, per tant, l'OBDH i \cd{flash.c}) & \cd{obdh\_requests.c}, només la regió HT\\
+Memòria & 1\,MB des de \cd{0x08000000}, inicial \cd{0xFF} & 1\,MB des de \cd{0x08000000}, inicial \cd{0xFF} & 8\,KB des de \cd{HT\_BASE\_ADDR} (\cd{0x080FE000})\\
+\cd{program} & alineació i longitud múltiples de 8; destí esborrat; si no, \cd{HAL\_ERROR} & AND bit a bit, sense cap comprovació & mode estricte: \cd{TEST\_ASSERT} d'alineació 8 i de transicions 1\ensuremath{\rightarrow}0\\
+\cd{write} & \cd{memcpy} (el driver real esborra i reescriu la pàgina) & \cd{memcpy} & igual que \cd{erase\_program}\\
+Esborrat & pàgina de 2\,KB & \cd{erase\_program}: pàgina a \cd{0xFF} i després AND & pàgina de 2\,KB\\
+Extres & injecció d'error, comptadors, última adreça & registre de 256 crides, injecció d'error & tall de corrent després de N operacions, injecció d'error\\
+Suites & \cd{test\_obdh} & 7 suites (fig.~\ref{fig:fakes}) & \cd{test\_ht\_handling}\\
+\bottomrule
+\end{tabularx}
+\caption{Comparació dels tres models de flash.}
+\label{tab:flash}
+\end{table}
+
+% ---------------------------------------------------------------- FIGURA 5
+\begin{slidefig}
+\begin{tikzpicture}[
+  cc/.style={text width=7.2cm, minimum height=1.15cm, font=\sffamily\small},
+  rules/.style={box, fill=white, draw=black!70, align=left, text width=7.2cm, minimum height=3.4cm, font=\sffamily\small, anchor=north},
+  ]
+\def\xa{4.0}\def\xb{12.3}\def\xc{20.6}\def\dy{1.55}
+\node[head] (ha) at (\xa,0.2) {\cd{test\_obdh}};
+\node[note, below=0mm of ha, align=center] {estricte, camí complet};
+\node[head] (hb) at (\xb,0.2) {7 suites};
+\node[note, below=0mm of hb, align=center] {permissiu, sense tasca OBDH};
+\node[head] (hc) at (\xc,0.2) {\cd{test\_ht\_handling}};
+\node[note, below=0mm of hc, align=center] {estricte, amb tall de corrent};
+
+\node[tool, cc] (a1) at (\xa,-1.6) {El test fa de client: \cd{obdh\_write\_request(...)}};
+\node[prod, cc] (a2) at (\xa,-1.6-\dy) {\cd{obdh\_requests.c} \textbf{real}: encua la petició i espera l'índex 1};
+\node[prod, cc] (a3) at (\xa,-1.6-2*\dy) {\cd{obdh.c} \textbf{real}: la tasca OBDH serveix la cua};
+\node[fake, cc] (a4) at (\xa,-1.6-3*\dy) {\cd{fake\_flash\_driver}: \cd{flash\_read/write/program/erase\_page}};
+
+\node[prod, cc] (b1) at (\xb,-1.6) {Codi de producció (\cd{state\_machine.c}, \cd{tc\_handler.c}, \cd{beacon.c}, \cd{arq.c}...)};
+\node[fake, cc] (b2) at (\xb,-1.6-\dy) {\cd{fake\_obdh\_requests}: implementa directament les 4 \cd{obdh\_*\_request}};
+\node[ghost, cc] (b3) at (\xb,-1.6-2*\dy) {tasca OBDH i cua: no hi són};
+\node[ghost, cc] (b4) at (\xb,-1.6-3*\dy) {\cd{flash.c}: no hi és};
+
+\node[prod, cc] (c1) at (\xc,-1.6) {\cd{ht\_handling.c} \textbf{real}};
+\node[fake, cc] (c2) at (\xc,-1.6-\dy) {\cd{mock\_obdh\_requests}: les 4 crides, només per a la regió HT};
+\node[ghost, cc] (c3) at (\xc,-1.6-2*\dy) {tasca OBDH i cua: no hi són};
+\node[fake, cc] (c4) at (\xc,-1.6-3*\dy) {\cd{fake\_flash\_memory}: matriu de 8\,KB};
+
+\node[rules] (a5) at (\xa,-8.0) {\textbf{Regles (com \cd{flash.c})}\\[2pt]
+  · \cd{program}: adreça i longitud múltiples de 8 i destí esborrat; si no, \cd{HAL\_ERROR}\\
+  · \cd{erase\_page}: pàgina sencera de 2\,KB a \cd{0xFF}\\
+  · adreça fora de la flash: el test falla\\
+  · injecció d'error i comptadors per operació};
+\node[rules] (b5) at (\xb,-8.0) {\textbf{Regles (permissives)}\\[2pt]
+  · \cd{write} = \cd{memcpy}; \cd{program} = AND bit a bit\\
+  · \cd{erase\_program} = pàgina a \cd{0xFF} + AND\\
+  · \textbf{no} comprova alineació ni que el destí estigui esborrat\\
+  · registre de 256 crides i injecció d'error};
+\node[rules] (c5) at (\xc,-8.0) {\textbf{Regles (estrictes, via asserts)}\\[2pt]
+  · \cd{TEST\_ASSERT} d'alineació 8 i de transicions 1\ensuremath{\rightarrow}0\\
+  · \cd{write} = \cd{erase\_program}\\
+  · \cd{mock\_power\_cut\_after\_ops}: tall de corrent després de N operacions\\
+  · \cd{stubs\_project/flash.h} fa ombra al \cd{flash.h} real};
+
+\foreach \c in {a,b,c}{\draw[arr] (\c1) -- (\c2);}
+\draw[arr] (a2) -- (a3); \draw[arr] (a3) -- (a4); \draw[arr] (a4) -- (a5);
+\draw[arr] (b2.east) -- ++(0.35,0) |- (b5.east);
+\draw[arr] (c2) -- (c3); \draw[arr] (c3) -- (c4); \draw[arr] (c4) -- (c5);
+\end{tikzpicture}
+\caption{Els tres models de flash, alineats per capes; les caixes grises discontínues són capes que
+falten. \textbf{Què cal retenir:} només \cd{test\_obdh} prova el camí real client \ensuremath{\rightarrow} cua \ensuremath{\rightarrow} tasca OBDH \ensuremath{\rightarrow}
+driver. Les altres 7 suites que escriuen a la flash salten directament a una memòria permissiva que
+accepta escriptures que el maquinari rebutjaria. Fer-la estricta és una decisió pendent
+(secció~\ref{sec:roadmap}).}
+\label{fig:flash}
+\end{slidefig}
+
+\subsection{Els altres fakes, en una línia}
+\begin{itemize}
+\item \cd{fake\_hal}: defineix els handles globals (\cd{hiwdg}, \cd{huart4}, \cd{htim2}, \cd{htim5},
+  \cd{hspi2}, \cd{hrtc}, \cd{hadc1}) i compta les crides a \cd{HAL\_IWDG\_Refresh}.
+\item \cd{fake\_clock}: substitueix \cd{clock\_get\_current}, \cd{clock\_switch\_to\_freq},
+  \cd{systemclock\_init\_for\_freq} i \cd{periph\_*\_for\_freq}; apunta comptadors, l'última
+  freqüència i la profunditat de \cd{vTaskSuspendAll} en el moment del canvi.
+\item \cd{fake\_comms\_env}: tot el que \cd{tc\_handler.c} crida fora de si mateix (cues TX/RX de
+  comms, hora RTC, període del beacon, ARQ, sensors de l'MCU, configuració de la ràdio amb
+  \cd{fake\_radio\_last\_config()}).
+\item \cd{fake\_link}: substitueix l'SX1262 i la línia DIO1. Apunta fins a 64 trames TX, accepta fins
+  a 4 trames RX injectades, té un ``responedor'' que fa d'estació de terra (contesta cada TX com a
+  màxim un cop), un resultat CAD configurable i permet desactivar TX\_DONE.
+\item \cd{mock\_pocket\_plus}: \cd{compressPacket()} copia 20 bytes i en retorna 20, sempre. És
+  determinista (5 beacons per bloc), però no prova el format real; per això existeix
+  \cd{test\_ht\_compression}, que usa el \cd{compression.c} real.
+\item \cd{pocat\_test\_main.h}: el \cd{main()} comú; afegeix \cd{-l} (llistar) a les opcions
+  \cd{-f}, \cd{-n} i \cd{-x} d'Unity.
+\end{itemize}
+
+% =====================================================================
+\section{Mapa del programari de vol per cobertura}\label{sec:coverage}
+
+La figura~\ref{fig:arch} és l'arquitectura del programari de vol tal com la descriu
+\cd{CLAUDE.md}, acolorida segons si cada fitxer té tests. El criteri:
+\begin{itemize}
+\item \textbf{Té suite}: el fitxer s'inclou en almenys una suite que en prova la lògica.
+\item \textbf{Parcial}: només se'n prova una part o només s'hi passa de rebot.
+  \cd{arq.c} (només la pujada), \cd{compression.c} (sense prova d'anada i tornada amb el
+  descompressor de terra, que no és al repo), \cd{timing.c} (només via \cd{lora\_toa\_ms} i
+  \cd{ack\_timeout\_ms}), \cd{cad.c} (enllaçat a \cd{test\_saw}/\cd{test\_arq}) i
+  \cd{eps.c}/\cd{adcs.c}/\cd{payload.c} (només el contracte de tasca i la lectura de llindars d'EPS).
+\item \textbf{Sense suite}: cap test l'executa. Alguns s'han descartat a propòsit:
+  \cd{comms.c} i \cd{transceiver.c} són bucles infinits sense una funció ``una iteració'', i
+  \cd{clock.c}, \cd{periph.c}, \cd{time.c}, \cd{temperature.c}, \cd{log.c} i \cd{src/core/} són
+  gairebé només HAL.
+\end{itemize}
+
+% ---------------------------------------------------------------- FIGURA 6
+\begin{slidefig}
+\begin{tikzpicture}[
+  t/.style={text width=3.0cm, minimum height=1.15cm, font=\sffamily\footnotesize, inner sep=3pt},
+  m/.style={text width=3.0cm, minimum height=0.95cm, font=\sffamily\footnotesize, inner sep=2pt},
+  tn/.style={font=\sffamily\small\bfseries},
+  ]
+% centres de columna (amplada 3.3 cm)
+\def\kA{1.65}\def\kB{5.2}\def\kC{8.75}\def\kD{12.3}\def\kE{15.85}\def\kF{19.4}\def\kG{22.95}
+% ---- fila superior: OBC
+\node[covnone, t] (main) at (\kA,13.3) {{\small\bfseries Arrencada}\\\cd{main.c}, \cd{src/core}};
+\node[covfull, t] (obc)  at (\kB,13.3) {{\small\bfseries Tasca OBC}\\\cd{obc.c}};
+\node[covfull, t] (sm)   at (\kC,13.3) {\cd{state\_machine.c}\\BOOT NM CM SSM\\SM SAFE\_HOLD};
+\node[covfull, t] (tm)   at (\kD,13.3) {\cd{task\_management.c}\\pausa / represa};
+\node[covfull, t] (hl)   at (\kE,13.3) {\cd{health.c}\\IWDG + bits de salut};
+\node[covfull, t] (nt)   at (\kF,13.3) {\cd{notifications.c}\\utilitat};
+\node[covnone, t] (hal)  at (\kG,13.3) {\cd{clock.c} \cd{periph.c} \cd{time.c}\\\cd{temperature.c} \cd{log.c}};
+\begin{scope}[on background layer]
+  \node[draw=black!70, fill=black!5, rounded corners=4pt, inner sep=2.5mm, fit=(obc)(hl),
+        label={[font=\sffamily\bfseries\small, anchor=south west, inner sep=1pt]north west:Coordinador OBC}] (obcg) {};
+\end{scope}
+\draw[arr] (main) -- (obcg.west |- main);
+
+% ---- bus de tasques
+\draw[line width=1.1pt, black!75] (\kA,11.75) -- (\kG,11.75);
+\draw[line width=1.1pt, black!75] (\kD,12.4) -- (\kD,11.75);
+\node[font=\sffamily\small, fill=white, inner sep=1.5pt, anchor=south] at (\kF,11.8)
+  {crea les tasques i les pausa / reprèn segons l'estat};
+
+% ---- tasques
+\node[covpart, t] (pl) at (\kA,10.5) {{\small\bfseries PAYLOAD}\\\cd{payload.c}};
+\node[covpart, t] (ep) at (\kB,10.5) {{\small\bfseries EPS}\\\cd{eps.c}};
+\node[covpart, t] (ad) at (\kC,10.5) {{\small\bfseries ADCS}\\\cd{adcs.c}};
+\node[covfull, t] (ob) at (\kD,10.5) {{\small\bfseries OBDH}\\\cd{obdh.c}\\tota la flash hi passa};
+\node[covfull, t] (bc) at (\kE,10.5) {{\small\bfseries BEACON}\\\cd{beacon.c}};
+\node[covnone, t] (cm) at (\kF,10.5) {{\small\bfseries COMMS}\\\cd{comms.c}};
+\node[covnone, t] (tr) at (\kG,10.5) {{\small\bfseries TRANSCEIVER}\\\cd{transceiver.c}};
+\foreach \n/\x in {pl/\kA,ep/\kB,ad/\kC,ob/\kD,bc/\kE,cm/\kF,tr/\kG}{ \draw[arr] (\x,11.75) -- (\n.north); }
+
+% ---- submòduls
+\def\ya{8.8}\def\yb{7.6}\def\yc{6.4}\def\yd{5.2}
+\node[covfull, m] (orq) at (\kD,\ya) {\cd{obdh\_requests.c}};
+\node[covnone, m] (fl)  at (\kD,\yb) {\cd{flash.c}};
+\node[covfull, m] (ht)  at (\kE,\ya) {\cd{ht\_handling.c}\\telemetria històrica};
+\node[covpart, m] (cp)  at (\kE,\yb) {\cd{compression.c}\\POCKET+};
+\node[covfull, m] (tc)  at (\kF,\ya) {\cd{tc\_handler.c}};
+\node[covfull, m] (tb)  at (\kF,\yb) {\cd{tm\_builder.c}};
+\node[covfull, m] (lc)  at (\kF,\yc) {\cd{lora\_cfg.c}};
+\node[covpart, m] (aq)  at (\kF,\yd) {\cd{arq.c}\\només la pujada};
+\node[covfull, m] (sw)  at (\kG,\ya) {\cd{saw.c}};
+\node[covfull, m] (fr)  at (\kG,\yb) {\cd{frame.c} \cd{auth.c} \cd{dedup.c}};
+\node[covpart, m] (cad) at (\kG,\yc) {\cd{cad.c}\\només enllaçat};
+\node[covpart, m] (tim) at (\kG,\yd) {\cd{timing.c}\\via \cd{lora\_cfg}};
+
+\draw[arr] (ob) -- (orq);
+\draw[arr] (orq) -- (fl);
+\draw[arr] (bc) -- (ht);
+\draw[arr] (ht) -- (cp);
+\draw[arr] (ht.west) -- (orq.east);
+\draw[arr] (cm) -- (tc);
+\draw[arr] (tr) -- (sw);
+
+% ---- maquinari
+\node[hw, m] (fhw) at (\kD,2.9) {flash interna de 1\,MB};
+\node[covnone, m] (rl) at (\kG,2.9) {RadioLib (C++) \ensuremath{\rightarrow} SX1262};
+\draw[arr] (fl) -- (fhw);
+\draw[arr] (\kG+0.9,\yd-0.5) -- (\kG+0.9,2.9+0.48);
+
+% ---- cues entre COMMS / BEACON i TRANSCEIVER
+\draw[line width=1.1pt, black!75, {Stealth[length=2.4mm]}-{Stealth[length=2.4mm]}] (\kF,\yd-0.5) -- (\kF,4.1) -- (\kG-0.9,4.1) -- (\kG-0.9,\yd-0.5);
+\draw[line width=1.1pt, black!75, -{Stealth[length=2.4mm]}] (\kE,\yb-0.5) -- (\kE,4.1) -- (\kF,4.1);
+\node[font=\sffamily\small, fill=white, inner sep=1.5pt, anchor=south] at ({(\kE+\kF)/2},4.15) {\cd{tx\_queue} / \cd{rx\_queue}};
+
+% ---- llegenda
+\begin{scope}[shift={(0.2,8.9)}]
+  \node[font=\sffamily\bfseries, anchor=west] at (0,0.1) {Cobertura};
+  \node[covfull, minimum width=1.0cm, minimum height=6mm, anchor=west] at (0,-0.8) {};
+  \node[note, anchor=west] at (1.2,-0.8) {té suite};
+  \node[covpart, minimum width=1.0cm, minimum height=6mm, anchor=west] at (0,-1.65) {};
+  \node[note, anchor=west] at (1.2,-1.65) {parcial};
+  \node[covnone, minimum width=1.0cm, minimum height=6mm, anchor=west] at (0,-2.5) {};
+  \node[note, anchor=west] at (1.2,-2.5) {sense suite};
+  \node[hw, minimum width=1.0cm, minimum height=6mm, anchor=west] at (0,-3.35) {};
+  \node[note, anchor=west] at (1.2,-3.35) {maquinari (no aplica)};
+  \node[note, anchor=north west, text width=9.6cm] at (0,-4.0)
+    {PAYLOAD, EPS i ADCS: només es prova el contracte de pausa, diferiment i represa,
+     i la lectura de llindars d'EPS. La lògica de cada subsistema encara és mínima.};
+\end{scope}
+\end{tikzpicture}
+\caption{Arquitectura del programari de vol, acolorida per cobertura de tests. \textbf{Què cal
+retenir:} el nucli de control (OBC, màquina d'estats, gestió de tasques, salut) i la major part de
+la pila de comms estan coberts. Els forats són a les vores: la tasca TRANSCEIVER i la tasca COMMS
+(bucles infinits), el driver de flash, RadioLib, la baixada d'ARQ i el compressor en anada i tornada.}
+\label{fig:arch}
+\end{slidefig}
+
+% =====================================================================
+\section{Taula suite per suite}\label{sec:suites}
+
+La taula~\ref{tab:suites} resumeix les 15 suites registrades a \cd{test/CMakeLists.txt}.
+Els recomptes de tests surten de les crides \cd{POCAT\_RUN\_TEST(...)} de cada fitxer, i els
+de \cd{KNOWN BUG} de les línies \cd{TEST\_IGNORE\_MESSAGE("KNOWN BUG ...")}; coincideixen
+amb l'última execució completa.
+
+\begin{landscape}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.4cm} l >{\raggedright\arraybackslash}p{4.9cm} >{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{5.6cm} r >{\raggedright\arraybackslash}p{2.6cm} l@{}}
+\caption{Les 15 suites. ``R'' = \cd{fake\_rtos} + \cd{fake\_hal} (automàtics). ``Git'': ``sí'' vol dir que el fitxer de la suite té commit.}\label{tab:suites}\\
+\toprule
+Suite & Etiq. & Producció inclosa (\cd{\#include}) & Producció enllaçada (\cd{SOURCES}) & Fakes & Tests & KNOWN BUG & Git\\
+\midrule
+\endfirsthead
+\toprule
+Suite & Etiq. & Producció inclosa (\cd{\#include}) & Producció enllaçada (\cd{SOURCES}) & Fakes & Tests & KNOWN BUG & Git\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\cd{test\_ht\_handling} & comms & \cd{ht\_handling.c} & -- & \cd{stubs\_project/flash.h}, \cd{fake\_flash\_memory}, \cd{mock\_obdh\_requests}, \cd{mock\_pocket\_plus} (sense R) & 14 & 0; 2 fallen a posta (KI-10, KI-11) & sí\\
+\cd{test\_notifications} & infra & -- & \cd{notifications.c} & R & 10 & 0 & sí\\
+\cd{test\_task\_management} & obc & \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c} & R, \cd{stub\_task\_entries}, \cd{sim\_tasks} & 14 & 1 (KI-4) & sí\\
+\cd{test\_state\_machine} & obc & \cd{state\_machine.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c} & R, \cd{stub\_task\_entries}, \cd{sim\_tasks}, \cd{fake\_clock}, \cd{fake\_obdh\_requests} & 12 & 2 (KB-3 ×2) & sí\\
+\cd{test\_comms\_frame} & comms & \cd{auth.c} & \cd{frame.c}, \cd{dedup.c} & R & 19 & 1 (KB-1) & sí\\
+\cd{test\_health} & obc & \cd{health.c} & -- & R & 17 & 0 & no\\
+\cd{test\_obdh} & obdh & \cd{obdh.c}, \cd{obdh\_requests.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c} & R, \cd{stub\_task\_entries}, \cd{fake\_flash\_driver} & 19 & 1 (KI-5) & no\\
+\cd{test\_tc\_handler} & comms & \cd{tc\_handler.c}, \cd{lora\_cfg.c}, \cd{tm\_builder.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c}, \cd{frame.c}, \cd{auth.c} & R, \cd{stub\_task\_entries}, \cd{fake\_obdh\_requests}, \cd{fake\_comms\_env} & 55 & 4 (KI-8 ×2, KI-15, KI-16) & no\\
+\cd{test\_lora\_cfg} & comms & \cd{lora\_cfg.c} & \cd{timing.c} & R, \cd{fake\_comms\_env} & 18 & 2 (KI-18, KI-19) & no\\
+\cd{test\_obc} & obc & \cd{obc.c}, \cd{state\_machine.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c} & R, \cd{stub\_task\_entries}, \cd{sim\_tasks}, \cd{fake\_clock}, \cd{fake\_obdh\_requests} & 11 & 1 (KI-26) & no\\
+\cd{test\_subsystem\_tasks} & subsys & \cd{eps.c}, \cd{adcs.c}, \cd{payload.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c} & R, \cd{stub\_task\_entries}, \cd{fake\_obdh\_requests} & 10 & 1 (KI-6) & no\\
+\cd{test\_beacon} & comms & \cd{beacon.c}, \cd{ht\_handling.c}, \cd{lora\_cfg.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c}, \cd{frame.c}, \cd{auth.c} & R, \cd{stub\_task\_entries}, \cd{fake\_obdh\_requests}, \cd{fake\_comms\_env}, \cd{mock\_pocket\_plus} & 15 & 2 (KI-15, KI-17) & no\\
+\cd{test\_saw} & comms & \cd{saw.c}, \cd{lora\_cfg.c} & \cd{timing.c}, \cd{cad.c}, \cd{frame.c}, \cd{auth.c} & R, \cd{fake\_comms\_env}, \cd{fake\_link} & 11 & 1 (KI-24) & no\\
+\cd{test\_arq} & comms & \cd{arq.c}, \cd{lora\_cfg.c}, \cd{task\_management.c}, \cd{health.c} & \cd{notifications.c}, \cd{timing.c}, \cd{cad.c}, \cd{frame.c}, \cd{auth.c} & R, \cd{stub\_task\_entries}, \cd{fake\_obdh\_requests}, \cd{fake\_comms\_env}, \cd{fake\_link} & 19 & 3 (KI-20, KI-21, KI-22) & no\\
+\cd{test\_ht\_compression} & comms & \cd{ht\_handling.c} & \cd{compression.c} (real) & R, \cd{fake\_obdh\_requests} (amb el \cd{flash.h} real) & 9 & 0 & no\\
+\midrule
+\textbf{Total} & & & & & \textbf{253} & \textbf{19} & 5 de 15\\
+\end{longtable}
+\end{landscape}
+
+\textbf{Què prova cada suite, en una frase.}
+\begin{description}[style=nextline,leftmargin=0.6cm,font=\normalfont\ttfamily]
+\item[test\_ht\_handling] La cua circular de telemetria històrica: ranures, desallotjament, esborrat d'una pàgina per volta, reconstrucció a \cd{ht\_init()}, tall de corrent i sector dolent.
+\item[test\_notifications] \cd{wait\_for\_notification()}, coherència del mapa de bits i autotests del FreeRTOS fals (FIFO, espera d'esdeveniments, detecció de deadlocks).
+\item[test\_task\_management] Taula de tasques, conjunts de creació, protocol de pausa i represa, diferiment, timeout d'ACK, reinici per salut i fallada de creació.
+\item[test\_state\_machine] Freqüència per estat, tasques a l'arrencada, canvi de rellotge NM\ensuremath{\rightarrow}SM, persistència de l'estat i pausa de les tasques velles / represa de les noves.
+\item[test\_comms\_frame] Vectors coneguts de SHA-256 i HMAC, codificació i descodificació de trames d'aire, límit 242/243, ACK de 16 bytes i anell de deduplicació.
+\item[test\_health] El watchdog de programari: temps de període (amb desbordament del tick), batecs que falten, període de gràcia i regles de refresc de l'IWDG.
+\item[test\_obdh] Client \ensuremath{\rightarrow} cua \ensuremath{\rightarrow} tasca OBDH \ensuremath{\rightarrow} driver \ensuremath{\rightarrow} resposta a l'índex 1; alineació, errors, cua plena, ordre, pausa i represa.
+\item[test\_tc\_handler] El catàleg de telecomandes (capa 2): un test per TC\_ID, TC desconeguda \ensuremath{\rightarrow} NACK, tots els 256 identificadors tractats o rebutjats.
+\item[test\_lora\_cfg] Configuració LoRa: valors d'arrencada, parse, commit programat, reversió automàtica, finestres BUSY, mapa d'amplades de banda i temps en l'aire de referència.
+\item[test\_obc] \cd{setup\_obc()} (cua OBDH de 10, IWDG + 5\,s de salut, tasques segons l'estat, hora d'arrencada desada) i \cd{process\_obc()}.
+\item[test\_subsystem\_tasks] El contracte comú de les tasques sobre els \cd{process\_eps/adcs/payload()} reals i la lectura de llindars d'EPS.
+\item[test\_beacon] Cos del beacon de 19 bytes, uptime, callback i període del timer, trama TX a la cua i alimentació de la telemetria històrica.
+\item[test\_saw] Emissor stop-and-wait: ACK, NACK, 3 retransmissions i timeout, trames RETX autenticades, trames alienes reenviades, CAD ocupat, TX\_DONE que no arriba.
+\item[test\_arq] Pujada ARQ: armat, \cd{DATA\_BEGIN}, blocs desordenats i duplicats, ACK per finestra, CRC-32 final, escriptura de TLE, calibratge i paràmetres de vol a la flash. La baixada no hi és.
+\item[test\_ht\_compression] Telemetria històrica amb el POCKET+ real: els blocs caben a la ranura de 128 bytes, beacons idèntics i aleatoris, \cd{ht\_init()} després de blocs reals, gir de la cua.
+\end{description}
+
+% =====================================================================
+\section{Flux d'una execució de tests}\label{sec:flow}
+
+\cd{run\_tests.sh} és curt (18 línies) i comença amb \cd{set -e}: si la compilació falla,
+s'atura i no s'executa cap test. Sempre fa el mateix fins a la compilació i després
+decideix què executar segons el primer argument (figura~\ref{fig:flow}).
+
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.0cm}>{\raggedright\arraybackslash}p{6.9cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Després de \cd{docker run --rm -v "\PWD:/app" pocat-tests} & Què executa & Per a què\\
+\midrule
+\emph{(res)} & \cd{ctest --output-on-failure} & totes les suites\\
+\cd{--list} & \cd{ctest -N} & llistar les suites registrades\\
+\cd{--label obc} & \cd{ctest --output-on-failure -L obc} & suites d'una etiqueta: \cd{obc}, \cd{obdh}, \cd{comms}, \cd{subsys}, \cd{infra}\\
+\cd{state\_machine} & \cd{ctest --output-on-failure -R state\_machine} & suites el nom de les quals coincideix amb l'expressió regular\\
+\cd{test\_state\_machine -l} & \cd{./test/test\_state\_machine -l} & llistar els tests d'una suite\\
+\cd{test\_state\_machine -f NM\_to\_SM} & \cd{./test/test\_state\_machine -f NM\_to\_SM} & només els tests que contenen el text\\
+\cd{test\_obc -n <nom>} / \cd{-x <text>} & el binari de la suite & un test pel nom exacte / excloure'n\\
+\bottomrule
+\end{tabularx}
+\caption{Formes d'argument de \cd{run\_tests.sh}. El binari d'una suite només s'executa directament si hi ha
+\emph{almenys dos} arguments i el primer és un executable a \cd{build\_test/test/}; si no, el primer argument
+es tracta com una expressió regular de \cd{ctest}.}
+\end{table}
+
+\textbf{Des de Git Bash} cal evitar que MSYS reescrigui els camins:
+\cd{MSYS\_NO\_PATHCONV=1 docker run --rm -v "\$(pwd -W)":/app pocat-tests}.
+
+% ---------------------------------------------------------------- FIGURA 7
+\begin{slidefig}
+\begin{tikzpicture}[
+  st/.style={box, fill=white, draw=black!80, text width=4.1cm, minimum height=1.9cm, font=\sffamily\small},
+  br/.style={box, fill=cCovPart, draw=black!80, text width=4.2cm, minimum height=2.1cm, font=\sffamily\small},
+  nt/.style={note, text width=4.2cm, font=\sffamily\scriptsize, anchor=north, align=left},
+  lbl/.style={font=\sffamily\small\bfseries, fill=white, inner sep=1.5pt},
+  ]
+\def\y{10.2}
+\node[tool, text width=4.1cm, minimum height=1.9cm, font=\sffamily\small] (s1) at (2.3,\y) {\textbf{PowerShell}\\\cd{docker run --rm -v "\PWD:/app" pocat-tests [args]}};
+\node[img, text width=4.1cm, minimum height=1.9cm, font=\sffamily\small] (s2) at (7.3,\y) {\textbf{Contenidor}\\\cd{ENTRYPOINT}:\\\cd{bash run\_tests.sh [args]}};
+\node[st] (s3) at (12.3,\y) {\textbf{1. Preparar}\\\cd{mkdir -p build\_test}\\\cd{rm -f CMakeCache.txt}};
+\node[st] (s4) at (17.3,\y) {\textbf{2. Configurar}\\\cd{cmake -DBUILD\_TESTING=ON ..}};
+\node[st] (s5) at (22.3,\y) {\textbf{3. Compilar}\\\cd{make -j\$(nproc) pocat\_tests}};
+\foreach \a/\b in {s1/s2,s2/s3,s3/s4,s4/s5} \draw[arr] (\a) -- (\b);
+
+\node[nt] at (2.3,\y-1.1) {cometes necessàries: el camí del repo té espais};
+\node[nt] at (7.3,\y-1.1) {el repo és a \cd{/app}; \cd{set -e}: un error atura tot};
+\node[nt] at (12.3,\y-1.1) {força una reconfiguració a cada execució};
+\node[nt] at (17.3,\y-1.1) {sense toolchain ARM; \cd{add\_subdirectory(test)}; genera el \cd{psk.h} de test};
+\node[nt] at (22.3,\y-1.1) {Unity (lib) + 15 executables a \cd{build\_test/test/}; mai el target per defecte};
+
+\node[decision, text width=3.8cm] (d) at (12.3,6.1) {\textbf{4. Triar}\\ \cd{case "\$1"}};
+\draw[arr] (s5.south) -- ++(0,-1.75) -| (d.north);
+
+\node[br] (b1) at (2.5,2.6) {\textbf{(cap argument)}\\[2pt]\cd{ctest --output-}\\\cd{on-failure}\\[1pt]totes les suites};
+\node[br] (b2) at (7.4,2.6) {\textbf{\cd{--list}}\\[2pt]\cd{ctest -N}\\[1pt]llista de suites};
+\node[br] (b3) at (12.3,2.6) {\textbf{\cd{--label L}}\\[2pt]\cd{ctest -L L}\\[1pt]p.\,ex.\ \cd{obc}, \cd{comms}};
+\node[br] (b4) at (17.2,2.6) {\textbf{\cd{<suite> <opcions>}}\\[2pt]\cd{./test/<suite>}\\\cd{-l | -f | -n | -x}};
+\node[br] (b5) at (22.1,2.6) {\textbf{\cd{<regex>}}\\[2pt]\cd{ctest -R <regex>}\\[1pt]tot el que no encaixa abans};
+\foreach \b in {b1,b2,b3,b4,b5} \draw[arr] (d.south) -- ++(0,-0.55) -| (\b.north);
+
+\node[outp, text width=23.6cm, font=\sffamily\small] (o) at (12.3,0.2) {\textbf{Sortida:} una línia Unity per test
+  (\cd{PASS}, \cd{FAIL} amb fitxer i línia, \cd{IGNORE} amb el missatge \cd{KNOWN BUG}), el resum de \cd{ctest}, i el codi de sortida:
+  diferent de 0 si falla alguna suite. Avui sempre és diferent de 0 per KI-10 i KI-11.};
+\foreach \b in {b1,b2,b3,b4,b5} \draw[arr] (\b.south) -- (\b.south |- o.north);
+\end{tikzpicture}
+\caption{Què passa entre \cd{docker run} i el resultat. \textbf{Què cal retenir:} els passos 1 a 3 són
+sempre iguals i compilen totes les suites (\cd{pocat\_tests}); només el pas 4 depèn dels arguments. Per
+executar només uns quants tests d'una suite cal donar el nom complet de la suite i una opció
+(\cd{-l}, \cd{-f}, \cd{-n}, \cd{-x}); amb un sol argument, aquest es tracta com una expressió regular.}
+\label{fig:flow}
+\end{slidefig}
+
+Dins de cada binari de suite, el \cd{main()} de \cd{pocat\_test\_main.h} llegeix les opcions
+(\cd{pocat\_parse\_args}), i per a cada \cd{POCAT\_RUN\_TEST(test\_x)} fa: si s'ha demanat
+\cd{-l}, imprimeix el nom; si no, comprova el filtre i executa \cd{setUp()} \ensuremath{\rightarrow} \cd{test\_x()} \ensuremath{\rightarrow}
+\cd{tearDown()} a través d'Unity. Cada suite té un límit de 60\,s (\cd{POCAT\_TEST\_TIMEOUT});
+una suite normal triga molt menys d'un segon, de manera que un timeout vol dir que el codi
+sota prova s'ha penjat.
+
+% =====================================================================
+\section{Problemes coneguts (KNOWN BUG)}\label{sec:ki}
+
+\textbf{La regla.} Els tests no corregeixen mai el codi de producció. Quan un test troba
+un error real, es queda escrit amb les assercions correctes i la primera línia del cos és:
+\begin{lstlisting}[language=C]
+void test_pause_and_resume_pending_together_leaves_task_running(void)
+{
+    TEST_IGNORE_MESSAGE("KNOWN BUG KI-4: PAUSE+RESUME pending together ...");
+    /* ... assercions reals: el que HAURIA de passar ... */
+}
+\end{lstlisting}
+Unity marca el test com a \cd{IGNORE} i mostra el missatge: el problema queda visible però
+l'execució no falla. Quan algú corregeixi el bug, només cal esborrar aquella línia i el test
+passa a protegir contra una regressió. Cada identificador té una fila a la taula de
+\cd{test/README.md}. ``KB'' són els primers errors greus trobats; ``KI'' la resta.
+
+\textbf{Les dues excepcions.} KI-10 i KI-11 (a \cd{test\_ht\_handling}) no tenen la línia
+d'ignorar: els seus tests fallen a posta. Per això una execució completa mai surt verda.
+Si s'han de convertir en ignorats és una decisió pendent (secció~\ref{sec:roadmap}).
+
+\textbf{Comprovació AC3.} Per estar segur que un test \cd{KNOWN BUG} prova el que diu, es
+treu la línia d'ignorar, es comprova que falla pel motiu esperat i es torna a posar. Està
+fet i registrat per a KB-1, KB-3, KI-4, KI-20, KI-21 i KI-22. No consta per a KI-6, KI-15
+(a \cd{test\_beacon}), KI-17, KI-18, KI-19, KI-24 ni KI-26.
+
+% ---------------------------------------------------------------- FIGURA 8
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  ph/.style={box, fill=white, draw=black!80, text width=2.75cm, minimum height=2.6cm, font=\sffamily\small},
+  ]
+\node[ph] (p1) at (0,0)     {\textbf{1. Es troba}\\un error de producció llegint el codi o escrivint un test};
+\node[ph, fill=cFakeL, draw=cFakeD] (p2) at (3.4,0) {\textbf{2. Test}\\assercions reals i, com a primera línia, \cd{TEST\_IGNORE\_} \cd{MESSAGE}};
+\node[ph] (p3) at (6.8,0)   {\textbf{3. AC3}\\sense la línia ha de fallar pel motiu esperat; es torna a posar};
+\node[ph] (p4) at (10.2,0)  {\textbf{4. Fila KI}\\a la taula de \cd{test/README.md}};
+\node[ph, fill=cCovPart] (p5) at (13.6,0) {\textbf{5. Es corregeix}\\(tasca a part): s'esborra la línia i el test queda com a guarda};
+\foreach \a/\b in {p1/p2,p2/p3,p3/p4,p4/p5} \draw[arr] (\a) -- (\b);
+\end{tikzpicture}
+\caption{Cicle de vida d'un \cd{KNOWN BUG}. \textbf{Què cal retenir:} un error conegut no es corregeix
+des de la feina de tests; es deixa escrit com un test ignorat que diu exactament què hauria de passar,
+i corregir-lo vol dir esborrar una sola línia.}
+\label{fig:kb}
+\end{figure}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}l>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}p{7.3cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
+\caption{Els 26 problemes coneguts, una línia cadascun (detall a \cd{test/README.md}). Estat: \textbf{ignorat}
+= test \cd{KNOWN BUG}; \textbf{falla} = test que falla a posta; \textbf{documentat} = test que passa i deixa
+constància; \textbf{sense test}.}\label{tab:ki}\\
+\toprule
+ID & On & Problema & Estat del test\\
+\midrule
+\endfirsthead
+\toprule
+ID & On & Problema & Estat del test\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+KB-1 & \cd{frame.c} \cd{decode\_raw()} & Una trama amb LEN 243–255 desborda \cd{payload[242]} abans de l'autenticació & ignorat (\cd{comms\_frame})\\
+KB-2 & \cd{transceiver.c:127} & \cd{ack\_buf[8]}, però l'ACK ocupa 16 bytes: desbordament de pila a cada ACK & documentat (passa); el transceiver no és testejable\\
+KB-3 & \cd{state\_machine.c} \cd{change\_state()} & Escriptures de 4 bytes solapades: \cd{PREVIOUS\_STATE} sempre 0 i flags de desplegament a 0 & ignorat ×2 (\cd{state\_machine})\\
+KI-4 & \cd{task\_management.c} \cd{tm\_check\_pause()} & PAUSE i RESUME pendents alhora: la tasca queda pausada per sempre & ignorat (\cd{task\_management})\\
+KI-5 & \cd{obdh.c} \cd{process\_obdh()} & L'OBDH pausat no es bloqueja: bucle actiu a prioritat 5 & ignorat (\cd{obdh})\\
+KI-6 & \cd{adcs.c} & Bits de mode privats (0/1) en lloc de \cd{N\_ADCS\_DESIRED\_STATE\_*} (1/2); \cd{NEW\_TLE} no es tracta & ignorat (\cd{subsystem\_tasks})\\
+KI-7 & \cd{radiolib\_wrapper\_mock.c} & Implementa l'API antiga: \cd{build.sh --mock} probablement no compila (no verificat) & sense test\\
+KI-8 & \cd{tc\_handler.c} \cd{UPLOAD\_EPS\_TH}, \cd{UPLOAD\_PL\_CONFIG} & No comprova \cd{frame->len}: desa bytes antics com a configuració & ignorat ×2 (\cd{tc\_handler})\\
+KI-9 & \cd{task\_management.c} \cd{tm\_create\_tasks()} & Retorna el codi d'\cd{xTaskCreate}, no \cd{pdFAIL} (inofensiu) & documentat (passa)\\
+KI-10 & \cd{ht\_handling.c} \cd{ht\_init()} & Després del gir del comptador de 32 bits tria malament la ranura més antiga & \textbf{falla} (\cd{ht\_handling})\\
+KI-11 & \cd{ht\_handling.c} \cd{ht\_store\_block()} & Una pàgina dolenta es reintenta per sempre: l'històric deixa de desar-se & \textbf{falla} (\cd{ht\_handling})\\
+KI-12 & \cd{obdh.c:65-66} & Les notificacions diferides es perden (\cd{N\_OBDH\_CLEAR\_FLASH}, \cd{N\_OBDH\_CLEAR\_HT}) & sense test (avís a \cd{tc\_handler})\\
+KI-13 & \cd{health.c:175} \cd{system\_health()} & Falta la comprovació de NULL si es crida abans d'\cd{health\_init()} & sense test\\
+KI-14 & \cd{obdh\_requests} \ensuremath{\rightarrow} \cd{obdh} \ensuremath{\rightarrow} \cd{flash} & \cd{size\_t len} es trunca a \cd{uint16\_t} & sense test\\
+KI-15 & \cd{TC\_SET\_BEACON\_PERIOD} \ensuremath{\rightarrow} \cd{beacon\_set\_period()} & Període 0: \cd{configASSERT} penja l'OBC fins que salta l'IWDG & ignorat ×2 (\cd{tc\_handler}, \cd{beacon})\\
+KI-16 & \cd{tc\_handler.c}, TC d'ARQ & Si l'ARQ està ocupat, no s'envia \cd{NACK\_BUSY}: terra espera una transferència que no comença & ignorat (\cd{tc\_handler})\\
+KI-17 & \cd{beacon.c} + \cd{obc.c} & L'uptime surt del RTC: sincronitzar l'hora després d'arrencar el corromp & ignorat (\cd{beacon})\\
+KI-18 & \cd{lora\_cfg.c} \cd{validate()} + \cd{timing.c} & Preàmbul sense límit: el temps en l'aire desborda \cd{uint32} & ignorat (\cd{lora\_cfg})\\
+KI-19 & \cd{timing.c:309}, \cd{arq.c} & El timeout d'ACK es calcula amb un ACK de 8 bytes; en fa 16 & ignorat (\cd{lora\_cfg})\\
+KI-20 & \cd{arq.c:460}, \cd{arq.c:538-539} & \cd{WINDOW\_SIZE = 0} s'accepta: mòdul per zero (UBSan avorta) & ignorat (\cd{arq})\\
+KI-21 & \cd{arq.c:453-457} & Un tipus de transferència diferent de l'armat només es registra al log & ignorat (\cd{arq})\\
+KI-22 & \cd{arq.c} + \cd{flash.h} & La pujada no es limita a la regió: pot sobreescriure fins a \cd{BOOT\_TIME\_ADDR} & ignorat (\cd{arq})\\
+KI-23 & \cd{arq.c:87}, \cd{arq.c:118-119} & L'històric d'HK baixa \cd{TELEMETRY\_ADDR} (antic), mai la cua HT & sense test (baixada pendent)\\
+KI-24 & \cd{saw.c:20}, \cd{saw.c:92-99} & \cd{own\_type} s'ignora en aparellar ACK/NACK & ignorat (\cd{saw})\\
+KI-25 & \cd{obc.c:112-121} & Els bits de reinici i d'actualitzar l'hora són \cd{if} buits (no implementat) & documentat (nota a \cd{obc})\\
+KI-26 & \cd{state\_machine.c} \cd{change\_state()} & Una transició a l'estat actual ho pausa i reprèn tot i fa 2 escriptures & ignorat (\cd{obc})\\
+\end{longtable}
+\endgroup
+
+Recompte: 16 identificadors tenen tests ignorats (19 tests en total, perquè KB-3, KI-8 i KI-15
+en tenen dos); 2 tenen tests que fallen (KI-10, KI-11); 3 queden documentats per un test que
+passa o una nota (KB-2, KI-9, KI-25); i 4 no tenen cap test (KI-7, KI-12, KI-13, KI-14), més
+KI-23, que espera els tests de baixada d'ARQ.
+
+% =====================================================================
+\section{Punts febles i full de ruta}\label{sec:roadmap}
+
+\subsection{Punts febles trobats per la revisió externa}
+
+Una revisió externa (només lectura) va trobar 19 punts (F1–F19). Alguns ja s'han
+resolt després; la columna ``Estat'' és l'estat actual comprovat al repo.
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}l l>{\raggedright\arraybackslash}p{9.6cm}>{\raggedright\arraybackslash}p{4.3cm}@{}}
+\toprule
+ID & Grav. & Punt feble & Estat\\
+\midrule
+\endfirsthead
+\toprule
+ID & Grav. & Punt feble & Estat\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+F1 & alta & \cd{test\_torn\_write\_recovery} no prova una escriptura a mitges: el tall arriba després de l'esborrat i abans de programar res & obert\\
+F2 & alta & El compressor és un mock a \cd{test\_ht\_handling} i \cd{test\_beacon} & en part: \cd{test\_ht\_compression} usa el real; falta l'anada i tornada\\
+F3 & mitj. & Assercions que només comproven el que el fake ha escrit; la cadena TC \ensuremath{\rightarrow} efecte no es tanca perquè la tasca destí és un stub (ex.: KI-12) & obert\\
+F4 & mitj. & KI-10 i KI-11 en vermell: una regressió real no es distingeix de les fallades esperades & \textbf{decisió pendent}\\
+F5 & mitj. & El reinici dels \cd{static} es copia a cada suite; hi ha \cd{static} locals de funció a \cd{tc\_handler.c} que no es poden reiniciar & obert\\
+F6 & mitj. & Els timers falsos accepten període 0 (el FreeRTOS real fa \cd{configASSERT}) & obert\\
+F7 & alta & \cd{fake\_obdh\_requests} és permissiu (sense alineació ni comprovació d'esborrat) i el fan servir 7 suites & \textbf{decisió pendent}\\
+F8 & mitj. & Tres models de flash amb regles diferents; \cd{fake\_flash\_driver} no té tall de corrent & obert\\
+F9 & mitj. & Un sol fil: no modela curses, prioritats, ISR ni piles; el host és de 64 bits & límit del disseny\\
+F10 & baixa & Els símbols \emph{weak} de \cd{fake\_comms\_env} poden deixar de comptar sense avisar si canvia l'enllaç & obert\\
+F11 & alta & Sense suite: \cd{transceiver.c} (KB-2 no té cap test que falli), \cd{comms.c}, \cd{flash.c}; baixada d'ARQ & en part: \cd{test\_arq} cobreix la pujada\\
+F12 & mitj. & L'OBDH es pausa a cada transició d'estat i podria bloquejar un client de la flash & \textbf{sospita, no confirmada}\\
+F13 & mitj. & Sense timeout per suite a \cd{ctest}; sense \cd{-Werror} & timeout resolt (60\,s); \cd{-Werror} no\\
+F14 & mitj. & No hi ha CI & \textbf{decisió pendent}\\
+F15 & mitj. & Documentació desfasada & majoritàriament resolt; queda \cd{CLAUDE.md}\\
+F16 & mitj. & La imatge de firmware porta una PSK de desenvolupament fixada sense cap avís & obert\\
+F17 & baixa & \cd{.gitattributes} sense commit & obert\\
+F18 & baixa & \cd{run\_tests.sh}: \cd{-f} sense nom de suite es converteix en regex; missatges poc clars & obert\\
+F19 & baixa & El toolchain ARM es descarrega sense comprovar el checksum & obert\\
+\end{longtable}
+\endgroup
+
+\textbf{Sobre F12 (sospita).} El codi confirma la meitat: \cd{change\_state()} crida
+\cd{tm\_pause\_tasks(tasks\_for\_state(estat\_vell))}, i \cd{tasks\_for\_state()} inclou
+\cd{TM\_TASK\_OBDH} en tots els estats, per tant l'OBDH rep \cd{N\_TASK\_PAUSE} a cada transició
+(això contradiu la frase de KI-5 a \cd{test/README.md} que diu que ``mai es pausa''). El que
+\emph{no} està confirmat és la conseqüència: que una tasca bloquejada a \cd{obdh\_submit\_request()}
+(espera \cd{portMAX\_DELAY} a l'índex 1) no pugui respondre a la pausa i acabi en timeout o
+reiniciada pel watchdog. Cap suite ho prova: les que fan transicions fan servir
+\cd{fake\_obdh\_requests}, que no té tasca OBDH. Cal un test abans de considerar-ho un bug.
+
+\subsection{Full de ruta}
+
+La figura~\ref{fig:roadmap} ordena la feina pendent per prioritat. Les targetes amb vora vermella
+i l'etiqueta DECISIÓ esperen que el propietari decideixi; no s'han de fer sense aquesta
+decisió. Les fletxes marquen dependències.
+
+% ---------------------------------------------------------------- FIGURA 9
+\begin{slidefig}
+\begin{tikzpicture}[
+  colh/.style={box, fill=black!80, text=white, text width=5.3cm, font=\sffamily\bfseries, inner sep=5pt},
+  ]
+\def\xa{2.95}\def\xb{9.15}\def\xc{15.35}\def\xd{21.55}
+\node[colh] (h0) at (\xa,0) {P0 · ara};
+\node[colh] (h1) at (\xb,0) {P1 · a continuació};
+\node[colh] (h2) at (\xc,0) {P2 · després};
+\node[colh, fill=black!45] (h3) at (\xd,0) {P3 · més endavant};
+
+% P0
+\node[card, anchor=north] (c1) at (\xa,-0.9) {\textbf{1. Fer commit de la feina}\\10 suites, 3 fakes nous, canvis als fakes, \cd{.gitattributes}, \cd{test-design-phase3.md}. Ho fa el propietari (els agents no fan commits).};
+\node[deccard, anchor=north] (c2) [below=9mm of c1] {\textbf{2. KI-10 i KI-11 \ensuremath{\rightarrow} ignorats?}\\Amb \cd{TEST\_IGNORE\_MESSAGE} com la resta, una execució completa pot sortir verda i el codi de sortida serveix per a CI.};
+\node[tag, anchor=south west] at (c2.north west) {DECISIÓ};
+
+% P1
+\node[deccard, anchor=north] (c3) at (\xb,-0.9) {\textbf{3. Afegir CI}\\GitHub Actions: construir \cd{Dockerfile.test}, executar-lo i desar \cd{build\_test/Testing} si falla. Més endavant, el build de firmware.};
+\node[tag, anchor=south west] at (c3.north west) {DECISIÓ};
+\node[card, anchor=north, draw=black!70, dashed, line width=1.2pt] (c4) [below=9mm of c3] {\textbf{4. Confirmar F12}\\Test amb l'OBDH real: un client amb una petició a la cua, pausa de l'OBDH, i veure si el client és servit o queda penjat.};
+\node[tagu, anchor=south west] at (c4.north west) {NO CONFIRMAT};
+\node[deccard, anchor=north] (c5) [below=9mm of c4] {\textbf{5. \cd{fake\_obdh\_requests} estricte}\\Que apliqui les regles reals: alineació de 8, destí esborrat, pàgina de 2\,KB. Pot fer fallar suites que avui passen.};
+\node[tag, anchor=south west] at (c5.north west) {DECISIÓ};
+\node[card, anchor=north] (c6) [below=9mm of c5] {\textbf{6. AC3 pendents}\\KI-6, KI-15 (beacon), KI-17, KI-18, KI-19, KI-24, KI-26.};
+
+% P2
+\node[deccard, anchor=north] (c7) at (\xc,-0.9) {\textbf{7. \cd{test\_arq}: baixada}\\Tests 20–24 de l'especificació B3.6 i KI-23 (l'històric d'HK no llegeix la cua HT).};
+\node[tag, anchor=south west] at (c7.north west) {DECISIÓ};
+\node[card, anchor=north] (c8) [below=9mm of c7] {\textbf{8. Fake RTOS més fidel}\\\cd{configASSERT(period > 0)} als timers (KI-15 fallaria de debò) i assert de bits d'esdeveniment 24+.};
+\node[card, anchor=north] (c9) [below=9mm of c8] {\textbf{9. Un sol model de flash}\\Unificar els tres fakes i afegir un tall de corrent a mitja programació (F1, F8).};
+\node[card, anchor=north] (c10) [below=9mm of c9] {\textbf{10. Petits arreglaments}\\\cd{<stdlib.h>} a \cd{test\_saw.c}; etiquetes \cd{obdh}/\cd{subsys} i cometes a \cd{CLAUDE.md}.};
+
+% P3
+\node[card, anchor=north] (c11) at (\xd,-0.9) {\textbf{11. KB-2 testejable}\\Cal un refactor de producció (\cd{transceiver\_process\_once()}); decisió de l'equip de vol.};
+\node[card, anchor=north] (c12) [below=9mm of c11] {\textbf{12. Capes 3 i 4}\\Simulador \cd{stdin} al PC; consola a la placa (necessita KI-7 resolt).};
+\node[card, anchor=north] (c13) [below=9mm of c12] {\textbf{13. Build \cd{-m32}}\\Segona configuració de 32 bits per acostar el host a l'STM32.};
+\node[card, anchor=north] (c14) [below=9mm of c13] {\textbf{14. Imatge de firmware}\\Avís o refús amb la PSK de desenvolupament; checksum del toolchain.};
+
+\draw[arr, cWarn] (c1.east) -- ++(0.12,0) |- (c3.west);
+\draw[arr, cWarn] (c2.east) -- ++(0.27,0) |- ([yshift=-3mm]c3.west);
+\draw[arr] (c5.east) -- ++(0.3,0) |- (c9.west);
+\end{tikzpicture}
+\caption{Full de ruta per prioritat. \textbf{Què cal retenir:} el primer pas és fer commit del que ja
+existeix i decidir què fer amb KI-10/KI-11, perquè d'aquí depèn tenir CI. Quatre punts esperen una decisió
+del propietari (vora vermella), i el possible problema de l'OBDH pausat s'ha de confirmar amb un test abans
+de tractar-lo com un bug.}
+\label{fig:roadmap}
+\end{slidefig}
+
+% =====================================================================
+\section{Com afegir una suite}\label{sec:recipe}
+
+\begin{enumerate}
+\item \textbf{Crea \cd{test/suites/test\_<nom>.c}.} Comença copiant una suite semblant
+  (\cd{test/suites/test\_task\_management.c} és l'exemple de referència). Estructura:
+\begin{lstlisting}[language=C]
+/**
+ * @file test_<nom>.c
+ * @brief Què es prova, en una frase.
+ * @details Què s'inclou (#include) i què va a SOURCES, quins fakes,
+ *          com s'executa.
+ */
+#include "unity.h"
+#include "pocat_test_main.h"
+#include "fake_rtos.h"
+#include "<modul>.c"              /* R1: el .c sota prova */
+
+void setUp(void) {                /* R2: tot net a cada test */
+    fake_rtos_reset();
+    /* reset dels altres fakes i dels static de <modul>.c */
+}
+void tearDown(void) {             /* R3: seccions crítiques equilibrades */
+    TEST_ASSERT_EQUAL_INT(0, fake_rtos_critical_depth());
+    TEST_ASSERT_EQUAL_INT(0, fake_rtos_suspend_all_depth());
+}
+
+/** @brief Comportament esperat. @details Escenari i per què importa. */
+void test_<accio>_<resultat_esperat>(void) { /* ... */ }
+
+int main(int argc, char **argv) { /* R6 */
+    if (pocat_parse_args(argc, argv) != 0) return 1;
+    POCAT_BEGIN();
+    POCAT_RUN_TEST(test_<accio>_<resultat_esperat>);
+    return POCAT_END();
+}
+\end{lstlisting}
+\item \textbf{Registra-la amb una línia a \cd{test/CMakeLists.txt}:}
+\begin{lstlisting}
+pocat_add_suite(test_<nom> LABEL <obc|obdh|comms|subsys|infra>
+  SOURCES ${SRC_DIR}/utils/notifications.c mocks/fake_obdh_requests.c)
+\end{lstlisting}
+  Opcions: \cd{NO\_FAKES} (no enllaça \cd{fake\_rtos}/\cd{fake\_hal}), \cd{NO\_SANITIZE} (cal un
+  comentari que ho justifiqui), \cd{INCLUDES <dirs>} (es busquen primer). \cd{run\_tests.sh} no
+  s'ha de tocar: la suite passa a dependre de \cd{pocat\_tests} automàticament.
+\item \textbf{Executa-la:} \cd{docker run --rm -v "\PWD:/app" pocat-tests test\_<nom>} i,
+  quan passi, l'execució completa.
+\item \textbf{Si trobes un bug de producció,} no el corregeixis: escriu el test amb
+  \cd{TEST\_IGNORE\_MESSAGE("KNOWN BUG KI-n: ...")} com a primera línia, fes l'AC3 i afegeix la fila a
+  \cd{test/README.md}.
+\end{enumerate}
+
+\textbf{Errors típics.}
+\begin{itemize}
+\item Posar el mateix \cd{.c} a \cd{\#include} i a \cd{SOURCES}: símbols duplicats.
+\item Oblidar reiniciar un \cd{static} del mòdul inclòs al \cd{setUp()}: els tests depenen de l'ordre.
+\item Incloure \cd{lora\_cfg.c} sense \cd{INCLUDES \$\{CMAKE\_SOURCE\_DIR\}/external/RadioLib/src}: no troba \cd{TypeDef.h}.
+\item Compilar el target per defecte a \cd{build\_test/}: és el firmware i no compila amb gcc natiu.
+\item Escriure un test nou de comms amb \cd{fake\_obdh\_requests} i suposar que valida l'alineació: no ho fa (taula~\ref{tab:flash}).
+\end{itemize}
+
+% =====================================================================
+\appendix
+\section{Notes de verificació}
+
+\begin{itemize}
+\item \textbf{Comprovat al repo:} els 15 \cd{pocat\_add\_suite}, els recomptes de tests i de
+  \cd{KNOWN BUG} de cada suite (253 i 19), els \cd{\#include} de producció de cada suite, els
+  dos Dockerfiles, \cd{build.sh}, \cd{run\_tests.sh}, \cd{flash.sh}, el comportament dels fakes de
+  flash i de \cd{block\_until} a \cd{fake\_rtos.c}, i \cd{tasks\_for\_state()} a \cd{state\_machine.c}.
+\item \textbf{Execució de comprovació:} l'execució completa es va repetir el 13/11/2026 en revisar
+  aquest document: 14 de 15 suites passen i \cd{test\_ht\_handling} falla només als dos tests
+  esperats (KI-10 i KI-11). El build de firmware i \cd{--mock} (KI-7) no s'han verificat.
+\item \textbf{Diferències entre informes anteriors i el repo:} un informe d'estat anterior parlava
+  de 13 suites, 225 tests i 16 ignorats, d'un \cd{test/README.md} amb només 8 suites i d'un
+  \cd{test\_arq} inexistent; ara són 15, 253 i 19, el README té les 15 suites i \cd{test\_arq} existeix.
+  La revisió externa deia que \cd{ctest} no tenia timeout; ara n'hi ha un de 60\,s.
+\item \textbf{Diferències amb \cd{CLAUDE.md}:} esmenta només les etiquetes \cd{obc}, \cd{comms} i
+  \cd{infra} (també hi ha \cd{obdh} i \cd{subsys}); la comanda de firmware hi apareix sense cometes
+  a \cd{\$\{PWD\}}, i falla perquè el camí té espais; i \cd{CLAUDE.md} és a \cd{.gitignore}, de
+  manera que no es comparteix amb qui cloni el repo. \cd{--mock} no ``selecciona'' un fitxer a
+  CMake: només defineix \cd{RADIO\_MOCK}, i són els \cd{\#ifdef} dels wrappers els que trien.
+\end{itemize}
+
+\end{document}

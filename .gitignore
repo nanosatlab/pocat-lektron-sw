@@ -70,7 +70,8 @@ ctrlp.root
 Debug
 
 #.resources
-.vscode
+.vscode/*
+!.vscode/tasks.json
 .cache
 
 #build

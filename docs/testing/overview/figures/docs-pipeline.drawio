@@ -1,0 +1,72 @@
+<mxfile host="drawio" version="24.7.17">
+  <!--
+    Figure: what build-docs.sh does to produce the guide PDF.
+    Used by docker-and-test-guide.tex (fig:docbuild). Exported to figures/pdf/
+    by build-docs.sh itself. Steps 1-3 each run in a throwaway container.
+  -->
+  <diagram id="docs-pipeline" name="Docs pipeline">
+    <mxGraphModel dx="1500" dy="640" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="cmd" value="bash docs/testing/overview/build-docs.sh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#333333;fontColor=#FFFFFF;strokeColor=none;fontFamily=Courier New;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1420" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- step 0 -->
+        <mxCell id="s0" value="&lt;b&gt;0. On the PC&lt;/b&gt;&lt;br&gt;git rev-parse --short HEAD&lt;br&gt;git status --porcelain&lt;br&gt;&lt;i&gt;&amp;rarr; TR_COMMIT, TR_DIRTY&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=1.5;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="230" height="110" as="geometry" />
+        </mxCell>
+        <!-- step 1 -->
+        <mxCell id="s1" value="&lt;b&gt;1. Run the tests&lt;/b&gt;&lt;br&gt;container &lt;b&gt;pocat-tests&lt;/b&gt;&lt;br&gt;tools/collect-test-results.sh&lt;br&gt;builds pocat_tests, runs every&lt;br&gt;suite binary, counts the Unity&lt;br&gt;PASS / FAIL / IGNORE lines" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0B65E;strokeColor=#8A5200;strokeWidth=2;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="120" width="260" height="110" as="geometry" />
+        </mxCell>
+        <!-- step 2 -->
+        <mxCell id="s2" value="&lt;b&gt;2. Export the figures&lt;/b&gt;&lt;br&gt;container &lt;b&gt;rlespinasse/drawio-export&lt;/b&gt;&lt;br&gt;figures/*.drawio&lt;br&gt;&amp;rarr; figures/pdf/*.pdf (cropped)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F1F1;strokeColor=#333333;strokeWidth=2;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="650" y="120" width="260" height="110" as="geometry" />
+        </mxCell>
+        <!-- step 3 -->
+        <mxCell id="s3" value="&lt;b&gt;3. Typeset&lt;/b&gt;&lt;br&gt;container &lt;b&gt;dxjoke/tectonic-docker&lt;/b&gt;&lt;br&gt;tectonic docker-and-test-guide.tex&lt;br&gt;(XeLaTeX, downloads packages&lt;br&gt;on first use, no .aux left behind)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F1F1;strokeColor=#333333;strokeWidth=2;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="970" y="120" width="260" height="110" as="geometry" />
+        </mxCell>
+        <!-- result -->
+        <mxCell id="pdf" value="&lt;b&gt;docker-and-test-guide.pdf&lt;/b&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#DCE8F4;strokeColor=#1F4E79;strokeWidth=2.5;fontFamily=Helvetica;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="125" width="190" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e01" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;" edge="1" parent="1" source="s0" target="s1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;" edge="1" parent="1" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3p" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;" edge="1" parent="1" source="s3" target="pdf"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- files produced (row 2) -->
+        <mxCell id="f1" value="&lt;b&gt;generated/test-results.tex&lt;/b&gt;&lt;br&gt;\TRtests, \TRfailed, \TRignored,&lt;br&gt;\TRsuiteRows, \TRfailRows ...&lt;br&gt;&lt;i&gt;+ test-run.log (raw output)&lt;/i&gt;" style="shape=note;size=14;whiteSpace=wrap;html=1;fillColor=#FBE7C6;strokeColor=#8A5200;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="290" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" value="&lt;b&gt;figures/pdf/*.pdf&lt;/b&gt;&lt;br&gt;docker-containers, repo-structure,&lt;br&gt;test-layers, docs-pipeline" style="shape=note;size=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="650" y="290" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" value="&lt;b&gt;docker-and-test-guide.tex&lt;/b&gt;&lt;br&gt;\input{generated/test-results.tex}&lt;br&gt;\includegraphics{figures/pdf/...}" style="shape=note;size=14;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="970" y="290" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ef1" style="html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#8A5200;dashed=1;" edge="1" parent="1" source="s1" target="f1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ef2" style="html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;dashed=1;" edge="1" parent="1" source="s2" target="f2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ef3a" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#8A5200;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="f1" target="f3"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="460" y="410" /><mxPoint x="1100" y="410" /></Array></mxGeometry></mxCell>
+        <mxCell id="ef3b" style="html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;dashed=1;" edge="1" parent="1" source="f2" target="f3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ef3c" style="html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;dashed=1;" edge="1" parent="1" source="f3" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lbl_in" value="read by" style="text;html=1;align=center;fontFamily=Helvetica;fontSize=11;fontStyle=2;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="245" width="70" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- what changes in the PDF -->
+        <mxCell id="what" value="&lt;b&gt;What follows the latest test run&lt;/b&gt; (rebuilt every time)&lt;br&gt;&amp;bull; the five tiles of the one-page summary (suites, tests, ignored, failing) and the status bullets&lt;br&gt;&amp;bull; the run date and the commit it was run on (with a note if there were uncommitted changes)&lt;br&gt;&lt;br&gt;&lt;b&gt;What does not&lt;/b&gt;: the hand-written prose (known-issues analysis, roadmap) is a snapshot of 13/11/2026 and is edited by hand." style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;strokeWidth=1.5;align=left;verticalAlign=top;spacing=10;fontFamily=Helvetica;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="450" width="1420" height="112" as="geometry" />
+        </mxCell>
+        <mxCell id="fail_note" value="&lt;b&gt;If a test breaks:&lt;/b&gt; the run still&lt;br&gt;completes, the PDF is still built,&lt;br&gt;and the failure is listed in it.&lt;br&gt;A suite that crashes (ASan,&lt;br&gt;deadlock, 60 s timeout) shows&lt;br&gt;as &lt;i&gt;crashed&lt;/i&gt;, never as green." style="text;html=1;align=left;verticalAlign=top;fontFamily=Helvetica;fontSize=12;fontColor=#8A5200;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="250" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

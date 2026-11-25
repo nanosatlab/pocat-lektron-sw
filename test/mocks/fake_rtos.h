@@ -172,6 +172,12 @@ int  fake_rtos_suspend_all_depth(void);
 /** @brief Calls the callback of software timer @p t now, as if its period had expired. */
 void fake_rtos_fire_timer(TimerHandle_t t);
 
+/** @brief Returns the current period (ticks) of software timer @p t (last xTimerCreate / xTimerChangePeriod value). */
+TickType_t fake_rtos_timer_period(TimerHandle_t t);
+
+/** @brief Returns true if xTimerStart or xTimerChangePeriod was called on @p t. */
+bool       fake_rtos_timer_active(TimerHandle_t t);
+
 /* ---------------------------------------------------------------- deadlock detection */
 
 /**

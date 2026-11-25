@@ -1,0 +1,137 @@
+<mxfile host="drawio" version="24.7.17">
+  <!--
+    Figure: the Docker containers and what flows between them.
+    Used by docker-and-test-guide.tex (fig:bigpicture). Exported to
+    figures/pdf/docker-containers.pdf by build-docs.sh. Edit with draw.io
+    (desktop or app.diagrams.net) and rebuild the guide.
+    Palette (same as the TikZ figures): blue = flight code / firmware path,
+    ochre = test path, white = real tools on the PC, grey = hardware.
+  -->
+  <diagram id="docker-containers" name="Docker containers">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== host PC frame ===== -->
+        <mxCell id="host" value="Your PC (Windows 11): only Docker Desktop, Git and the flashing tool are installed" style="rounded=1;arcSize=2;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#555555;strokeWidth=2;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontSize=15;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1560" height="860" as="geometry" />
+        </mxCell>
+
+        <!-- ===== repository ===== -->
+        <mxCell id="repo" value="&lt;b style=&quot;font-size:15px&quot;&gt;Repository&lt;/b&gt;&lt;br&gt;&lt;i&gt;pocat-lektron-sw/ (a folder on the PC)&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;src/, include/, external/&lt;/b&gt;&lt;br&gt;flight code&lt;br&gt;&lt;br&gt;&lt;b&gt;test/&lt;/b&gt;&lt;br&gt;suites, fakes, Unity&lt;br&gt;&lt;br&gt;&lt;b&gt;Dockerfile&lt;/b&gt; + build.sh&lt;br&gt;&lt;b&gt;Dockerfile.test&lt;/b&gt; + run_tests.sh&lt;br&gt;&lt;br&gt;&lt;b&gt;flash.sh&lt;/b&gt;, .vscode/tasks.json&lt;br&gt;&lt;br&gt;&lt;b&gt;docs/testing/overview/&lt;/b&gt;&lt;br&gt;this guide + build-docs.sh&lt;br&gt;&lt;br&gt;&lt;i&gt;generated, ignored by git:&lt;/i&gt;&lt;br&gt;build/, build_test/, generated/" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;fillColor=#F1F1F1;strokeColor=#333333;strokeWidth=1.5;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="270" height="560" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Docker Desktop ===== -->
+        <mxCell id="dd" value="Docker Desktop (a small Linux VM)" style="rounded=1;arcSize=2;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontSize=14;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="420" y="60" width="760" height="800" as="geometry" />
+        </mxCell>
+
+        <!-- container A: firmware -->
+        <mxCell id="ca" value="Container from image &lt;b&gt;pocat-build-env&lt;/b&gt; (2.14 GB)" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#DCE8F4;strokeColor=#1F4E79;strokeWidth=2.5;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontSize=13;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="450" y="100" width="700" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="ca_img" value="&lt;b&gt;Image&lt;/b&gt;&lt;br&gt;Ubuntu 22.04&lt;br&gt;Arm GNU Toolchain 13.2.rel1&lt;br&gt;in /opt/arm-gcc&lt;br&gt;ENV POCAT_PSK (dev key)&lt;br&gt;&lt;br&gt;ends with&lt;br&gt;&lt;font face=&quot;Courier New&quot;&gt;CMD bash build.sh&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F4E79;fontColor=#FFFFFF;strokeColor=#0E2A44;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="470" y="135" width="200" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="ca_run" value="&lt;b&gt;build.sh&lt;/b&gt; runs in /app&lt;br&gt;1. check POCAT_PSK (32 hex digits)&lt;br&gt;2. psk.h.in &amp;rarr; include/subsystems/comms/psk.h&lt;br&gt;3. --clean? rm -rf build&lt;br&gt;4. cmake with the ARM toolchain file&lt;br&gt;5. make -j4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F4E79;strokeWidth=1.5;align=left;spacingLeft=8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="700" y="135" width="430" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="ca_cmd" value="docker run --rm -v &quot;${PWD}:/app&quot; pocat-build-env&lt;br&gt;&lt;i style=&quot;font-family:Helvetica&quot;&gt;flags: add &lt;/i&gt;bash build.sh --clean --mock --test-instr" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#999999;align=left;spacingLeft=8;fontSize=11;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="700" y="260" width="430" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ca1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#1F4E79;" edge="1" parent="1" source="ca_img" target="ca_run">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- container B: tests -->
+        <mxCell id="cb" value="Container from image &lt;b&gt;pocat-tests&lt;/b&gt; (641 MB)" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FBE7C6;strokeColor=#8A5200;strokeWidth=2.5;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontSize=13;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="450" y="360" width="700" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="cb_img" value="&lt;b&gt;Image&lt;/b&gt;&lt;br&gt;Ubuntu 22.04&lt;br&gt;build-essential (native gcc)&lt;br&gt;cmake&lt;br&gt;&lt;br&gt;ends with&lt;br&gt;&lt;font face=&quot;Courier New&quot;&gt;ENTRYPOINT&lt;br&gt;bash run_tests.sh&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8A5200;fontColor=#FFFFFF;strokeColor=#5A3500;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="470" y="395" width="200" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="cb_run" value="&lt;b&gt;run_tests.sh&lt;/b&gt; runs in /app&lt;br&gt;1. mkdir build_test, drop CMakeCache.txt&lt;br&gt;2. cmake -DBUILD_TESTING=ON (no ARM toolchain)&lt;br&gt;3. make pocat_tests (Unity + 15 suites, ASan + UBSan)&lt;br&gt;4. ctest, or one suite binary, by argument" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8A5200;strokeWidth=1.5;align=left;spacingLeft=8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="700" y="395" width="430" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cb_cmd" value="docker run --rm -v &quot;${PWD}:/app&quot; pocat-tests [args]&lt;br&gt;&lt;i style=&quot;font-family:Helvetica&quot;&gt;args go straight to run_tests.sh: &lt;/i&gt;--list, --label obc, test_obc -f x" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#999999;align=left;spacingLeft=8;fontSize=11;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="700" y="520" width="430" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cb1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#8A5200;" edge="1" parent="1" source="cb_img" target="cb_run">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- container C: documentation -->
+        <mxCell id="cc" value="Documentation containers (only for build-docs.sh)" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#555555;strokeWidth=1.5;dashed=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontSize=13;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="450" y="620" width="700" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="cc_t" value="&lt;b&gt;pocat-tests&lt;/b&gt; again, with&lt;br&gt;tools/collect-test-results.sh&lt;br&gt;&lt;i&gt;runs every suite and writes&lt;br&gt;generated/test-results.tex&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE7C6;strokeColor=#8A5200;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="470" y="660" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cc_d" value="&lt;b&gt;rlespinasse/drawio-export&lt;/b&gt;&lt;br&gt;&lt;i&gt;figures/*.drawio&lt;br&gt;&amp;rarr; figures/pdf/*.pdf&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F1F1;strokeColor=#333333;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="700" y="660" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cc_x" value="&lt;b&gt;dxjoke/tectonic-docker&lt;/b&gt;&lt;br&gt;&lt;i&gt;XeLaTeX: .tex + figures&lt;br&gt;+ test results &amp;rarr; PDF&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F1F1;strokeColor=#333333;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="930" y="660" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cc1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;" edge="1" parent="1" source="cc_t" target="cc_d">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cc2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;" edge="1" parent="1" source="cc_d" target="cc_x">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cc_note" value="run in this order by build-docs.sh" style="text;html=1;align=center;fontSize=11;fontStyle=2;fontColor=#555555;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="470" y="790" width="660" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- bind mounts from the repo -->
+        <mxCell id="m1" value="-v &quot;${PWD}:/app&quot;" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeWidth=2;strokeColor=#333333;fontFamily=Courier New;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.15;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="repo" target="ca">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="-v &quot;${PWD}:/app&quot;" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeWidth=2;strokeColor=#333333;fontFamily=Courier New;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.6;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="repo" target="cb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="-v (same repo)" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeWidth=2;strokeColor=#333333;dashed=1;fontFamily=Courier New;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.95;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="repo" target="cc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mnote" value="The repo is &lt;b&gt;mounted&lt;/b&gt;, not copied:&lt;br&gt;containers read and write&lt;br&gt;the PC folder directly.&lt;br&gt;--rm deletes each container&lt;br&gt;when it finishes." style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontFamily=Helvetica;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="50" y="660" width="270" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ===== outputs (on the PC) ===== -->
+        <mxCell id="elf" value="&lt;b&gt;build/pocat_lektron_sw.elf&lt;/b&gt;&lt;br&gt;firmware for the Cortex-M4F&lt;br&gt;(82 392 bytes of code)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A7C6E2;strokeColor=#1F4E79;strokeWidth=1.5;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="110" width="320" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="fl" value="&lt;b&gt;flash.sh&lt;/b&gt;, VS Code task or &lt;b&gt;F5&lt;/b&gt;&lt;br&gt;runs on the PC, &lt;i&gt;outside&lt;/i&gt; Docker:&lt;br&gt;a container can't see the USB port" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="210" width="320" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nuc" value="Nucleo-L476RG&lt;br&gt;ST-LINK (USB) &amp;rarr; SWD &amp;rarr; STM32L476RG" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBEBEB;strokeColor=#808080;fontStyle=2;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="310" width="320" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="res" value="&lt;b&gt;Test results&lt;/b&gt; (terminal)&lt;br&gt;PASS / FAIL / IGNORE per test,&lt;br&gt;ctest summary and exit code&lt;br&gt;build_test/ holds the binaries" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0B65E;strokeColor=#8A5200;strokeWidth=1.5;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="430" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="pdf" value="&lt;b&gt;docker-and-test-guide.pdf&lt;/b&gt;&lt;br&gt;with the draw.io figures and&lt;br&gt;the numbers of the latest test run" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=1.5;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="690" width="320" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="o1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#1F4E79;exitX=1;exitY=0.2;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ca" target="elf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="o2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;" edge="1" parent="1" source="elf" target="fl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="o3" value="USB" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=#333333;fontSize=11;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="fl" target="nuc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="o4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#8A5200;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="cb" target="res">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="o5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#333333;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="cc_x" target="pdf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

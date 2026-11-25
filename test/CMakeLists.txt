@@ -4,6 +4,7 @@ project(pocat_tests C)
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(SRC_DIR  ${CMAKE_SOURCE_DIR}/src)
 option(POCAT_TEST_SANITIZERS "Build host tests with ASan+UBSan" ON)
+set(POCAT_TEST_TIMEOUT 60 CACHE STRING "Per-suite ctest timeout in seconds")
 
 # 1. Unity, compiled once as a library (command-line args enable -l/-f/-n/-x, see support/pocat_test_main.h)
 add_library(unity STATIC framework/unity/unity.c)
@@ -44,6 +45,9 @@ function(pocat_add_suite NAME)
     target_link_options(${NAME} PRIVATE -fsanitize=address,undefined)
   endif()
   add_test(NAME ${NAME} COMMAND ${NAME})
+  # A hang in included production code (a for(;;) or a wait on a hardware flag) fails the suite
+  # after POCAT_TEST_TIMEOUT seconds instead of ctest's 1500 s default. Suites run in well under 1 s.
+  set_tests_properties(${NAME} PROPERTIES TIMEOUT ${POCAT_TEST_TIMEOUT})
   if(S_LABEL)
     set_tests_properties(${NAME} PROPERTIES LABELS "${S_LABEL}")
   endif()
@@ -63,3 +67,34 @@ pocat_add_suite(test_state_machine LABEL obc              # suite #includes stat
           mocks/fake_clock.c mocks/fake_obdh_requests.c)
 pocat_add_suite(test_comms_frame LABEL comms              # suite #includes auth.c (static sha256/hmac)
   SOURCES ${SRC_DIR}/subsystems/comms/frame.c ${SRC_DIR}/subsystems/comms/dedup.c)
+pocat_add_suite(test_health LABEL obc)                    # suite #includes health.c
+pocat_add_suite(test_obdh LABEL obdh                      # suite #includes obdh.c, obdh_requests.c, task_management.c, health.c
+  SOURCES ${SRC_DIR}/utils/notifications.c mocks/stub_task_entries.c mocks/fake_flash_driver.c)
+pocat_add_suite(test_tc_handler LABEL comms               # TC catalogue; #includes tc_handler.c, lora_cfg.c, tm_builder.c, task_management.c, health.c
+  INCLUDES ${CMAKE_SOURCE_DIR}/external/RadioLib/src      # TypeDef.h, needed by radiolib_wrapper.h (included by lora_cfg.c)
+  SOURCES ${SRC_DIR}/utils/notifications.c ${SRC_DIR}/subsystems/comms/frame.c ${SRC_DIR}/subsystems/comms/auth.c
+          mocks/stub_task_entries.c mocks/fake_obdh_requests.c mocks/fake_comms_env.c)
+pocat_add_suite(test_lora_cfg LABEL comms                 # #includes lora_cfg.c; timing.c linked
+  INCLUDES ${CMAKE_SOURCE_DIR}/external/RadioLib/src
+  SOURCES ${SRC_DIR}/subsystems/comms/timing.c mocks/fake_comms_env.c)
+pocat_add_suite(test_obc LABEL obc                        # #includes obc.c, state_machine.c, task_management.c, health.c
+  SOURCES ${SRC_DIR}/utils/notifications.c mocks/stub_task_entries.c support/sim_tasks.c
+          mocks/fake_clock.c mocks/fake_obdh_requests.c)
+pocat_add_suite(test_subsystem_tasks LABEL subsys         # #includes eps.c, adcs.c, payload.c, task_management.c, health.c
+  SOURCES ${SRC_DIR}/utils/notifications.c mocks/stub_task_entries.c mocks/fake_obdh_requests.c)
+pocat_add_suite(test_beacon LABEL comms                   # #includes beacon.c, ht_handling.c, lora_cfg.c, task_management.c, health.c
+  INCLUDES ${CMAKE_SOURCE_DIR}/external/RadioLib/src
+  SOURCES ${SRC_DIR}/utils/notifications.c ${SRC_DIR}/subsystems/comms/frame.c ${SRC_DIR}/subsystems/comms/auth.c
+          mocks/stub_task_entries.c mocks/fake_obdh_requests.c mocks/fake_comms_env.c mocks/mock_pocket_plus.c)
+pocat_add_suite(test_saw LABEL comms                      # #includes saw.c, lora_cfg.c
+  INCLUDES ${CMAKE_SOURCE_DIR}/external/RadioLib/src
+  SOURCES ${SRC_DIR}/subsystems/comms/timing.c ${SRC_DIR}/subsystems/comms/cad.c
+          ${SRC_DIR}/subsystems/comms/frame.c ${SRC_DIR}/subsystems/comms/auth.c
+          mocks/fake_comms_env.c mocks/fake_link.c)
+pocat_add_suite(test_arq LABEL comms                      # #includes arq.c, lora_cfg.c, task_management.c, health.c
+  INCLUDES ${CMAKE_SOURCE_DIR}/external/RadioLib/src
+  SOURCES ${SRC_DIR}/utils/notifications.c ${SRC_DIR}/subsystems/comms/timing.c ${SRC_DIR}/subsystems/comms/cad.c
+          ${SRC_DIR}/subsystems/comms/frame.c ${SRC_DIR}/subsystems/comms/auth.c
+          mocks/stub_task_entries.c mocks/fake_obdh_requests.c mocks/fake_comms_env.c mocks/fake_link.c)
+pocat_add_suite(test_ht_compression LABEL comms           # #includes ht_handling.c; real POCKET+ (compression.c) linked, real flash.h
+  SOURCES ${SRC_DIR}/utils/compression.c mocks/fake_obdh_requests.c)

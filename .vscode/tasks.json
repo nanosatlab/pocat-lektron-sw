@@ -1,0 +1,49 @@
+{
+    // Shared VS Code tasks (Terminal > Run Task...). No machine-specific paths:
+    // the builds run in Docker and flash.sh finds the flashing tool by itself.
+    // Build the Docker images once first (see the README):
+    //   docker build -t pocat-build-env .
+    //   docker build -t pocat-tests -f Dockerfile.test .
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "PoCAT: build firmware (Docker)",
+            "type": "process",
+            "command": "docker",
+            "args": ["run", "--rm", "-v", "${workspaceFolder}:/app", "pocat-build-env"],
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": []
+        },
+        {
+            "label": "PoCAT: clean build firmware (Docker)",
+            "type": "process",
+            "command": "docker",
+            "args": ["run", "--rm", "-v", "${workspaceFolder}:/app", "pocat-build-env", "bash", "build.sh", "--clean"],
+            "problemMatcher": []
+        },
+        {
+            "label": "PoCAT: flash Nucleo",
+            "type": "process",
+            "command": "bash",
+            "args": ["flash.sh"],
+            // On Windows plain "bash" can resolve to WSL, so use Git Bash explicitly.
+            "windows": { "command": "C:\\Program Files\\Git\\bin\\bash.exe" },
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": []
+        },
+        {
+            "label": "PoCAT: build + flash",
+            "dependsOn": ["PoCAT: build firmware (Docker)", "PoCAT: flash Nucleo"],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "PoCAT: run host tests (Docker)",
+            "type": "process",
+            "command": "docker",
+            "args": ["run", "--rm", "-v", "${workspaceFolder}:/app", "pocat-tests"],
+            "group": "test",
+            "problemMatcher": []
+        }
+    ]
+}
