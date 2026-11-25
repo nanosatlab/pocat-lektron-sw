@@ -37,7 +37,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "flash.h" /* HT_BASE_ADDR / HT_REGION_SIZE (flash memory map) */
+#include "flash_map.h" /* FLASH_REGION_HT / FLASH_HT_SIZE (flash memory map) */
 
 #define POCKET_PLUS_UPDATE_RATE 12 /**< POCKET+ positive-mask update rate (packets between mask history refreshes). Must match the ground decompressor's setting -- NOT a block-size knob. */
 
@@ -49,16 +49,15 @@
 #define HT_SLOT_PAYLOAD_SIZE (HT_SLOT_SIZE - HT_SLOT_HEADER_SIZE)
 #define HT_SLOT_MAX_BEACONS  (1u + (HT_SLOT_PAYLOAD_SIZE - HT_STORED_PACKET_SIZE)) /**< Physical bound on a block's beacon count: raw reference + at least 1 byte per compressed packet. */
 
-#define HT_SLOTS_PER_PAGE    (FLASH_PAGE_SIZE / HT_SLOT_SIZE)
-#define HT_NUM_SLOTS         (HT_REGION_SIZE / HT_SLOT_SIZE) /**< Derived from the region reserved in flash.h. */
+#define HT_SLOTS_PER_PAGE    (FLASH_MAP_PAGE_SIZE / HT_SLOT_SIZE)
+#define HT_NUM_SLOTS         (FLASH_HT_SIZE / HT_SLOT_SIZE) /**< Derived from the HT region of flash_map.h. */
 
 #define HT_FORMAT_POCKET_V3  0x03u /**< Slot format marker (V3: compressed packets stored without length prefixes); erased flash reads 0xFF. */
 
-_Static_assert((FLASH_PAGE_SIZE % HT_SLOT_SIZE) == 0u, "HT_SLOT_SIZE must divide the flash page size exactly");
-_Static_assert((HT_BASE_ADDR % FLASH_PAGE_SIZE) == 0u, "HT_BASE_ADDR must be flash page aligned");
-_Static_assert((HT_REGION_SIZE % FLASH_PAGE_SIZE) == 0u, "HT_REGION_SIZE must be a whole number of flash pages");
-_Static_assert(HT_REGION_SIZE >= FLASH_PAGE_SIZE, "HT region must be at least one flash page");
-_Static_assert((HT_BASE_ADDR >= 0x08000000u) && ((HT_BASE_ADDR + HT_REGION_SIZE) <= 0x08100000u), "HT region must lie inside the 1 MB internal flash");
+/* flash_map.h checks the region's address and alignment; these are the properties the queue logic relies on. */
+_Static_assert((FLASH_MAP_PAGE_SIZE % HT_SLOT_SIZE) == 0u, "HT_SLOT_SIZE must divide the flash page size exactly");
+_Static_assert((FLASH_HT_SIZE % FLASH_MAP_PAGE_SIZE) == 0u, "the HT region must be a whole number of flash pages");
+_Static_assert(FLASH_HT_SIZE >= FLASH_MAP_PAGE_SIZE, "HT region must be at least one flash page");
 _Static_assert(HT_SLOT_MAX_BEACONS <= 255u, "block beacon count must fit the uint8_t header field");
 _Static_assert((HT_STORED_PACKET_SIZE % 4u) == 0u, "stored packets must be whole 32-bit words (POCKET+ and the word packing require it)");
 _Static_assert(HT_BEACON_SIZE <= HT_STORED_PACKET_SIZE, "the beacon body must fit the stored packet");

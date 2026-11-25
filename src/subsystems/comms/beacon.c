@@ -38,11 +38,11 @@ static uint8_t build_beacon_body(uint8_t *body)
 
     uint32_t epoch = time_get_unix();
     uint8_t obc_state = 0;
-    obdh_read_request(CURRENT_STATE_ADDR, &obc_state, 1);
+    obdh_read_old_request(CURRENT_STATE_ADDR, &obc_state, 1);
 
     /* Uptime = current time − persisted boot time (§6.6 UPTIME_S, seconds). */
     uint32_t boot_time = 0;
-    obdh_read_request(BOOT_TIME_ADDR, (uint8_t *)&boot_time, sizeof(boot_time));
+    obdh_read_old_request(BOOT_TIME_ADDR, (uint8_t *)&boot_time, sizeof(boot_time));
     uint32_t uptime_s = (epoch >= boot_time) ? (epoch - boot_time) : 0u;
 
     body[0]  = AIR_BODY_VER;
