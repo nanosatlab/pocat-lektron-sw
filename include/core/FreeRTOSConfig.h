@@ -66,7 +66,7 @@
 #define configSUPPORT_STATIC_ALLOCATION          1
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
 #define configKERNEL_PROVIDED_STATIC_MEMORY      1
-#define configTASK_NOTIFICATION_ARRAY_ENTRIES    2   /* idx 0 = general signalling, idx 1 = OBDH flash completion */
+#define configTASK_NOTIFICATION_ARRAY_ENTRIES    1   /* idx 0 = general signalling; OBDH answers through obdh_answer_queues */
 #define configUSE_IDLE_HOOK                      0
 #define configUSE_TICK_HOOK                      0
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )

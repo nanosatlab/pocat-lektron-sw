@@ -1,19 +1,17 @@
 /**
  * @file flash_map.h
- * @brief Internal flash memory map: where every region lives, with compile-time checks.
+ * @brief Internal flash memory map
  * @date 2026-10-27
  *
  * @details
  * The 1 MB internal flash has two 512 KB banks of 2 KB pages. Code and data are
- * kept in different banks, so erasing a data page never stalls the code
- * (docs/FLASH-USAGE-SPECIFICATION.md §5.3).
+ * kept in different banks, so erasing a data page never stalls the code.
  *
- * | Address    | Size   | Bank | Content                                  |
- * |------------|--------|------|------------------------------------------|
- * | 0x08000000 | 256 KB | 1    | Code                                     |
- * | 0x08040000 | 256 KB | 1    | Reserved: backup program image           |
- * | 0x08080000 | 256 KB | 2    | Reserved: staging for an uploaded image  |
- * | 0x080C0000 | 256 KB | 2    | Data area                                |
+ *     Address     Size    Bank  Content
+ *     0x08000000  256 KB  1     Code
+ *     0x08040000  256 KB  1     Reserved for a backup program image
+ *     0x08080000  256 KB  2     Reserved for staging uploaded images
+ *     0x080C0000  256 KB  2     Data area
  *
  * The data area has two parts:
  * - The packed part, from 0x080C0000 up. Its sizes are placeholders until each
@@ -21,20 +19,16 @@
  *   changing one size moves only the regions after it, into the free space.
  * - The fixed block, from 0x080F0000 to the end of flash. Its addresses never move.
  *
- * To change a size, edit its *_SIZE line and increase FLASH_MAP_VERSION. The
- * checks at the end of this file stop the build if regions overlap, split a
- * page, or leave the data area. The map is frozen before flight acceptance.
+ * To change a size, edit its *_SIZE line. The checks at the end of this file
+ * stop the build if regions overlap, split a page, or leave the data area.
  *
- * Flash addresses belong in this file only (spec FLS-GEN-050).
+ * Flash addresses belong in this file only.
  */
 
 #ifndef INC_FLASH_MAP_H_
 #define INC_FLASH_MAP_H_
 
-/** @brief Version of this layout, reported in telemetry. Increase it on every change below. */
-#define FLASH_MAP_VERSION           1u
-
-/* ---- Chip geometry (RM0351) ---- */
+/* ---- Chip geometry ---- */
 
 #define FLASH_MAP_PAGE_SIZE         0x00000800u   /**< Erase unit: 2 KB. */
 #define FLASH_MAP_BANK2_START       0x08080000u   /**< First address of bank 2. */
@@ -55,7 +49,7 @@
 /* Ordered by how certain each size is, so a size that is still a guess never moves a settled region. */
 
 #define FLASH_HT_BASE               FLASH_DATA_BASE
-#define FLASH_HT_SIZE               0x00010000u   /**< Telemetry history, 64 KB: set by the wear analysis (spec §8). */
+#define FLASH_HT_SIZE               0x00010000u   /**< Telemetry history, 64 KB. */
 #define FLASH_PAYLOAD_BASE          (FLASH_HT_BASE + FLASH_HT_SIZE)
 #define FLASH_PAYLOAD_SIZE          0x00010000u   /**< Payload results, 64 KB: placeholder, TBC by Payload. */
 #define FLASH_FREE_BASE             (FLASH_PAYLOAD_BASE + FLASH_PAYLOAD_SIZE)
@@ -76,41 +70,33 @@
 
 /* ---- Region table ---- */
 
-/** @brief Who writes a region. */
+/** @brief Whether the driver lets the flight software program and erase a region. */
 typedef enum {
-    FLASH_OWNER_OBDH,       /**< Parameter store, on behalf of every subsystem. */
-    FLASH_OWNER_OBC,
-    FLASH_OWNER_COMMS,
-    FLASH_OWNER_PAYLOAD,
-    FLASH_OWNER_GROUND      /**< Programmed with the ST-Link before flight; the software only reads it. */
-} flash_owner_t;
-
-/** @brief How a region is written. */
-typedef enum {
-    FLASH_STORE_PARAM,      /**< Records appended; when a half fills, the newest of each ID moves to the other half. */
-    FLASH_STORE_RING,       /**< Fixed slots, oldest overwritten; one erase per page per lap. */
-    FLASH_STORE_ONCE        /**< Written once, then only read. */
-} flash_store_t;
+    FLASH_ACCESS_READ_ONLY,     /**< Program and erase are refused: the region is programmed on the ground with the ST-Link. */
+    FLASH_ACCESS_READ_WRITE     /**< Program and erase are allowed. */
+} flash_access_t;
 
 /**
- * @brief Every data region in address order, as X(id, base, size, owner, store).
- * @details Free space, spare space and the reserved areas are not regions:
- *          nothing in flight may write there.
+ * @brief Every data region in address order, as X(id, base, size, access).
+ * @details Free space, spare space and the reserved areas are not regions, so
+ *          nothing can write there in flight. Each row gets the page and bounds
+ *          checks below automatically; the overlap checks are written by hand,
+ *          so a new row needs its own.
  */
 #define FLASH_REGIONS(X) \
-    X(FLASH_REGION_HT,      FLASH_HT_BASE,      FLASH_HT_SIZE,      FLASH_OWNER_COMMS,   FLASH_STORE_RING)  \
-    X(FLASH_REGION_PAYLOAD, FLASH_PAYLOAD_BASE, FLASH_PAYLOAD_SIZE, FLASH_OWNER_PAYLOAD, FLASH_STORE_RING)  \
-    X(FLASH_REGION_PARAM_B, FLASH_PARAM_B_BASE, FLASH_PARAM_SIZE,   FLASH_OWNER_OBDH,    FLASH_STORE_PARAM) \
-    X(FLASH_REGION_OBC_LOG, FLASH_OBC_LOG_BASE, FLASH_OBC_LOG_SIZE, FLASH_OWNER_OBC,     FLASH_STORE_RING)  \
-    X(FLASH_REGION_PARAM_A, FLASH_PARAM_A_BASE, FLASH_PARAM_SIZE,   FLASH_OWNER_OBDH,    FLASH_STORE_PARAM) \
-    X(FLASH_REGION_UNIT,    FLASH_UNIT_BASE,    FLASH_UNIT_SIZE,    FLASH_OWNER_GROUND,  FLASH_STORE_ONCE)
+    X(FLASH_REGION_HT,      FLASH_HT_BASE,      FLASH_HT_SIZE,      FLASH_ACCESS_READ_WRITE) \
+    X(FLASH_REGION_PAYLOAD, FLASH_PAYLOAD_BASE, FLASH_PAYLOAD_SIZE, FLASH_ACCESS_READ_WRITE) \
+    X(FLASH_REGION_PARAM_B, FLASH_PARAM_B_BASE, FLASH_PARAM_SIZE,   FLASH_ACCESS_READ_WRITE) \
+    X(FLASH_REGION_OBC_LOG, FLASH_OBC_LOG_BASE, FLASH_OBC_LOG_SIZE, FLASH_ACCESS_READ_WRITE) \
+    X(FLASH_REGION_PARAM_A, FLASH_PARAM_A_BASE, FLASH_PARAM_SIZE,   FLASH_ACCESS_READ_WRITE) \
+    X(FLASH_REGION_UNIT,    FLASH_UNIT_BASE,    FLASH_UNIT_SIZE,    FLASH_ACCESS_READ_ONLY)
 
 /** @brief Region identifiers, in address order. */
 typedef enum {
-#define FLASH_REGION_ID(id, base, size, owner, store) id,
+#define FLASH_REGION_ID(id, base, size, access) id,
     FLASH_REGIONS(FLASH_REGION_ID)
 #undef FLASH_REGION_ID
-    FLASH_REGION_COUNT
+    FLASH_REGION_COUNT      /**< Number of regions; not a region itself. */
 } flash_region_id_t;
 
 /* ---- Compile-time checks ---- */
@@ -123,7 +109,7 @@ _Static_assert(FLASH_STAGING_BASE + FLASH_STAGING_SIZE == FLASH_DATA_BASE, "the 
 _Static_assert(FLASH_DATA_BASE + FLASH_DATA_SIZE == FLASH_MAP_END, "the data area must end at the end of flash");
 
 /* Every region: whole pages, inside the data area. */
-#define FLASH_REGION_CHECK(id, base, size, owner, store) \
+#define FLASH_REGION_CHECK(id, base, size, access) \
     _Static_assert((base) % FLASH_MAP_PAGE_SIZE == 0u, #id ": base is not on a page boundary"); \
     _Static_assert((size) > 0u && (size) % FLASH_MAP_PAGE_SIZE == 0u, #id ": size is not a whole number of pages"); \
     _Static_assert((base) >= FLASH_DATA_BASE && (base) + (size) <= FLASH_MAP_END, #id ": lies outside the data area");

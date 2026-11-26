@@ -8,8 +8,8 @@
 ** @brief       : Linker script for STM32L476RGTx Device from STM32L4 series
 **                      1024KBytes FLASH, of which the program image may use
 **                      only the first 256KBytes (FLASH_CODE_SIZE in
-**                      include/utils/flash_map.h); the rest is reserved
-**                      space and the data area
+**                      include/subsystems/obdh/flash_map.h); the rest is
+**                      reserved space and the data area
 **                      96KBytes RAM
 **                      32KBytes RAM2
 **
@@ -46,8 +46,9 @@ _Min_Heap_Size = 0x200; /* required amount of heap */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Memories definition */
-/* FLASH is the code area of include/utils/flash_map.h (FLASH_CODE_BASE, FLASH_CODE_SIZE):
-   a larger image fails to link instead of spilling into the reserved and data areas. */
+/* FLASH is the code area of include/subsystems/obdh/flash_map.h (FLASH_CODE_BASE,
+   FLASH_CODE_SIZE): a larger image fails to link instead of spilling into the
+   reserved and data areas. */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 96K

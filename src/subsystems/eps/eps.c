@@ -9,8 +9,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "health.h"
-#include "flash.h"
-#include "obdh_requests.h"
+#include "param_store.h"
 #include "notifications.h"
 #include "task_management.h"
 
@@ -62,12 +61,14 @@ static void process_eps(void)
     deferred_notifications = 0;
 
     if (notifications & N_EPS_NEW_THRESHOLDS) {
-        uint8_t thresholds[3] = {0}; // TODO define default theshholds in case of read failure
-        obdh_read_old_request(EPS_THRESHOLDS_ADDR, thresholds, 3);
-        // Thresholds are now in the thresholds array, in the order: 
-        // thresholds[0]: nominal
-        // thresholds[1]: contingency
-        // thresholds[2]: sunsafe
+        // A parameter never written holds its PARAM_TABLE default (TBD with the EPS owner)
+        uint8_t thresholds[3];
+        if (param_get(PARAM_EPS_THRESHOLDS, thresholds, sizeof(thresholds)) == HAL_OK) {
+            // Thresholds are now in the thresholds array, in the order:
+            // thresholds[0]: nominal
+            // thresholds[1]: contingency
+            // thresholds[2]: sunsafe
+        }
     }
 
     if (notifications & N_EPS_ENABLE_AUTO_HEAT) {
