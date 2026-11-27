@@ -125,7 +125,7 @@ void test_global_pause_resume_bits_do_not_collide_with_task_bits(void)
         N_ADCS_DESIRED_STATE_IDLE | N_ADCS_DESIRED_STATE_DETUMBLING | N_ADCS_DESIRED_STATE_NADIR |
         N_ADCS_NEW_CALIBRATION | N_ADCS_NEW_TLE |
         N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL | N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY |
-        N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE | N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL |
+        N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL |
         N_OBC_UPDATE_TIME | N_OBC_HARD_REBOOT | N_OBC_SOFT_REBOOT | N_OBC_PERIPHERALS_REBOOT |
         N_COMMS_NEW_CONFIG | N_COMMS_NEW_PARAMS | N_COMMS_STOP_RF | N_COMMS_RESUME_RF | N_COMMS_TRANSMIT_BEACON |
         N_TRANSCEIVER_RADIO_IRQ_BIT | N_TRANSCEIVER_TX_READY_BIT | N_TRANSCEIVER_ARQ_DL_BIT |
@@ -140,15 +140,15 @@ void test_global_pause_resume_bits_do_not_collide_with_task_bits(void)
 }
 
 /**
- * @brief `N_OBC_EXIT_STATE_GROUP_MASK` contains exactly the four state-change bits (NOMINAL, CONTINGENCY, SUNSAFE, SURVIVAL).
+ * @brief `N_OBC_EXIT_STATE_GROUP_MASK` contains exactly the three state-change bits (NOMINAL, CONTINGENCY, SURVIVAL).
  * @details `obc.c` and `state_machine.c` use this mask to decide whether a
  * notification asks for a state change. A missing bit would ignore one
  * transition; an extra bit would treat, for example, a time update as a
  * state change.
  */
-void test_exit_state_group_mask_is_four_bits(void)
+void test_exit_state_group_mask_is_three_bits(void)
 {
-    TEST_ASSERT_EQUAL_HEX32(0x0Fu, N_OBC_EXIT_STATE_GROUP_MASK);
+    TEST_ASSERT_EQUAL_HEX32(0x0Bu, N_OBC_EXIT_STATE_GROUP_MASK);
 }
 
 /**
@@ -265,7 +265,7 @@ int main(int argc, char **argv)
     POCAT_RUN_TEST(test_wait_returns_pending_bits_and_drains_them);
     POCAT_RUN_TEST(test_set_bits_notifications_accumulate);
     POCAT_RUN_TEST(test_global_pause_resume_bits_do_not_collide_with_task_bits);
-    POCAT_RUN_TEST(test_exit_state_group_mask_is_four_bits);
+    POCAT_RUN_TEST(test_exit_state_group_mask_is_three_bits);
     POCAT_RUN_TEST(test_tm_task_bits_equal_ack_event_bits);
     POCAT_RUN_TEST(test_fake_queue_is_fifo_and_reports_full);
     POCAT_RUN_TEST(test_fake_event_wait_returns_bits_and_clears);

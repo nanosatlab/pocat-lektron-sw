@@ -31,11 +31,11 @@
 #include "clock.h"
 
 /* ---------- OBC state enum (§6.6) ---------- */
+/* 0x03 is not used: the other values stay as the ground decodes them. */
 typedef enum {
     OBC_STATE_INIT        = 0x00,
     OBC_STATE_NOMINAL     = 0x01,
     OBC_STATE_CONTINGENCY = 0x02,
-    OBC_STATE_SUNSAFE     = 0x03,
     OBC_STATE_SURVIVAL    = 0x04,
     OBC_STATE_SAFE_HOLD   = 0x05,
 } obc_state_t;
@@ -60,9 +60,9 @@ bool state_machine_boot(void); // Todo: change name to something more descriptiv
  * - Any other caller changes nothing.
  * - In Init: moves to the next step when its time comes. N_OBC_PING_RECEIVED
  *   ends Init, for NOMINAL, at the first-contact step only; a PING before it
- *   is dropped. A request for a lower-power state (CONTINGENCY, SUNSAFE or
- *   SURVIVAL) is kept, and carried out right after Init ends. Any other
- *   state request is dropped.
+ *   is dropped. A request for a lower-power state (CONTINGENCY or SURVIVAL)
+ *   is kept, and carried out right after Init ends. Any other state request
+ *   is dropped.
  * - After Init, a request for the current state changes nothing.
  * - A change is refused when OBDH does not acknowledge the pause: the state
  *   stays, the failure is counted, and the state machine keeps the request.

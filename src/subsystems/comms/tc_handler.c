@@ -215,10 +215,6 @@ void tc_process(const AirFrame_t *frame)
         request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY);
         break;
 
-    case TC_TRANSIT_TO_SUNSAFE:
-        request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE);
-        break;
-
     case TC_TRANSIT_TO_SURVIVAL:
         request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL);
         break;
@@ -266,7 +262,7 @@ void tc_process(const AirFrame_t *frame)
         break;
 
     case TC_UPLOAD_EPS_TH:
-        /* params: p[2:4] = NOMINAL, CONTINGENCY, SUNSAFE thresholds */
+        /* params: p[2:4] = NOMINAL, CONTINGENCY, SURVIVAL thresholds */
         if (store_tc_param(frame, PARAM_EPS_THRESHOLDS, 3u)) {
             notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_NEW_THRESHOLDS);
         }

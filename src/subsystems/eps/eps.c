@@ -67,7 +67,7 @@ static void process_eps(void)
             // Thresholds are now in the thresholds array, in the order:
             // thresholds[0]: nominal
             // thresholds[1]: contingency
-            // thresholds[2]: sunsafe
+            // thresholds[2]: survival
         }
     }
 

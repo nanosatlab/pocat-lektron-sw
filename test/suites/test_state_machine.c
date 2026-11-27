@@ -97,8 +97,7 @@
 #define SET_INIT_FIRST_CONTACT (TM_TASK_ALL & ~TM_TASK_PAYLOAD)                                               /**< Init's first contact: everything but the payload. */
 #define SET_NOMINAL            (TM_TASK_ALL)                                                                  /**< Nominal mode: everything runs. */
 #define SET_CONTINGENCY        (TM_TASK_ALL & ~TM_TASK_PAYLOAD)                                               /**< Contingency mode: payload off. */
-#define SET_SUNSAFE            (TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_OBDH | TM_TASK_TRANSCEIVER | TM_TASK_BEACON) /**< Sun-safe mode: payload and ADCS off. */
-#define SET_SURVIVAL           (TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_OBDH | TM_TASK_TRANSCEIVER)                  /**< Survival mode: also no beacon. */
+#define SET_SURVIVAL           (TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_OBDH | TM_TASK_TRANSCEIVER)            /**< Survival mode: payload, ADCS and beacon off. */
 /** @} */
 
 #define RADIO_TASKS (TM_TASK_COMMS | TM_TASK_TRANSCEIVER | TM_TASK_BEACON)   /**< The tasks that receive or emit. */
@@ -316,8 +315,8 @@ static void start_in(obc_state_t state)
 
 /**
  * @brief Each state maps to the documented clock frequency.
- * @details INIT and SURVIVAL run at 2 MHz and SUNSAFE at 8 MHz to save power
- * (SPF Table 3.19). NOMINAL, CONTINGENCY and SAFE_HOLD run at 80 MHz. `main.c`
+ * @details INIT and SURVIVAL run at 2 MHz to save power (SPF Table 3.19).
+ * NOMINAL, CONTINGENCY and SAFE_HOLD run at 80 MHz. `main.c`
  * boots at INIT's frequency, before FreeRTOS starts, so a wrong value would
  * boot the satellite at the wrong speed.
  */
@@ -326,7 +325,6 @@ void test_freq_for_state_mapping(void)
     TEST_ASSERT_EQUAL_INT(CLK_FREQ_2MHZ,  freq_for_state(OBC_STATE_INIT));
     TEST_ASSERT_EQUAL_INT(CLK_FREQ_80MHZ, freq_for_state(OBC_STATE_NOMINAL));
     TEST_ASSERT_EQUAL_INT(CLK_FREQ_80MHZ, freq_for_state(OBC_STATE_CONTINGENCY));
-    TEST_ASSERT_EQUAL_INT(CLK_FREQ_8MHZ,  freq_for_state(OBC_STATE_SUNSAFE));
     TEST_ASSERT_EQUAL_INT(CLK_FREQ_2MHZ,  freq_for_state(OBC_STATE_SURVIVAL));
     TEST_ASSERT_EQUAL_INT(CLK_FREQ_80MHZ, freq_for_state(OBC_STATE_SAFE_HOLD));
 }
@@ -580,18 +578,18 @@ void test_state_requests_do_not_end_Init(void)
 }
 
 /**
- * @brief A lower-power request made during Init is carried out right after the PING: NOMINAL, then at once SUNSAFE.
- * @details The low-battery case of SPF §1.6.1. EPS asks for SUNSAFE during
+ * @brief A lower-power request made during Init is carried out right after the PING: NOMINAL, then at once SURVIVAL.
+ * @details The low-battery case of SPF §1.6.1. EPS asks for SURVIVAL during
  * the standby; the request waits through the standby's end, the deployment
  * and several cycles at first contact. The PING ends Init in NOMINAL (the
- * payload is resumed) and SUNSAFE follows in the same cycle: two clock
- * switches, 2 → 80 → 8 MHz, and nothing is left to do at the next cycle.
+ * payload is resumed) and SURVIVAL follows in the same cycle: two clock
+ * switches, 2 → 80 → 2 MHz, and nothing is left to do at the next cycle.
  */
 void test_lower_power_request_during_Init_follows_the_PING(void)
 {
     boot();
     set_uptime_s(10u * 60u);
-    check_next_state(N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE);
+    check_next_state(N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL);
     set_uptime_s(INIT_STANDBY_S);
     check_next_state(0);
     check_next_state(0);
@@ -601,14 +599,14 @@ void test_lower_power_request_during_Init_follows_the_PING(void)
 
     check_next_state(N_OBC_PING_RECEIVED);
 
-    TEST_ASSERT_EQUAL_INT(OBC_STATE_SUNSAFE, state_machine_current_state());
+    TEST_ASSERT_EQUAL_INT(OBC_STATE_SURVIVAL, state_machine_current_state());
     TEST_ASSERT_EQUAL_INT(2, fake_clock_switch_count());
-    TEST_ASSERT_EQUAL_INT(CLK_FREQ_8MHZ, clock_get_current());
+    TEST_ASSERT_EQUAL_INT(CLK_FREQ_2MHZ, clock_get_current());
     TEST_ASSERT_EQUAL_HEX32(TM_TASK_PAYLOAD, resumed_among(TM_TASK_PAYLOAD));
-    TEST_ASSERT_EQUAL_HEX32(TM_TASK_ALL & ~SET_SUNSAFE, paused_mask());
+    TEST_ASSERT_EQUAL_HEX32(TM_TASK_ALL & ~SET_SURVIVAL, paused_mask());
 
     check_next_state(0);
-    TEST_ASSERT_EQUAL_INT(OBC_STATE_SUNSAFE, state_machine_current_state());
+    TEST_ASSERT_EQUAL_INT(OBC_STATE_SURVIVAL, state_machine_current_state());
     TEST_ASSERT_EQUAL_INT(2, changes_tried());
 }
 
@@ -807,16 +805,14 @@ void test_request_for_the_current_state_changes_nothing(void)
 /**
  * @brief When several state-change bits arrive together, NOMINAL wins.
  * @details `check_next_state()` checks the bits in a fixed order: NOMINAL,
- * CONTINGENCY, SUNSAFE, then SURVIVAL. With SURVIVAL, SUNSAFE and NOMINAL all
- * requested at once, the satellite goes to NOMINAL, and only one transition
- * happens.
+ * CONTINGENCY, then SURVIVAL. With SURVIVAL and NOMINAL both requested at
+ * once, the satellite goes to NOMINAL, and only one transition happens.
  */
 void test_multiple_exit_bits_NOMINAL_has_priority(void)
 {
     start_in(OBC_STATE_CONTINGENCY);
 
     check_next_state(N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL |
-                     N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE |
                      N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL);
 
     TEST_ASSERT_EQUAL_INT(OBC_STATE_NOMINAL, state_machine_current_state());

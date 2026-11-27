@@ -81,7 +81,7 @@ typedef enum {
     TC_PING                    = 0x01,
     TC_TRANSIT_TO_NOMINAL      = 0x02,
     TC_TRANSIT_TO_CONTINGENCY  = 0x03,
-    TC_TRANSIT_TO_SUNSAFE      = 0x04,
+    /* 0x04 is not used: answered NACK_UNKNOWN_TC_ID */
     TC_TRANSIT_TO_SURVIVAL     = 0x05,
     TC_LORA_CONFIG             = 0x08,
     TC_COMMS_PARAMS            = 0x09,

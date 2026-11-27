@@ -118,7 +118,7 @@ typedef union __attribute__ ((__packed__)) RadioFrequency {
 /****STRUCTS****/
 enum Subsystem {OBC, COMMS, ADCS, PAYLOAD, EPS};
 
-enum MachineState {_INIT, _NOMINAL, _CONTINGENCY, _SUNSAFE, _SURVIVAL};
+enum MachineState {_INIT, _NOMINAL, _CONTINGENCY, _SURVIVAL = 4};
 
 typedef enum
 {

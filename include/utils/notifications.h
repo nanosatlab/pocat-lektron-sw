@@ -35,7 +35,7 @@
 
 #define N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL      (1u << 0)  /**< Permission to upgrade state to NOMINAL */
 #define N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY  (1u << 1)  /**< Transition state to CONTINGENCY */
-#define N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE      (1u << 2)  /**< Transition state to SUNSAFE */
+                                                   /* (1u << 2) is not used */
 #define N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL     (1u << 3)  /**< Transition state to SURVIVAL */
 #define N_OBC_UPDATE_TIME                          (1u << 4)  /**< New Unix timestamp available to sync */
 #define N_OBC_HARD_REBOOT                          (1u << 5)  /**< Perform a hard reboot (including flash) */
@@ -45,7 +45,6 @@
 
 #define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL | \
                                      N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY | \
-                                     N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE | \
                                      N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL)
 
 /* ── COMMS Task Notifications ───────────────────────────────────────────── */

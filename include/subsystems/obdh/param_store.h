@@ -42,7 +42,7 @@
     X(0x04u, PARAM_POL_MASK,          1u, 0x00u)        /* TBD (proposed: all enabled) */ \
     X(0x05u, PARAM_STANDBY_DONE,      1u, 0x00u)        /* not done */ \
     /* EPS (electrical power system), IDs 0x20-0x3F. */ \
-    X(0x20u, PARAM_EPS_THRESHOLDS,    3u, 0x00u)        /* nominal, contingency, sunsafe: TBD; size TBC */ \
+    X(0x20u, PARAM_EPS_THRESHOLDS,    3u, 0x00u)        /* nominal, contingency, survival: TBD; size TBC */ \
     X(0x21u, PARAM_HEATER_AUTO,       1u, 0x00u)        /* TBD */ \
     /* COMMS (communications), IDs 0x40-0x5F. */ \
     X(0x40u, PARAM_COMMS_CONFIG,     21u, 0x00u)        /* TBD (proposed: built-in LoRa settings); size TBC */ \

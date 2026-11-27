@@ -25,7 +25,6 @@
 
 /** @brief Requests for a lower-power state: during Init they wait for its end. */
 #define LOWER_POWER_REQUESTS (N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY | \
-                              N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE | \
                               N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL)
 
 /** @brief Init's steps, in order. */
@@ -57,7 +56,6 @@ ClockFreq_t freq_for_state(obc_state_t state)
 {
     switch (state) {
         case OBC_STATE_INIT:     return CLK_FREQ_2MHZ;
-        case OBC_STATE_SUNSAFE:  return CLK_FREQ_8MHZ;
         case OBC_STATE_SURVIVAL: return CLK_FREQ_2MHZ;
         default:                 return CLK_FREQ_80MHZ;
     }
@@ -157,7 +155,7 @@ static void run_init(uint32_t requests)
 }
 
 /**
- * @brief Changes to the state @p requests ask for: the first of NOMINAL, CONTINGENCY, SUNSAFE and SURVIVAL requested.
+ * @brief Changes to the state @p requests ask for: the first of NOMINAL, CONTINGENCY and SURVIVAL requested.
  * @details A request for the current state changes nothing. A refused change
  *          keeps its request for the next call.
  * @param requests Notification bits, with the requests kept from earlier calls.
@@ -174,10 +172,6 @@ static void change_to_requested_state(uint32_t requests)
     else if (requests & N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY) {
         request = N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY;
         newState = OBC_STATE_CONTINGENCY;
-    }
-    else if (requests & N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE) {
-        request = N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE;
-        newState = OBC_STATE_SUNSAFE;
     }
     else if (requests & N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL) {
         request = N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL;
@@ -291,10 +285,6 @@ static uint32_t tasks_for_state(obc_state_t state)
         case OBC_STATE_CONTINGENCY:
             // COMMS beacon only, ADCS detumbling only
             return TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_ADCS | TM_TASK_OBDH
-                 | TM_TASK_TRANSCEIVER | TM_TASK_BEACON;
-        case OBC_STATE_SUNSAFE:
-            // COMMS beacon only, ADCS idle
-            return TM_TASK_EPS | TM_TASK_COMMS | TM_TASK_OBDH
                  | TM_TASK_TRANSCEIVER | TM_TASK_BEACON;
         case OBC_STATE_SURVIVAL:
             // COMMS RX only, ADCS idle
