@@ -1,4 +1,5 @@
 #include "beacon.h"
+#include "beacon_period.h"
 #include "frame.h"
 #include "comms.h"
 #include "lora_cfg.h"
@@ -6,44 +7,28 @@
 #include "obc.h"
 #include "time.h"
 #include "temperature.h"
-#include "flash.h"
-#include "obdh_requests.h"
-#include "ht_handling.h"
+#include "state_machine.h"
+#include "uptime.h"
+#include "ht_store.h"
 #include "health.h"
 #include "task_management.h"
 #include "types.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
 #include <string.h>
+
+_Static_assert(HT_BEACON_SIZE == 19u, "the telemetry history stores the 19-byte beacon body built below");
 
 uint8_t  g_last_tc_id      = 0xFFu;
 uint8_t  g_last_tc_rc      = 0x00u;
-uint32_t g_beacon_period_ms = BEACON_PERIOD_MS;
-
-static TimerHandle_t beacon_timer = NULL;
-
-static void beacon_timer_cb(TimerHandle_t xTimer)
-{
-    (void)xTimer;
-    TaskHandle_t task = tm_get_task_handle(TM_TASK_BEACON);
-    if (task != NULL) {
-        xTaskNotify(task, N_COMMS_TRANSMIT_BEACON, eSetBits);
-    }
-}
 
 static uint8_t build_beacon_body(uint8_t *body)
 {
     memset(body, 0, 19);
 
     uint32_t epoch = time_get_unix();
-    uint8_t obc_state = 0;
-    obdh_read_old_request(CURRENT_STATE_ADDR, &obc_state, 1);
-
-    /* Uptime = current time − persisted boot time (§6.6 UPTIME_S, seconds). */
-    uint32_t boot_time = 0;
-    obdh_read_old_request(BOOT_TIME_ADDR, (uint8_t *)&boot_time, sizeof(boot_time));
-    uint32_t uptime_s = (epoch >= boot_time) ? (epoch - boot_time) : 0u;
+    uint8_t obc_state = (uint8_t)state_machine_current_state();
+    uint32_t uptime_s = uptime_get_s();         /* §6.6 UPTIME_S: seconds since boot, from the tick counter */
 
     body[0]  = AIR_BODY_VER;
     body[1]  = (uint8_t)(epoch >> 24);
@@ -73,7 +58,7 @@ static void transmit_beacon(void)
     uint8_t body[19];
     build_beacon_body(body);
 
-    fill_ht_from_it(body);
+    ht_beacon_post(body);   /* never waits: OBDH stores the beacon, at most one per 30 s on average */
 
     uint8_t air_buf[AIR_FRAME_MAX];
     uint8_t frame_len = air_encode(air_buf, AIR_BEACON, 0x00u,
@@ -94,37 +79,31 @@ static void transmit_beacon(void)
     }
 }
 
-void beacon_set_period(uint32_t period_ms)
-{
-    g_beacon_period_ms = period_ms;
-    if (beacon_timer != NULL) {
-        xTimerChangePeriod(beacon_timer, pdMS_TO_TICKS(period_ms), portMAX_DELAY);
-    }
-}
-
 void beacon_task(void *pv_parameters)
 {
     (void)pv_parameters;
+    uint32_t deferred = 0u;   /* notifications that came while paused */
 
-    ht_init();
-
-    beacon_timer = xTimerCreate("beacon", pdMS_TO_TICKS(g_beacon_period_ms),
-                                pdTRUE, NULL, beacon_timer_cb);
-    if (beacon_timer != NULL) {
-        xTimerStart(beacon_timer, portMAX_DELAY);
-    }
+    beacon_period_apply();   /* the stored period, also after a restart by the health monitor */
 
     for (;;) {
         uint32_t notif = 0;
-        xTaskNotifyWait(0, N_TASK_PAUSE | N_TASK_RESUME | N_COMMS_TRANSMIT_BEACON,
+        xTaskNotifyWait(0, N_TASK_PAUSE | N_TASK_RESUME | N_COMMS_TRANSMIT_BEACON | N_COMMS_NEW_BEACON_PERIOD,
                         &notif, pdMS_TO_TICKS(BEACON_HEALTH_KICK_MS));
 
         health_kick(HEALTH_BIT_BEACON);
 
-        if (tm_check_pause(notif, NULL)) {
+        if (tm_check_pause(notif, &deferred)) {
             continue;
         }
+        /* A period stored while paused (SURVIVAL pauses this task) applies now;
+           a beacon that fell due while paused is not sent late */
+        notif |= deferred & N_COMMS_NEW_BEACON_PERIOD;
+        deferred = 0u;
 
+        if (notif & N_COMMS_NEW_BEACON_PERIOD) {
+            beacon_period_apply();
+        }
         if (notif & N_COMMS_TRANSMIT_BEACON) {
             transmit_beacon();
         }

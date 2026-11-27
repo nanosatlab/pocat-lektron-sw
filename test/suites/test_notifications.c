@@ -104,27 +104,6 @@ void test_set_bits_notifications_accumulate(void)
     TEST_ASSERT_EQUAL_HEX32(N_COMMS_NEW_CONFIG | N_COMMS_STOP_RF, wait_for_notification(0));
 }
 
-/**
- * @brief An OBDH flash completion (notification index 1) is invisible to `wait_for_notification()` (index 0).
- * @details OBDH replies to a flash request by writing the HAL status to index 1
- * (`OBDH_NOTIFY_IDX`). If that value leaked into index 0, a task would read a
- * HAL status such as `HAL_ERROR` (0x01) as notification bit 0 and act on a
- * command nobody sent.
- * - Arrange: write `HAL_ERROR` to index 1 of the test task.
- * - Expected: index 0 reads as 0 and has nothing pending; index 1 still holds
- *   `HAL_ERROR` for the code that is actually waiting for it.
- */
-void test_obdh_index1_does_not_leak_into_index0(void)
-{
-    TaskHandle_t t = fake_rtos_test_task();
-    xTaskNotifyIndexed(t, OBDH_NOTIFY_IDX, (uint32_t)HAL_ERROR, eSetValueWithOverwrite);
-
-    TEST_ASSERT_EQUAL_HEX32(0u, wait_for_notification(0));
-    TEST_ASSERT_TRUE(fake_rtos_notify_pending(t, OBDH_NOTIFY_IDX));
-    TEST_ASSERT_EQUAL_HEX32((uint32_t)HAL_ERROR, fake_rtos_notify_value(t, OBDH_NOTIFY_IDX));
-    TEST_ASSERT_FALSE(fake_rtos_notify_pending(t, 0));
-}
-
 /* =========================================================================
  * 2. Bit map consistency (notifications.h / events.h / task_management.h)
  * ========================================================================= */
@@ -145,8 +124,8 @@ void test_global_pause_resume_bits_do_not_collide_with_task_bits(void)
     const uint32_t task_bits =
         N_ADCS_DESIRED_STATE_IDLE | N_ADCS_DESIRED_STATE_DETUMBLING | N_ADCS_DESIRED_STATE_NADIR |
         N_ADCS_NEW_CALIBRATION | N_ADCS_NEW_TLE |
-        N_OBC_EXIT_STATE_TO_OBC_STATE_NM | N_OBC_EXIT_STATE_TO_OBC_STATE_CM |
-        N_OBC_EXIT_STATE_TO_OBC_STATE_SSM | N_OBC_EXIT_STATE_TO_OBC_STATE_SM |
+        N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL | N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY |
+        N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE | N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL |
         N_OBC_UPDATE_TIME | N_OBC_HARD_REBOOT | N_OBC_SOFT_REBOOT | N_OBC_PERIPHERALS_REBOOT |
         N_COMMS_NEW_CONFIG | N_COMMS_NEW_PARAMS | N_COMMS_STOP_RF | N_COMMS_RESUME_RF | N_COMMS_TRANSMIT_BEACON |
         N_TRANSCEIVER_RADIO_IRQ_BIT | N_TRANSCEIVER_TX_READY_BIT | N_TRANSCEIVER_ARQ_DL_BIT |
@@ -161,7 +140,7 @@ void test_global_pause_resume_bits_do_not_collide_with_task_bits(void)
 }
 
 /**
- * @brief `N_OBC_EXIT_STATE_GROUP_MASK` contains exactly the four state-change bits (NM, CM, SSM, SM).
+ * @brief `N_OBC_EXIT_STATE_GROUP_MASK` contains exactly the four state-change bits (NOMINAL, CONTINGENCY, SUNSAFE, SURVIVAL).
  * @details `obc.c` and `state_machine.c` use this mask to decide whether a
  * notification asks for a state change. A missing bit would ignore one
  * transition; an extra bit would treat, for example, a time update as a
@@ -285,7 +264,6 @@ int main(int argc, char **argv)
     POCAT_RUN_TEST(test_wait_returns_zero_when_nothing_pending);
     POCAT_RUN_TEST(test_wait_returns_pending_bits_and_drains_them);
     POCAT_RUN_TEST(test_set_bits_notifications_accumulate);
-    POCAT_RUN_TEST(test_obdh_index1_does_not_leak_into_index0);
     POCAT_RUN_TEST(test_global_pause_resume_bits_do_not_collide_with_task_bits);
     POCAT_RUN_TEST(test_exit_state_group_mask_is_four_bits);
     POCAT_RUN_TEST(test_tm_task_bits_equal_ack_event_bits);

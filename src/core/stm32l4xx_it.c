@@ -191,6 +191,15 @@ void SysTick_Handler(void)
 /* USER CODE BEGIN 1 */
 
 /**
+ * @brief Flash global interrupt handler.
+ * Only ECC corrections raise it: the flash driver polls its operations, with
+ * the end-of-operation and error interrupts off.
+ */
+void FLASH_IRQHandler(void) {
+    flash_ecc_irq();
+}
+
+/**
  * @brief EXTI lines [15:10] interrupt handler.
  * Routes DIO1 (PA10, EXTI line 10) to the HAL dispatcher, which calls
  * HAL_GPIO_EXTI_Callback → stm32RadioLibHal::handleExtiCallback.

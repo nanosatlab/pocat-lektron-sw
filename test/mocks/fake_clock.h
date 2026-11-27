@@ -43,4 +43,11 @@ ClockFreq_t fake_clock_last_reconfigure_freq(void);
 /** @brief Returns the number of boot-time init calls (`systemclock_init_for_freq()` and `periph_init_for_freq()` together). */
 int  fake_clock_init_count(void);
 
+/**
+ * @brief Installs a function that `clock_switch_to_freq()` calls during each switch, or removes it with NULL.
+ * @details Lets a test check the state of other modules at the moment of the
+ * switch, for example that OBDH was paused. fake_clock_reset() removes it.
+ */
+void fake_clock_set_switch_hook(void (*hook)(void));
+
 #endif

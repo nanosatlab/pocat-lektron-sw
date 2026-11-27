@@ -13,6 +13,7 @@
 
 #include "health.h"
 #include "log.h"
+#include "obc.h"
 #include "stm32l4xx_hal.h"
 
 /** @brief Event group handle for health bit tracking. */
@@ -53,6 +54,10 @@ void health_kick(EventBits_t bit)
 
 void health_config(TickType_t period)
 {
+    if (!obc_is_caller()) {
+        return;   /* another task: period and window unchanged */
+    }
+
     if (period == 0) period = 1;
 
     lock();
@@ -88,11 +93,19 @@ EventBits_t health_get_expected(void)
 
 void health_register_iwdg(void *hiwdg)
 {
+    if (!obc_is_caller()) {
+        return;   /* another task: handle unchanged */
+    }
+
     iwdg_handle = (IWDG_HandleTypeDef *)hiwdg;
 }
 
 EventBits_t health_check(void)
 {
+    if (!obc_is_caller()) {
+        return 0;   /* another task: nothing checked, watchdog not refreshed */
+    }
+
     BaseType_t period_elapsed;
     EventBits_t faults = system_health(&period_elapsed);
 

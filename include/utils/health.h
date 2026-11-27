@@ -15,6 +15,9 @@
 #include "event_groups.h"
 #include <stdint.h>
 
+/** @brief Period of health_check(): a task that does not report within it is restarted. */
+#define HEALTH_PERIOD_MS 5000u
+
 /**
  * @brief Health monitoring bit flags for each subsystem.
  *
@@ -55,7 +58,7 @@ void health_kick(EventBits_t bit);
  *
  * Sets the time window within which all expected subsystems must kick.
  * After this period, health_check() will report any subsystems that failed
- * to kick. Only the OBC task should call this function.
+ * to kick. OBC task only: any other caller changes nothing (obc_is_caller()).
  *
  * @param period Health check period in FreeRTOS ticks. Use pdMS_TO_TICKS()
  *               to convert from milliseconds.
@@ -65,8 +68,8 @@ void health_config(TickType_t period);
 /**
  * @brief Set which subsystems are expected to report health.
  *
- * Only subsystems whose bits are set here will be monitored.
- * Only the OBC task should call this function.
+ * Only subsystems whose bits are set here will be monitored. The task manager
+ * calls it from the OBC task and from each task's tm_check_pause().
  *
  * @param expected_bits Bitmask of subsystems to monitor (OR of health_bit_t values).
  *
@@ -78,7 +81,7 @@ void health_set_expected(EventBits_t expected_bits);
 
 /**
  * @brief Get the currently expected subsystems for health monitoring.
- * Only the OBC task should call this function.
+ * Any task may call it.
  *
  * @return Bitmask of currently expected subsystems (OR of health_bit_t values).
  */
@@ -88,7 +91,8 @@ EventBits_t health_get_expected(void);
  * @brief Register the hardware watchdog handle.
  *
  * Must be called during initialization to enable automatic IWDG refresh
- * when the system is healthy. Only the OBC task should call this function.
+ * when the system is healthy. OBC task only: any other caller changes nothing
+ * (obc_is_caller()).
  *
  * @param hiwdg Pointer to the IWDG handle (IWDG_HandleTypeDef*).
  */
@@ -98,11 +102,12 @@ void health_register_iwdg(void *hiwdg);
  * @brief Perform health check and refresh watchdog if healthy.
  *
  * Call this periodically from the OBC task. The IWDG is refreshed only after
- * a completed health period has no missing subsystem kicks.
+ * a completed health period has no missing subsystem kicks. OBC task only:
+ * any other caller gets 0, with nothing checked or refreshed (obc_is_caller()).
  *
  * @return Bitmask of faulty subsystems when a health period has elapsed.
- *         Returns 0 both when the check period has not
- *         elapsed yet and when the elapsed check
- *         found no faults.
+ *         Returns 0 when the check period has not elapsed yet, when the
+ *         elapsed check found no faults, and for a caller other than the
+ *         OBC task.
  */
 EventBits_t health_check(void);

@@ -3,6 +3,7 @@
 #include "tc_handler.h"
 #include "arq.h"
 #include "beacon.h"
+#include "beacon_period.h"
 #include "comms.h"
 #include "frame.h"
 #include "lora_cfg.h"
@@ -12,10 +13,12 @@
 #include "task_management.h"
 #include "main.h"
 #include "time.h"
-#include "flash.h"
+#include "param_store.h"
 #include "obdh_requests.h"
+#include "state_machine.h"
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 static inline void notify(TaskHandle_t handle, uint32_t bits)
 {
@@ -44,6 +47,100 @@ static void enqueue_nack(uint8_t ref_type, uint8_t ref_seq, uint8_t reason)
         if (trx != NULL) {
             xTaskNotify(trx, N_TRANSCEIVER_TX_READY_BIT, eSetBits);
         }
+    }
+}
+
+/**
+ * @brief Refuses a telecommand after its eager ACK: keeps the reason for the beacon and sends the NACK.
+ * @param frame The telecommand.
+ * @param reason NACK reason (§6.5).
+ */
+static void reject(const AirFrame_t *frame, uint8_t reason)
+{
+    g_last_tc_rc = reason;
+    enqueue_nack(frame->type, frame->seq, reason);
+}
+
+/**
+ * @brief Passes a state telecommand to the OBC; during Init, which only TC_PING ends, refuses it with NACK_NOT_ALLOWED.
+ * @param frame The telecommand.
+ * @param request The N_OBC_EXIT_STATE_TO_OBC_STATE_* bit it asks for.
+ */
+static void request_state(const AirFrame_t *frame, uint32_t request)
+{
+    if (state_machine_current_state() == OBC_STATE_INIT) {
+        reject(frame, NACK_NOT_ALLOWED);
+        return;
+    }
+    notify(main_get_obc_handle(), request);
+}
+
+/**
+ * @brief Stores the parameter value a telecommand carries after its TC_ID (p[2] onwards).
+ * @details A frame too short for the value is refused with NACK_BAD_PARAMS.
+ *          A value the store did not take is refused with NACK_BUSY: the
+ *          ground sends the telecommand again, and a value already stored is
+ *          not written twice.
+ * @param frame The telecommand.
+ * @param id Parameter.
+ * @param size Size of the value, as in PARAM_TABLE.
+ * @return true once the value is stored.
+ */
+static bool store_tc_param(const AirFrame_t *frame, param_id_t id, uint8_t size)
+{
+    if (frame->len < 2u + size) {
+        reject(frame, NACK_BAD_PARAMS);
+        return false;
+    }
+    if (param_set_request(id, &frame->payload[2], size, OBDH_REQUEST_WAIT) != HAL_OK) {
+        reject(frame, NACK_BUSY);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief Refuses a downlink request the ARQ engine did not start.
+ * @details NACK_NO_DATA when nothing is stored to send. NACK_BUSY when another
+ *          session is active or the store did not answer in time: the ground
+ *          asks again later.
+ * @param frame The telecommand.
+ * @param result What arq_begin_hk_history() or arq_begin_obc_log() returned.
+ */
+static void answer_dl(const AirFrame_t *frame, arq_dl_result_t result)
+{
+    switch (result) {
+    case ARQ_DL_STARTED:
+        break;
+    case ARQ_DL_NO_DATA:
+        reject(frame, NACK_NO_DATA);
+        break;
+    case ARQ_DL_SESSION_ACTIVE:
+    case ARQ_DL_STORE_BUSY:
+        reject(frame, NACK_BUSY);
+        break;
+    }
+}
+
+/**
+ * @brief Refuses a beacon period that was not stored.
+ * @details NACK_PARAM_OUT_OF_RANGE outside the limits of beacon_period.h.
+ *          NACK_BUSY when the store did not take it: the ground sends the
+ *          telecommand again.
+ * @param frame The telecommand.
+ * @param result What beacon_period_set_request() returned.
+ */
+static void answer_period(const AirFrame_t *frame, beacon_period_result_t result)
+{
+    switch (result) {
+    case BEACON_PERIOD_STORED:
+        break;
+    case BEACON_PERIOD_OUT_OF_RANGE:
+        reject(frame, NACK_PARAM_OUT_OF_RANGE);
+        break;
+    case BEACON_PERIOD_NOT_STORED:
+        reject(frame, NACK_BUSY);
+        break;
     }
 }
 
@@ -107,22 +204,23 @@ void tc_process(const AirFrame_t *frame)
     switch ((tc_id_t)tc_id) {
 
     case TC_PING:
+        notify(main_get_obc_handle(), N_OBC_PING_RECEIVED);   /* ends Init at its first-contact step */
         break;
 
-    case TC_TRANSIT_TO_NM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_NM);
+    case TC_TRANSIT_TO_NOMINAL:
+        request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL);
         break;
 
-    case TC_TRANSIT_TO_CM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_CM);
+    case TC_TRANSIT_TO_CONTINGENCY:
+        request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY);
         break;
 
-    case TC_TRANSIT_TO_SSM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_SSM);
+    case TC_TRANSIT_TO_SUNSAFE:
+        request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE);
         break;
 
-    case TC_TRANSIT_TO_SM:
-        notify(main_get_obc_handle(), N_OBC_EXIT_STATE_TO_OBC_STATE_SM);
+    case TC_TRANSIT_TO_SURVIVAL:
+        request_state(frame, N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL);
         break;
 
     case TC_LORA_CONFIG: {
@@ -168,12 +266,15 @@ void tc_process(const AirFrame_t *frame)
         break;
 
     case TC_UPLOAD_EPS_TH:
-        obdh_write_request(EPS_THRESHOLDS_ADDR, &p[2], 3);
-        notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_NEW_THRESHOLDS);
+        /* params: p[2:4] = NOMINAL, CONTINGENCY, SUNSAFE thresholds */
+        if (store_tc_param(frame, PARAM_EPS_THRESHOLDS, 3u)) {
+            notify(tm_get_task_handle(TM_TASK_EPS), N_EPS_NEW_THRESHOLDS);
+        }
         break;
 
     case TC_UPLOAD_PL_CONFIG:
-        obdh_write_request(RFI_CONFIG_ADDR, &p[2], 8);
+        /* params: p[2:9] = RFI configuration */
+        (void)store_tc_param(frame, PARAM_RFI_CONFIG, 8u);
         break;
 
     case TC_REQUEST_BEACON_NOW:
@@ -195,29 +296,30 @@ void tc_process(const AirFrame_t *frame)
     }
 
     case TC_REQUEST_HK_HISTORY: {
-        /* params: p[2:5] = SINCE_UNIX (4B BE) */
+        /* params: p[2:5] = FROM_SEQ (4B BE), the first HT block wanted (hk_history.h) */
+        if (frame->len < 6u) {
+            reject(frame, NACK_BAD_PARAMS);
+            break;
+        }
         static uint8_t s_hk_sess = 0u;
         s_hk_sess++;
-        arq_begin_dl(s_hk_sess, TRANSFER_HK_HISTORY,
-                     (frame->len >= 6u) ? &p[2] : NULL,
-                     (frame->len >= 6u) ? 4u : 0u);
+        uint32_t from_seq = ((uint32_t)p[2] << 24) | ((uint32_t)p[3] << 16) |
+                            ((uint32_t)p[4] << 8)  |  (uint32_t)p[5];
+        answer_dl(frame, arq_begin_hk_history(s_hk_sess, from_seq));
         break;
     }
 
-    case TC_REQUEST_PAYLOAD_DATA: {
-        /* params: p[2]=MEASURE_NUMBER, p[3:4]=FIRST_BLOCK, p[5:6]=BLOCK_COUNT */
-        static uint8_t s_pl_sess = 0x10u;
-        s_pl_sess++;
-        arq_begin_dl(s_pl_sess, TRANSFER_PAYLOAD_DATA,
-                     (frame->len >= 7u) ? &p[2] : NULL,
-                     (frame->len >= 7u) ? 5u : 0u);
+    case TC_REQUEST_PAYLOAD_DATA:
+        /* params: p[2]=MEASURE_NUMBER, p[3:4]=FIRST_BLOCK, p[5:6]=BLOCK_COUNT.
+         * The payload store does not exist yet: nothing is stored to send. */
+        reject(frame, NACK_NO_DATA);
         break;
-    }
 
     case TC_REQUEST_OBC_LOG: {
+        /* No OBC log store yet: the session sends a test pattern (arq_begin_obc_log()) */
         static uint8_t s_log_sess = 0x20u;
         s_log_sess++;
-        arq_begin_dl(s_log_sess, TRANSFER_OBC_LOG, NULL, 0u);
+        answer_dl(frame, arq_begin_obc_log(s_log_sess));
         break;
     }
 
@@ -269,10 +371,12 @@ void tc_process(const AirFrame_t *frame)
         break;
 
     case TC_SET_BEACON_PERIOD:
-        if (frame->len >= 4u) {
-            uint16_t period_s = (uint16_t)(((uint16_t)p[2] << 8) | p[3]);
-            beacon_set_period((uint32_t)period_s * 1000u);
+        /* params: p[2:3] = PERIOD_S (2B BE), BEACON_PERIOD_MIN_S to BEACON_PERIOD_MAX_S (beacon_period.h) */
+        if (frame->len < 4u) {
+            reject(frame, NACK_BAD_PARAMS);
+            break;
         }
+        answer_period(frame, beacon_period_set_request((uint16_t)(((uint16_t)p[2] << 8) | p[3]), OBDH_REQUEST_WAIT));
         break;
 
     case TC_PAYLOAD_SCHEDULE:

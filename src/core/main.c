@@ -5,8 +5,9 @@
  * @date 2026-01-20
  * @details This is the main module. It performs system initialization and starts the FreeRTOS scheduler. It:
  * - Initializes the HAL library
- * - Restores the boot state from flash
- * - Configures the system clock for that state
+ * - Enables the flash ECC correction interrupt
+ * - Loads the parameter store
+ * - Configures the system clock for the Init state, where every boot starts
  * - Initializes board peripherals
  * - Creates the OBC task and starts the FreeRTOS scheduler
  */
@@ -20,8 +21,8 @@
 #include "state_machine.h"
 #include "log.h"
 #include "time.h"
-#include "flash.h"
 #include "param_store.h"
+#include "flash.h"
 
 /** @brief Handle for the OBC FreeRTOS task*/
 static TaskHandle_t obc_task_handle;
@@ -47,14 +48,13 @@ int main(void)
 
   HAL_Init();
 
+  /* From here on a corrected flash ECC error is cleared at once: while its flag is set, a double error raises no NMI */
+  flash_ecc_init();
+
   /* Persistent parameters into RAM: reads flash only, before anything else needs them */
-  param_store_init();
+  param_store_load();
 
-  obc_state_t bootState;
-  flash_read_old(CURRENT_STATE_ADDR, (uint8_t*)&bootState, sizeof(obc_state_t));
-  bootState = (bootState >= OBC_STATE_BOOT && bootState <= OBC_STATE_SAFE_HOLD) ? bootState : OBC_STATE_BOOT;
-
-  ClockFreq_t freq = freq_for_state(bootState);
+  ClockFreq_t freq = freq_for_state(OBC_STATE_INIT);
   if (!systemclock_init_for_freq(freq)) {
       Error_Handler();
   }
@@ -64,8 +64,7 @@ int main(void)
   time_init();
   printf("\r\n=======================\r\n pocat flight software\r\n=======================\r\n\r\n");
   
-  printf("Boot state: %d\r\n", bootState);
-  BaseType_t result = xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, (void*)(uint32_t)bootState, OBC_PRIORITY, &obc_task_handle);
+  BaseType_t result = xTaskCreate(obc_task, "OBC", OBC_STACK_SIZE, NULL, OBC_PRIORITY, &obc_task_handle);
 
   if (result != pdPASS) {
       printf("Failed to create OBC task!\r\n");

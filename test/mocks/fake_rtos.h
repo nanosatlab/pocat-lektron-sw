@@ -63,7 +63,8 @@
  * - makes the test task current again;
  * - removes the block hook;
  * - clears the notify log and all fault injections;
- * - turns deadlock-expect mode off.
+ * - turns deadlock-expect mode off;
+ * - makes the scheduler running again.
  * @warning Handles the code under test kept in its own `static` variables now
  * point at freed objects. The suite must reset those variables too.
  */
@@ -83,6 +84,13 @@ void fake_rtos_set_current_task(TaskHandle_t t);
 /** @brief Returns the task that is currently "running". */
 TaskHandle_t fake_rtos_current_task(void);
 
+/**
+ * @brief Sets what `xTaskGetSchedulerState()` returns.
+ * @param state `taskSCHEDULER_RUNNING`, the default that fake_rtos_reset()
+ * restores, or `taskSCHEDULER_NOT_STARTED`, as in main() before the scheduler starts.
+ */
+void fake_rtos_set_scheduler_state(BaseType_t state);
+
 /* ---------------------------------------------------------------- time and blocking */
 
 /** @brief Function the fake calls when the code under test would block. See the file description. */
@@ -95,10 +103,14 @@ typedef void (*fake_rtos_block_hook_t)(void);
  */
 void fake_rtos_set_block_hook(fake_rtos_block_hook_t hook);
 
-/** @brief Sets the tick count (1 tick = 1 ms, as on the target) to an absolute value. */
+/** @brief Sets the tick count (1 tick = 1 ms, as on the target) to an absolute value; the overflow count stays. */
 void fake_rtos_set_tick(TickType_t t);
 
-/** @brief Moves time forward by @p dt ticks without calling anything. */
+/**
+ * @brief Moves time forward by @p dt ticks without calling anything.
+ * @details Like every wait that runs out, it counts an overflow when the
+ * 32-bit tick count wraps, as the kernel does (vTaskSetTimeOutState() reports it).
+ */
 void fake_rtos_advance_ticks(TickType_t dt);
 
 /* ---------------------------------------------------------------- fault injection */
@@ -131,7 +143,7 @@ int  fake_rtos_tasks_created(void);
 
 /* ---------------------------------------------------------------- inspection: notifications */
 
-/** @brief Returns the current notification value of task @p t at index @p idx (0 = task bits, 1 = OBDH completion). */
+/** @brief Returns the current notification value of task @p t at index @p idx (the firmware has only index 0, the task bits). */
 uint32_t fake_rtos_notify_value(TaskHandle_t t, UBaseType_t idx);
 
 /** @brief Returns true if task @p t has a notification at index @p idx that nobody has read yet. */
@@ -140,7 +152,7 @@ bool     fake_rtos_notify_pending(TaskHandle_t t, UBaseType_t idx);
 /** @brief One entry of the notify log: one delivered `xTaskNotify` / `xTaskNotifyIndexed` call. */
 typedef struct {
     TaskHandle_t  target; /**< Task that received the notification. */
-    UBaseType_t   index;  /**< Notification index (0 or 1). */
+    UBaseType_t   index;  /**< Notification index (always 0: the firmware has one). */
     uint32_t      value;  /**< Value passed by the sender. */
     eNotifyAction action; /**< How the value was applied (eSetBits, eSetValueWithOverwrite, ...). */
 } fake_notify_rec_t;

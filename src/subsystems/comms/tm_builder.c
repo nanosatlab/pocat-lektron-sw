@@ -3,8 +3,7 @@
 #include "obc.h"
 #include "temperature.h"
 #include "health.h"
-#include "flash.h"
-#include "obdh_requests.h"
+#include "state_machine.h"
 #include <string.h>
 #include <stdint.h>
 
@@ -13,8 +12,7 @@ void tm_build_hk_live(uint8_t *out)
 {
     memset(out, 0, 24);
 
-    uint8_t obc_state = 0;
-    obdh_read_old_request(CURRENT_STATE_ADDR, &obc_state, 1);
+    uint8_t obc_state = (uint8_t)state_machine_current_state();
 
     out[0]  = obc_state;
     out[1]  = 0x3Fu;                          /* HEALTH_FLAGS placeholder */

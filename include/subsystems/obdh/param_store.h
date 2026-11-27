@@ -37,7 +37,6 @@
  */
 #define PARAM_TABLE(X) \
     /* OBC (on-board computer), IDs 0x01-0x1F. Owns both deployment flags. */ \
-    X(0x01u, PARAM_OBC_MODE,          1u, 0x00u)        /* the mode to boot in (state_machine.c): OBC_STATE_BOOT */ \
     X(0x02u, PARAM_DEPLOY_COMMS,      1u, 0x00u)        /* not deployed */ \
     X(0x03u, PARAM_DEPLOY_PAYLOAD,    1u, 0x00u)        /* not deployed */ \
     X(0x04u, PARAM_POL_MASK,          1u, 0x00u)        /* TBD (proposed: all enabled) */ \

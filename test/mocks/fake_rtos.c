@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NOTIFY_SLOTS    4
+#define NOTIFY_SLOTS    1   /* as configTASK_NOTIFICATION_ARRAY_ENTRIES in include/core/FreeRTOSConfig.h: another index fails configASSERT, as on the target */
 #define NOTIFY_LOG_MAX  1024
 
 struct fake_task {
@@ -56,6 +56,7 @@ static struct fake_task        *test_task;
 static struct fake_task        *current;
 
 static TickType_t now_tick;
+static BaseType_t tick_overflows;   /* as the kernel's xNumOfOverflows: times now_tick wrapped while advancing */
 static fake_rtos_block_hook_t block_hook;
 static bool in_hook;
 static int  tasks_created_count;
@@ -63,11 +64,20 @@ static int  fail_create_countdown;
 static bool fail_next_queue, fail_next_eg;
 static int  critical_depth, suspend_depth;
 static bool expect_deadlock, deadlock_seen;
+static BaseType_t scheduler_state = taskSCHEDULER_RUNNING;
 
 static fake_notify_rec_t notify_log[NOTIFY_LOG_MAX];
 static int               notify_log_n;
 
 /* ---------------------------------------------------------------- */
+
+/* Moves the tick count forward, counting a wrap as the kernel does. */
+static void advance_ticks(TickType_t dt)
+{
+    TickType_t before = now_tick;
+    now_tick += dt;
+    if (now_tick < before) tick_overflows++;
+}
 
 static struct fake_task *new_task_record(const char *name)
 {
@@ -88,6 +98,7 @@ void fake_rtos_reset(void)
     while (sems)   { struct fake_semaphore *n = sems->next; free(sems); sems = n; }
     while (timers) { struct fake_timer *n = timers->next; free(timers); timers = n; }
     now_tick = 0;
+    tick_overflows = 0;
     block_hook = NULL;
     in_hook = false;
     tasks_created_count = 0;
@@ -95,6 +106,7 @@ void fake_rtos_reset(void)
     fail_next_queue = fail_next_eg = false;
     critical_depth = suspend_depth = 0;
     expect_deadlock = deadlock_seen = false;
+    scheduler_state = taskSCHEDULER_RUNNING;
     notify_log_n = 0;
     test_task = new_task_record("TEST");
     test_task->is_test = true;
@@ -113,9 +125,10 @@ void fake_rtos_assert_failed(const char *file, int line)
 TaskHandle_t fake_rtos_test_task(void) { return test_task; }
 void fake_rtos_set_current_task(TaskHandle_t t) { current = t ? t : test_task; }
 TaskHandle_t fake_rtos_current_task(void) { return current; }
+void fake_rtos_set_scheduler_state(BaseType_t state) { scheduler_state = state; }
 void fake_rtos_set_block_hook(fake_rtos_block_hook_t hook) { block_hook = hook; }
 void fake_rtos_set_tick(TickType_t t) { now_tick = t; }
-void fake_rtos_advance_ticks(TickType_t dt) { now_tick += dt; }
+void fake_rtos_advance_ticks(TickType_t dt) { advance_ticks(dt); }
 void fake_rtos_fail_task_create_at(int nth) { fail_create_countdown = nth; }
 void fake_rtos_fail_next_queue_create(void) { fail_next_queue = true; }
 void fake_rtos_fail_next_event_group_create(void) { fail_next_eg = true; }
@@ -195,7 +208,7 @@ static bool block_until(cond_fn cond, const void *ctx, TickType_t ticks, const c
         }
         return false;
     }
-    now_tick += ticks;
+    advance_ticks(ticks);
     return false;
 }
 
@@ -233,7 +246,7 @@ void vTaskSetTaskNumber(TaskHandle_t t, UBaseType_t number) { configASSERT(t != 
 UBaseType_t uxTaskGetTaskNumber(TaskHandle_t t) { return t ? t->number : 0; }
 TaskHandle_t xTaskGetCurrentTaskHandle(void) { return current; }
 TickType_t xTaskGetTickCount(void) { return now_tick; }
-void vTaskDelay(TickType_t ticks) { now_tick += ticks; }
+void vTaskDelay(TickType_t ticks) { advance_ticks(ticks); }
 void vTaskSuspendAll(void) { suspend_depth++; }
 BaseType_t xTaskResumeAll(void)
 {
@@ -241,7 +254,34 @@ BaseType_t xTaskResumeAll(void)
     suspend_depth--;
     return pdFALSE;
 }
-BaseType_t xTaskGetSchedulerState(void) { return taskSCHEDULER_RUNNING; }
+BaseType_t xTaskGetSchedulerState(void) { return scheduler_state; }
+
+void vTaskSetTimeOutState(TimeOut_t *timeout)
+{
+    configASSERT(timeout != NULL);
+    timeout->xOverflowCount = tick_overflows;
+    timeout->xTimeOnEntering = now_tick;
+}
+
+/* As FreeRTOS: pdTRUE once the time is up; otherwise pdFALSE, with *ticks_to_wait cut to what is left. */
+BaseType_t xTaskCheckForTimeOut(TimeOut_t *timeout, TickType_t *ticks_to_wait)
+{
+    configASSERT(timeout != NULL && ticks_to_wait != NULL);
+    if (*ticks_to_wait == portMAX_DELAY) return pdFALSE;
+
+    TickType_t elapsed = now_tick - timeout->xTimeOnEntering;
+    if ((tick_overflows != timeout->xOverflowCount) && (now_tick >= timeout->xTimeOnEntering)) {
+        *ticks_to_wait = 0;   /* the tick count wrapped all the way round since the wait started */
+        return pdTRUE;
+    }
+    if (elapsed < *ticks_to_wait) {
+        *ticks_to_wait -= elapsed;
+        vTaskSetTimeOutState(timeout);
+        return pdFALSE;
+    }
+    *ticks_to_wait = 0;
+    return pdTRUE;
+}
 
 void fake_rtos_enter_critical(void) { critical_depth++; }
 void fake_rtos_exit_critical(void)
@@ -352,6 +392,7 @@ static bool cond_queue_has_item(const void *ctx) { const struct fake_queue *q = 
 BaseType_t xQueueSend(QueueHandle_t q, const void *item, TickType_t ticks)
 {
     configASSERT(q != NULL);
+    configASSERT(!((suspend_depth > 0) && (ticks != 0u)));   /* as FreeRTOS: no waiting with the scheduler suspended */
     if (!block_until(cond_queue_has_room, q, ticks, "xQueueSend")) return errQUEUE_FULL;
     UBaseType_t tail = (q->head + q->count) % q->length;
     memcpy(&q->storage[tail * q->item_size], item, q->item_size);
@@ -359,14 +400,32 @@ BaseType_t xQueueSend(QueueHandle_t q, const void *item, TickType_t ticks)
     return pdTRUE;
 }
 
+/* As FreeRTOS: only for a queue of length 1; replaces the item it holds, never waits. */
+BaseType_t xQueueOverwrite(QueueHandle_t q, const void *item)
+{
+    configASSERT(q != NULL);
+    configASSERT(q->length == 1u);
+    memcpy(q->storage, item, q->item_size);
+    q->head = 0;
+    q->count = 1;
+    return pdPASS;
+}
+
 BaseType_t xQueueReceive(QueueHandle_t q, void *buffer, TickType_t ticks)
 {
     configASSERT(q != NULL);
+    configASSERT(!((suspend_depth > 0) && (ticks != 0u)));   /* as FreeRTOS: no waiting with the scheduler suspended */
     if (!block_until(cond_queue_has_item, q, ticks, "xQueueReceive")) return pdFALSE;
     memcpy(buffer, &q->storage[q->head * q->item_size], q->item_size);
     q->head = (q->head + 1u) % q->length;
     q->count--;
     return pdTRUE;
+}
+
+UBaseType_t uxQueueSpacesAvailable(QueueHandle_t q)
+{
+    configASSERT(q != NULL);
+    return q->length - q->count;
 }
 
 /* ---------------------------------------------------------------- event groups */
@@ -457,6 +516,7 @@ TimerHandle_t xTimerCreate(const char *name, TickType_t period, UBaseType_t auto
                            void *timer_id, TimerCallbackFunction_t callback)
 {
     (void)name;
+    configASSERT(period > 0u);   /* as FreeRTOS: a timer needs a period */
     struct fake_timer *t = calloc(1, sizeof(*t));
     TEST_ASSERT_NOT_NULL_MESSAGE(t, "fake_rtos: out of memory");
     t->period = period;
@@ -480,9 +540,13 @@ BaseType_t xTimerChangePeriod(TimerHandle_t t, TickType_t new_period, TickType_t
 {
     (void)ticks;
     configASSERT(t != NULL);
+    configASSERT(new_period > 0u);   /* FreeRTOS asserts too, in the timer service task */
     t->period = new_period;
-    t->active = true;
+    t->active = true;   /* a change also starts a dormant timer */
     return pdPASS;
 }
 
 void *pvTimerGetTimerID(TimerHandle_t t) { configASSERT(t != NULL); return t->id; }
+TickType_t  xTimerGetPeriod(TimerHandle_t t)      { configASSERT(t != NULL); return t->period; }
+BaseType_t  xTimerIsTimerActive(TimerHandle_t t)  { configASSERT(t != NULL); return t->active ? pdTRUE : pdFALSE; }
+UBaseType_t uxTimerGetReloadMode(TimerHandle_t t) { configASSERT(t != NULL); return t->auto_reload ? pdTRUE : pdFALSE; }

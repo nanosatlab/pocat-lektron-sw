@@ -4,6 +4,7 @@
 static ClockFreq_t current_freq = CLK_FREQ_80MHZ;
 static int switch_count, reconfigure_count, init_count, last_switch_suspend_depth;
 static ClockFreq_t last_switch_freq, last_reconfigure_freq;
+static void (*switch_hook)(void);
 
 void fake_clock_reset(void)
 {
@@ -11,7 +12,10 @@ void fake_clock_reset(void)
     switch_count = reconfigure_count = init_count = 0;
     last_switch_suspend_depth = 0;
     last_switch_freq = last_reconfigure_freq = CLK_FREQ_80MHZ;
+    switch_hook = NULL;
 }
+
+void fake_clock_set_switch_hook(void (*hook)(void)) { switch_hook = hook; }
 
 void fake_clock_set_current(ClockFreq_t f) { current_freq = f; }
 int  fake_clock_switch_count(void) { return switch_count; }
@@ -28,6 +32,7 @@ bool clock_switch_to_freq(ClockFreq_t freq)
     switch_count++;
     last_switch_freq = freq;
     last_switch_suspend_depth = fake_rtos_suspend_all_depth();
+    if (switch_hook != NULL) switch_hook();
     current_freq = freq;
     return true;
 }

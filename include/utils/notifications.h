@@ -2,12 +2,11 @@
  * @file notifications.h
  * @brief Inter-task notification bit definitions.
  *
- * Each task has an array of notification slots; two are used:
- *   index 0 — general signalling. Per-task bitmask (eSetBits), read by
- *             wait_for_notification(). A bit's meaning is per task, so the
- *             N_<TARGET>_* groups below reuse low bits independently.
- *   index 1 — OBDH flash completion (OBDH_NOTIFY_IDX): the HAL status as a
- *             whole value (eSetValueWithOverwrite).
+ * Each task has one notification slot (index 0), for general signalling: a
+ * per-task bitmask (eSetBits), read by wait_for_notification(). A bit's
+ * meaning is per task, so the N_<TARGET>_* groups below reuse low bits
+ * independently. OBDH answers its requests through reply queues, never
+ * through notifications (obdh.h).
  *
  * Naming convention: N_<TARGET>_<ACTION>
  */
@@ -16,13 +15,6 @@
 
 #include <stdint.h>
 #include "FreeRTOS.h"   /* for TickType_t */
-
-/* ════════════════════════ Notification indices ═════════════════════════ */
-/* Index 0 carries every N_* bit and is read by wait_for_notification().
-   Index 1 is reserved for the OBDH flash round-trip, so a flash completion can
-   never collide with a task's own signalling. */
-#define OBDH_NOTIFY_IDX                    1u   /**< Flash completion; notification value = HAL status */
-
 
 /* ═══════════ Index 0 — GLOBAL notifications (sent to any task) ═══════════ */
 #define N_TASK_PAUSE                       (1u << 30)  /**< OBC requests task to quiesce and ACK */
@@ -41,17 +33,20 @@
 
 /* ── OBC Task Notifications ─────────────────────────────────────────────── */
 
-#define N_OBC_EXIT_STATE_TO_OBC_STATE_NM   (1u << 0)  /**< Permission to upgrade state to NM */
-#define N_OBC_EXIT_STATE_TO_OBC_STATE_CM   (1u << 1)  /**< Transition state to CM */
-#define N_OBC_EXIT_STATE_TO_OBC_STATE_SSM  (1u << 2)  /**< Transition state to SSM */
-#define N_OBC_EXIT_STATE_TO_OBC_STATE_SM   (1u << 3)  /**< Transition state to SM */
-#define N_OBC_UPDATE_TIME                  (1u << 4)  /**< New Unix timestamp available to sync */
-#define N_OBC_HARD_REBOOT                  (1u << 5)  /**< Perform a hard reboot (including flash) */
-#define N_OBC_SOFT_REBOOT                  (1u << 6)  /**< Perform a soft reboot (without clearing flash) */
-#define N_OBC_PERIPHERALS_REBOOT           (1u << 7)  /**< Reboot peripheral devices */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL      (1u << 0)  /**< Permission to upgrade state to NOMINAL */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY  (1u << 1)  /**< Transition state to CONTINGENCY */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE      (1u << 2)  /**< Transition state to SUNSAFE */
+#define N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL     (1u << 3)  /**< Transition state to SURVIVAL */
+#define N_OBC_UPDATE_TIME                          (1u << 4)  /**< New Unix timestamp available to sync */
+#define N_OBC_HARD_REBOOT                          (1u << 5)  /**< Perform a hard reboot (including flash) */
+#define N_OBC_SOFT_REBOOT                          (1u << 6)  /**< Perform a soft reboot (without clearing flash) */
+#define N_OBC_PERIPHERALS_REBOOT                   (1u << 7)  /**< Reboot peripheral devices */
+#define N_OBC_PING_RECEIVED                        (1u << 8)  /**< The ground sent TC_PING: ends Init at its first-contact step */
 
-#define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_OBC_STATE_NM | N_OBC_EXIT_STATE_TO_OBC_STATE_CM | \
-                                N_OBC_EXIT_STATE_TO_OBC_STATE_SSM | N_OBC_EXIT_STATE_TO_OBC_STATE_SM)
+#define N_OBC_EXIT_STATE_GROUP_MASK (N_OBC_EXIT_STATE_TO_OBC_STATE_NOMINAL | \
+                                     N_OBC_EXIT_STATE_TO_OBC_STATE_CONTINGENCY | \
+                                     N_OBC_EXIT_STATE_TO_OBC_STATE_SUNSAFE | \
+                                     N_OBC_EXIT_STATE_TO_OBC_STATE_SURVIVAL)
 
 /* ── COMMS Task Notifications ───────────────────────────────────────────── */
 
@@ -60,6 +55,7 @@
 #define N_COMMS_STOP_RF                  (1u << 2)  /**< Stop RF transmission */
 #define N_COMMS_RESUME_RF                (1u << 3)  /**< Resume RF transmission */
 #define N_COMMS_TRANSMIT_BEACON          (1u << 4)  /**< Transmit the beacon (deprecated: use beacon timeout) */
+#define N_COMMS_NEW_BEACON_PERIOD        (1u << 5)  /**< A new beacon period is stored: the beacon task applies it (beacon_period.h) */
 
 /* ── Transceiver Task Notifications ────────────────────────────────────────── */
 

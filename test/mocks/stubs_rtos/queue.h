@@ -6,6 +6,8 @@ typedef struct fake_queue *QueueHandle_t;
 
 QueueHandle_t xQueueCreate(UBaseType_t length, UBaseType_t item_size);
 BaseType_t    xQueueSend(QueueHandle_t q, const void *item, TickType_t ticks);
+BaseType_t    xQueueOverwrite(QueueHandle_t q, const void *item);
 BaseType_t    xQueueReceive(QueueHandle_t q, void *buffer, TickType_t ticks);
+UBaseType_t   uxQueueSpacesAvailable(QueueHandle_t q);
 
 #endif

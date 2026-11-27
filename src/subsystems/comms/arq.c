@@ -10,8 +10,9 @@
 #include "notifications.h"
 #include "task_management.h"
 #include "types.h"
-#include "flash.h"
+#include "hk_history.h"
 #include "obdh_requests.h"
+#include "param_store.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include <string.h>
@@ -29,6 +30,9 @@ typedef enum {
     ARQ_UL_ACTIVE,   /* OBC is receiver (uplink) */
 } arq_state_t;
 
+/* DL: copies n bytes of the session's data, from byte offset on */
+typedef void (*dl_source_t)(uint32_t offset, uint8_t *out, uint32_t n);
+
 typedef struct {
     arq_state_t     state;
     uint8_t         session_id;
@@ -38,9 +42,8 @@ typedef struct {
     uint16_t        total_blocks;
     uint32_t        total_bytes;
 
-    /* DL params from the triggering TC */
-    uint8_t         dl_params[8];
-    uint8_t         dl_params_len;
+    /* DL: where the session's bytes come from, all in RAM */
+    dl_source_t     dl_source;
 
     /* UL reassembly */
     uint8_t         ul_buf[ARQ_UL_BUF_MAX];
@@ -52,85 +55,67 @@ typedef struct {
 
 static arq_session_t g_sess;
 
-/* ---- Flash address map for DL transfer types ---- */
+/* ---- DL data: each session sends from RAM (docs/FLASH-USAGE-SPECIFICATION.md §5.4, §6) ---- */
 
-/* TRANSFER_OBC_LOG has no real log-to-flash capture subsystem yet (it reuses
- * the telemetry area as a stand-in source). To exercise the ARQ engine and
- * measure throughput at a realistic size (test-campaign.md §3.2) without
- * reading into unrelated flash regions, OBC_LOG sessions cycle through a
- * small, legitimately-OBC_LOG-owned window of flash, repeating it as many
- * times as needed to reach ARQ_OBC_LOG_TOTAL_BYTES — see dl_block_addr(). */
+/* TRANSFER_OBC_LOG has no store yet. Its sessions send a generated test
+ * pattern instead, so the ARQ engine and its throughput can be tested at a
+ * realistic size (test-campaign.md §3.2) without reading flash. The pattern
+ * is byte i = i mod 251: with a prime, no two blocks of a session are the
+ * same, so the tests also catch a block put in the wrong place. */
 #define ARQ_OBC_LOG_TOTAL_BYTES  8192u
-#define ARQ_OBC_LOG_SRC_WINDOW    256u   /* TELEMETRY_ADDR .. COUNT_PACKET_ADDR */
+#define ARQ_OBC_LOG_PATTERN       251u
 
-static uint32_t dl_base_addr(transfer_type_t type)
+/* HK history: the copy the session sends, resends and computes its CRC from.
+ * It is the active session's data: it is written only while no session is active. */
+static uint8_t dl_copy[HK_HISTORY_MAX];
+
+static void hk_history_source(uint32_t offset, uint8_t *out, uint32_t n)
 {
-    switch (type) {
-    case TRANSFER_HK_HISTORY:    return TELEMETRY_ADDR;
-    case TRANSFER_PAYLOAD_DATA:  return PHOTO_ADDR;
-    default:                     return TELEMETRY_ADDR; /* OBC_LOG: reuse telemetry area */
+    memcpy(out, &dl_copy[offset], n);
+}
+
+static void obc_log_source(uint32_t offset, uint8_t *out, uint32_t n)
+{
+    for (uint32_t i = 0u; i < n; i++) {
+        out[i] = (uint8_t)((offset + i) % ARQ_OBC_LOG_PATTERN);
     }
 }
 
-/* Flash address to read for one DL block. OBC_LOG wraps within
- * ARQ_OBC_LOG_SRC_WINDOW (repeating content) since its source bytes are a
- * placeholder, not a real per-block log buffer; other transfer types read
- * linearly as before. */
-static uint32_t dl_block_addr(transfer_type_t type, uint32_t base_addr,
-                              uint16_t block_idx, uint8_t block_size)
+/* ---- UL destinations: each upload is one parameter (param_store.h) ---- */
+
+/**
+ * @brief Stores a completed upload as a parameter.
+ * @details An upload whose length is not the parameter's size is refused
+ *          (param_set_request() checks it), and nothing is written.
+ * @return true once the value is stored.
+ */
+static bool ul_store_param(param_id_t id, const uint8_t *data, uint32_t len)
 {
-    uint32_t off = (uint32_t)block_idx * block_size;
-    if (type == TRANSFER_OBC_LOG) {
-        off %= ARQ_OBC_LOG_SRC_WINDOW;
-    }
-    return base_addr + off;
+    HAL_StatusTypeDef status = param_set_request(id, data, len, OBDH_REQUEST_WAIT);
+    printf("ARQ: %lu B for parameter 0x%02x, status %d\r\n", (unsigned long)len, (unsigned)id, (int)status);
+    return status == HAL_OK;
 }
 
-/* Return total bytes for a DL session based on type and params. */
-static uint32_t dl_total_bytes(transfer_type_t type, const uint8_t *p, uint8_t plen)
-{
-    switch (type) {
-    case TRANSFER_PAYLOAD_DATA: {
-        /* p[0]=MEASURE_NUMBER, p[1:2]=FIRST_BLOCK, p[3:4]=BLOCK_COUNT */
-        uint16_t block_count = (plen >= 5u) ?
-            (uint16_t)(((uint16_t)p[3] << 8) | p[4]) : 0u;
-        if (block_count == 0u) { block_count = 20u; }
-        return (uint32_t)block_count * ARQ_BLOCK_SIZE;
-    }
-    case TRANSFER_HK_HISTORY:
-        return 2048u; /* 2 KB of historic HK (≈128 × 16-B records) */
-    case TRANSFER_OBC_LOG:
-        return ARQ_OBC_LOG_TOTAL_BYTES;
-    default:
-        return 1024u;
-    }
-}
-
-/* ---- UL flash write destinations ---- */
-
-static void ul_write_flash(transfer_type_t type, const uint8_t *data, uint32_t len)
+/**
+ * @brief Stores a completed upload; tells ADCS about a new TLE or calibration only once it is stored.
+ */
+static void ul_store(transfer_type_t type, const uint8_t *data, uint32_t len)
 {
     TaskHandle_t adcs = tm_get_task_handle(TM_TASK_ADCS);
 
     switch (type) {
     case TRANSFER_TLE_UPLOAD:
-        obdh_write_request(TLE_ADDR, data, len);
-        if (adcs != NULL) {
+        if (ul_store_param(PARAM_TLE, data, len) && (adcs != NULL)) {
             xTaskNotify(adcs, N_ADCS_NEW_TLE, eSetBits);
         }
-        printf("ARQ: TLE written %lu B\r\n", (unsigned long)len);
         break;
     case TRANSFER_ADCS_CALIBRATION:
-        obdh_write_request(CALIBRATION_ADDR, data, len);
-        if (adcs != NULL) {
+        if (ul_store_param(PARAM_ADCS_CALIBRATION, data, len) && (adcs != NULL)) {
             xTaskNotify(adcs, N_ADCS_NEW_CALIBRATION, eSetBits);
         }
-        printf("ARQ: ADCS cal written %lu B\r\n", (unsigned long)len);
         break;
     case TRANSFER_FLIGHT_PARAMS:
-        if (len > 8u) { len = 8u; }
-        obdh_write_request(RFI_CONFIG_ADDR, data, len);
-        printf("ARQ: flight params written %lu B\r\n", (unsigned long)len);
+        (void)ul_store_param(PARAM_RFI_CONFIG, data, len);
         break;
     default:
         printf("ARQ: UL unknown type 0x%02x\r\n", (unsigned)type);
@@ -153,22 +138,16 @@ static void arq_tx_raw(const uint8_t *buf, uint8_t len)
 }
 
 /* CAD + transmit + wait TX_DONE for one DATA block. */
-static void arq_send_data_block(transfer_type_t type, uint8_t session_id,
-                                 uint16_t block_idx, uint8_t block_size,
-                                 uint8_t actual_size, uint32_t base_addr,
+static void arq_send_data_block(uint8_t session_id, uint16_t block_idx,
+                                 uint8_t block_size, uint8_t actual_size,
                                  bool is_retx)
 {
-    uint8_t block_data[ARQ_BLOCK_SIZE];
-    memset(block_data, 0xFF, sizeof(block_data)); /* a refused read (outside the old map pages) sends erased-flash bytes */
-    obdh_read_old_request(dl_block_addr(type, base_addr, block_idx, block_size),
-                          block_data, actual_size);
-
     /* DATA payload: [SESSION_ID][BLOCK_INDEX_HI][BLOCK_INDEX_LO][data...] */
     uint8_t payload[3u + ARQ_BLOCK_SIZE];
     payload[0] = session_id;
     payload[1] = (uint8_t)(block_idx >> 8);
     payload[2] = (uint8_t)(block_idx);
-    memcpy(&payload[3], block_data, actual_size);
+    g_sess.dl_source((uint32_t)block_idx * block_size, &payload[3], actual_size);
 
     uint8_t flags = is_retx ? AIR_FLAG_IS_RETX : 0u;
     uint8_t frame_buf[AIR_FRAME_MAX];
@@ -365,37 +344,61 @@ bool arq_active(void)
     return g_sess.state != ARQ_IDLE;
 }
 
-int arq_begin_dl(uint8_t session_id, transfer_type_t type,
-                 const uint8_t *params, uint8_t params_len)
+/**
+ * @brief Starts a DL session and wakes the transceiver task to send it.
+ * @details The caller has checked that no session is active, so nothing else
+ *          reads or writes the session meanwhile: only the comms task starts one.
+ */
+static void begin_dl(uint8_t session_id, transfer_type_t type,
+                     uint32_t total_bytes, dl_source_t source)
 {
-    printf("ARQ: request begin DL session_id=%u type=0x%02x params_len=%u\r\n",
-           (unsigned)session_id, (unsigned)type, (unsigned)params_len);
-    if (g_sess.state != ARQ_IDLE) { return -1; }
-
     memset(&g_sess, 0, sizeof(g_sess));
-    g_sess.state         = ARQ_DL_ACTIVE;
     g_sess.session_id    = session_id;
     g_sess.transfer_type = type;
     g_sess.window_size   = ARQ_WINDOW_SIZE;
     g_sess.block_size    = ARQ_BLOCK_SIZE;
+    g_sess.total_bytes   = total_bytes;
+    g_sess.total_blocks  = (uint16_t)((total_bytes + ARQ_BLOCK_SIZE - 1u)
+                                      / ARQ_BLOCK_SIZE);
+    g_sess.dl_source     = source;
+    g_sess.state         = ARQ_DL_ACTIVE;
 
-    if (params != NULL && params_len > 0u && params_len <= sizeof(g_sess.dl_params)) {
-        memcpy(g_sess.dl_params, params, params_len);
-        g_sess.dl_params_len = params_len;
-    }
-
-    g_sess.total_bytes  = dl_total_bytes(type, params, params_len);
-    g_sess.total_blocks = (uint16_t)((g_sess.total_bytes + ARQ_BLOCK_SIZE - 1u)
-                                     / ARQ_BLOCK_SIZE);
-
-    printf("ARQ: begin DL session_id=%u type=%u total_blocks=%u\r\n",
-           (unsigned)session_id, (unsigned)type, (unsigned)g_sess.total_blocks);
+    printf("ARQ: begin DL session_id=%u type=0x%02x total_bytes=%lu total_blocks=%u\r\n",
+           (unsigned)session_id, (unsigned)type, (unsigned long)total_bytes,
+           (unsigned)g_sess.total_blocks);
 
     TaskHandle_t trx = tm_get_task_handle(TM_TASK_TRANSCEIVER);
     if (trx != NULL) {
         xTaskNotify(trx, N_TRANSCEIVER_ARQ_DL_BIT, eSetBits);
     }
-    return 0;
+}
+
+arq_dl_result_t arq_begin_hk_history(uint8_t session_id, uint32_t from_seq)
+{
+    if (g_sess.state != ARQ_IDLE) {
+        return ARQ_DL_SESSION_ACTIVE;   /* dl_copy may be the active session's data */
+    }
+
+    uint32_t len = 0u;
+    switch (hk_history_request(from_seq, dl_copy, &len, OBDH_REQUEST_WAIT)) {
+    case HAL_OK:
+        begin_dl(session_id, TRANSFER_HK_HISTORY, len, hk_history_source);
+        return ARQ_DL_STARTED;
+    case HAL_ERROR:
+        return ARQ_DL_NO_DATA;
+    default:   /* HAL_BUSY, HAL_TIMEOUT */
+        return ARQ_DL_STORE_BUSY;
+    }
+}
+
+arq_dl_result_t arq_begin_obc_log(uint8_t session_id)
+{
+    if (g_sess.state != ARQ_IDLE) {
+        return ARQ_DL_SESSION_ACTIVE;
+    }
+
+    begin_dl(session_id, TRANSFER_OBC_LOG, ARQ_OBC_LOG_TOTAL_BYTES, obc_log_source);
+    return ARQ_DL_STARTED;
 }
 
 void arq_arm_ul(transfer_type_t type)
@@ -561,7 +564,7 @@ int arq_rx(const AirFrame_t *frame)
         printf("ARQ: UL complete, CRC32 ok, writing %lu B\r\n",
                (unsigned long)computed_len);
 
-        ul_write_flash(g_sess.transfer_type, g_sess.ul_buf, computed_len);
+        ul_store(g_sess.transfer_type, g_sess.ul_buf, computed_len);
 
         g_sess.state = ARQ_IDLE;
         return 1;
@@ -586,7 +589,6 @@ void arq_run_dl(QueueHandle_t rx_q)
     const uint16_t total    = g_sess.total_blocks;
     const uint32_t tbytes   = g_sess.total_bytes;
     const transfer_type_t ttype = g_sess.transfer_type;
-    const uint32_t base_addr = dl_base_addr(ttype);
 
     /* WINDOW_TIMEOUT_MS = W × ToA(DATA_max) + ToA(DATA_ACK_max=12B) + 500 */
     uint32_t win_timeout = (uint32_t)wsz * lora_toa_ms(3u + bsize)
@@ -641,7 +643,7 @@ void arq_run_dl(QueueHandle_t rx_q)
                 uint8_t rem = (uint8_t)(tbytes % bsize);
                 if (rem != 0u) { actual = rem; }
             }
-            arq_send_data_block(ttype, sid, tx_next, bsize, actual, base_addr,
+            arq_send_data_block(sid, tx_next, bsize, actual,
                                 retx_attempts > 0u);
             tx_next++;
             health_kick(HEALTH_BIT_TRANSCEIVER);
@@ -700,7 +702,7 @@ void arq_run_dl(QueueHandle_t rx_q)
                 uint8_t rem = (uint8_t)(tbytes % bsize);
                 if (rem != 0u) { actual = rem; }
             }
-            arq_send_data_block(ttype, sid, tx_base, bsize, actual, base_addr, true);
+            arq_send_data_block(sid, tx_base, bsize, actual, true);
             health_kick(HEALTH_BIT_TRANSCEIVER);
         }
 
@@ -719,7 +721,7 @@ void arq_run_dl(QueueHandle_t rx_q)
                     uint8_t rem = (uint8_t)(tbytes % bsize);
                     if (rem != 0u) { actual = rem; }
                 }
-                arq_send_data_block(ttype, sid, blk, bsize, actual, base_addr, true);
+                arq_send_data_block(sid, blk, bsize, actual, true);
                 health_kick(HEALTH_BIT_TRANSCEIVER);
             }
         }
@@ -742,8 +744,7 @@ void arq_run_dl(QueueHandle_t rx_q)
             if (rem != 0u) { actual = rem; }
         }
         uint8_t blk_buf[ARQ_BLOCK_SIZE];
-        memset(blk_buf, 0xFF, sizeof(blk_buf)); /* same bytes as arq_send_data_block() sent */
-        obdh_read_old_request(dl_block_addr(ttype, base_addr, blk, bsize), blk_buf, actual);
+        g_sess.dl_source((uint32_t)blk * bsize, blk_buf, actual);   /* the bytes arq_send_data_block() sent */
         crc = crc32_update(crc, blk_buf, actual);
         health_kick(HEALTH_BIT_TRANSCEIVER);
     }

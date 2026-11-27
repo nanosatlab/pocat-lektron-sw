@@ -73,15 +73,16 @@ typedef enum {
     NACK_ARQ_SESSION_FULL   = 0x09,
     NACK_ARQ_BAD_WINDOW     = 0x0A,
     NACK_CONFIG_REJECTED    = 0x0B,
+    NACK_NO_DATA            = 0x0C,   /* a downlink request found nothing stored to send */
 } nack_reason_t;
 
 /* ---------- TC_ID catalogue (§10) ---------- */
 typedef enum {
     TC_PING                    = 0x01,
-    TC_TRANSIT_TO_NM           = 0x02,
-    TC_TRANSIT_TO_CM           = 0x03,
-    TC_TRANSIT_TO_SSM          = 0x04,
-    TC_TRANSIT_TO_SM           = 0x05,
+    TC_TRANSIT_TO_NOMINAL      = 0x02,
+    TC_TRANSIT_TO_CONTINGENCY  = 0x03,
+    TC_TRANSIT_TO_SUNSAFE      = 0x04,
+    TC_TRANSIT_TO_SURVIVAL     = 0x05,
     TC_LORA_CONFIG             = 0x08,
     TC_COMMS_PARAMS            = 0x09,
     TC_UPLOAD_UNIX_TIME        = 0x0A,

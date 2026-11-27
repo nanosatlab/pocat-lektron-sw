@@ -56,10 +56,11 @@ void comms_task(void *pv_parameters)
 
     for (;;) {
         uint32_t notif = 0;
-        xTaskNotifyWait(0, 0xFFFFFFFFu, &notif, 0);
+        xTaskNotifyWait(0, 0xFFFFFFFFu, &notif, 0);   /* no wait: the RX queue below paces the loop */
 
-        if (tm_check_pause(notif, &deferred_notifications)) {
-            continue;
+        /* Paused: sleep until the resume. Polling here would starve every lower-priority task. */
+        while (tm_check_pause(notif, &deferred_notifications)) {
+            xTaskNotifyWait(0, 0xFFFFFFFFu, &notif, portMAX_DELAY);
         }
 
         notif |= deferred_notifications;

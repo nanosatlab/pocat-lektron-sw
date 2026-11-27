@@ -11,8 +11,11 @@
 #ifndef INC_OBC_H_
 #define INC_OBC_H_
 
+#include <stdbool.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
+#include "main.h"
 #include "state_machine.h"
 
 // TODO: revisar stack sizes y prioridades!
@@ -42,5 +45,20 @@
  * @param pv_parameters Task parameter provided by xTaskCreate(); currently unused.
  */
 void obc_task(void *pv_parameters);
+
+/**
+ * @brief Whether the caller is the OBC task.
+ * @details The functions only the OBC task may run call it first and do
+ *          nothing for any other caller: those that change the OBC state,
+ *          create, pause, resume or reset tasks, or run the health check. It
+ *          is false before the scheduler starts: the current task FreeRTOS
+ *          reports then is not the caller.
+ * @return true in the OBC task only.
+ */
+static inline bool obc_is_caller(void)
+{
+    return (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) &&
+           (xTaskGetCurrentTaskHandle() == main_get_obc_handle());
+}
 
 #endif /* INC_OBC_H_ */

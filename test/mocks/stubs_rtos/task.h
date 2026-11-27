@@ -18,6 +18,12 @@ typedef enum {
 #define taskSCHEDULER_NOT_STARTED ((BaseType_t)1)
 #define taskSCHEDULER_RUNNING     ((BaseType_t)2)
 
+/** @brief Start of a wait, for xTaskCheckForTimeOut(); the same fields as FreeRTOS's, which uptime.c reads. */
+typedef struct {
+    BaseType_t xOverflowCount;    /**< Tick overflows when the wait started, or when it was last checked. */
+    TickType_t xTimeOnEntering;   /**< Tick count at that moment. */
+} TimeOut_t;
+
 void fake_rtos_enter_critical(void);
 void fake_rtos_exit_critical(void);
 #define taskENTER_CRITICAL() fake_rtos_enter_critical()
@@ -35,6 +41,8 @@ void         vTaskDelay(TickType_t ticks);
 void         vTaskSuspendAll(void);
 BaseType_t   xTaskResumeAll(void);
 BaseType_t   xTaskGetSchedulerState(void);
+void         vTaskSetTimeOutState(TimeOut_t *timeout);
+BaseType_t   xTaskCheckForTimeOut(TimeOut_t *timeout, TickType_t *ticks_to_wait);
 
 BaseType_t xTaskNotify(TaskHandle_t t, uint32_t value, eNotifyAction action);
 BaseType_t xTaskNotifyIndexed(TaskHandle_t t, UBaseType_t idx, uint32_t value, eNotifyAction action);

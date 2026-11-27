@@ -1,28 +1,32 @@
 /**
  * @file fake_obdh_requests.h
- * @brief Fake of the four OBDH flash requests, backed by a RAM copy of the whole 1 MB internal flash, with a call log.
+ * @brief Fake of the OBDH parameter write, served at once by the real parameter store; with a call log.
  * @date 2026-10-23
+ * @note Modified on 2026-11-21: obdh_write_request() deleted (flash plan step 3);
+ * parameter writes added; the region, program, erase and old-map requests
+ * deleted with the flash image (step 5a). On 2026-11-24 the block time was
+ * added to the log (step 5b).
  *
  * @details
- * On the satellite, `obdh_*_request()` (include/subsystems/obdh/obdh_requests.h)
- * sends a request to the OBDH task and blocks until OBDH has accessed the
- * flash. This fake serves the request immediately from a RAM image instead.
- * Tests can then read what was written, or preset bytes before running the
- * code.
+ * On the satellite, `obdh_param_write_request()` (include/subsystems/obdh/obdh_requests.h)
+ * sends the write to the OBDH task and waits, at most its block time, until
+ * OBDH has run `param_store_write()`. This fake runs it immediately instead,
+ * and ignores the block time. It runs it as the OBDH task, the task
+ * `tm_get_task_handle(TM_TASK_OBDH)` returns, since the store refuses any
+ * other caller (spec FLS-REQ-110); the calling task is current again after.
+ * The request protocol itself is tested in test_obdh_requests.c.
  *
- * | Request                          | Effect on the image                                         |
- * |----------------------------------|-------------------------------------------------------------|
- * | `obdh_read_request`              | copies bytes out                                            |
- * | `obdh_write_request`             | copies bytes in (like flash_write's read-modify-write)      |
- * | `obdh_program_request`           | ANDs bytes in (programming can only clear bits)             |
- * | `obdh_erase_program_request`     | sets the 2 KB page to 0xFF, then ANDs bytes in              |
+ * A suite that uses it links the real param_store.c, crc32.c and a flash
+ * driver for the store (mocks/fake_flash_driver.c), and provides
+ * tm_get_task_handle(), real or faked, with an OBDH task.
  *
- * Every call is logged (operation, address, length), even calls that fail.
- * A request with NULL data, length 0, or a range outside the flash returns
- * `HAL_ERROR`, like the real request functions.
+ * Every call is logged with its ID, length and block time, even calls that
+ * fail. Like the OBDH requests, a write
+ * returns `HAL_ERROR` when its data is NULL or its length is 0 or above
+ * `OBDH_DATA_MAX`.
  *
- * @note The older suite test_ht_handling uses mocks/mock_obdh_requests.c
- * instead, which covers only the HT region. Never link both into one suite.
+ * @note The HT operations, obdh_ht_post() and obdh_ht_read_request(), are not
+ * faked here: test_ht_store fakes them itself.
  */
 #ifndef FAKE_OBDH_REQUESTS_H
 #define FAKE_OBDH_REQUESTS_H
@@ -30,37 +34,31 @@
 #include <stdint.h>
 #include "obdh_requests.h"
 
-#define FAKE_FLASH_BASE 0x08000000u   /**< First address of the image (start of internal flash). */
-#define FAKE_FLASH_SIZE 0x00100000u   /**< Image size: the full 1 MB of the STM32L476RG. */
-
-/** @brief Which request was made. */
-typedef enum { FAKE_OBDH_READ, FAKE_OBDH_WRITE, FAKE_OBDH_PROGRAM, FAKE_OBDH_ERASE_PROGRAM } fake_obdh_op_t;
-
-/** @brief One entry of the call log. */
+/** @brief One entry of the call log: a parameter write. */
 typedef struct {
-    fake_obdh_op_t op;   /**< Request type. */
-    uint32_t       addr; /**< Flash address passed by the caller. */
-    size_t         len;  /**< Length passed by the caller. */
+    uint8_t    id;      /**< The parameter ID. */
+    size_t     len;     /**< Length passed by the caller. */
+    TickType_t ticks;   /**< Block time passed by the caller. */
 } fake_obdh_call_t;
 
-/** @brief Resets the image to erased flash (all 0xFF), clears the call log, and removes any injected error. Call it in `setUp()`. */
+/** @brief Hook run at the start of every request, before it is served. */
+typedef void (*fake_obdh_request_hook_t)(void);
+
+/** @brief Clears the call log, and removes any injected error and the hook. Call it in `setUp()`. */
 void fake_obdh_reset(void);
 
 /**
- * @brief Makes every later request fail with @p err without touching the image.
- * @param err For example `HAL_ERROR` or `HAL_BUSY`; `HAL_OK` turns injection off.
+ * @brief Makes every later request fail with @p err without serving it.
+ * @param err For example `HAL_ERROR`, `HAL_BUSY` or `HAL_TIMEOUT`; `HAL_OK` turns injection off.
  */
 void fake_obdh_inject_error(HAL_StatusTypeDef err);
 
 /**
- * @brief Returns a pointer into the image at flash address @p addr, to read results or preset bytes.
- * @return NULL if @p addr is outside 0x08000000..0x080FFFFF.
- * @code
- * fake_obdh_flash(DEPLOYMENT_STATE_ADDR)[0] = 0xAA;            // preset before the code runs
- * TEST_ASSERT_EQUAL_UINT8(OBC_STATE_SM, fake_obdh_flash(CURRENT_STATE_ADDR)[0]);  // check after
- * @endcode
+ * @brief Installs a hook that runs at the start of every request, or removes it with NULL.
+ * @details For checks about the moment a request is sent, for example that
+ * the OBC never sends one while it holds OBDH paused (spec FLS-REQ-080).
  */
-uint8_t *fake_obdh_flash(uint32_t addr);
+void fake_obdh_set_request_hook(fake_obdh_request_hook_t hook);
 
 /** @brief Returns the number of requests made since the last reset (at most 256 are stored). */
 int  fake_obdh_call_count(void);

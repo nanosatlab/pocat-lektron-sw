@@ -17,7 +17,7 @@
 
 ### A1. Short answer
 - **Where it belongs:** in `test/`. Keep extending the host test module you already have. Logic tests should run in Docker on Windows in seconds, with no board attached.
-- **What the "commands" are:** at first, each named test is a command. For example, `run_tests.sh state_machine` runs one subsystem's tests, and `run_tests.sh test_state_machine -f NM_to_SM` runs one scenario.
+- **What the "commands" are:** at first, each named test is a command. For example, `run_tests.sh state_machine` runs one subsystem's tests, and `run_tests.sh test_state_machine -f NOMINAL_to_SURVIVAL` runs one scenario.
 - **Later steps:**
   - A host "command catalogue" suite where every telecommand (TC) is a scenario.
   - Optionally, an interactive host simulator.
@@ -29,7 +29,7 @@
 |---|---|---|---|---|
 | (a) Host unit/integration tests in `test/` (Unity + fakes) | Compile real `.c` files with gcc and fake FreeRTOS/HAL | No hardware, fast, deterministic, can inject faults, runs in Docker. Infrastructure already exists | Can't check timing, preemption, or real peripherals | **Build first (Layers 1 and 2)** |
 | (b) On-target test/command mode (UART console or debug TCs) | Firmware option that takes typed commands on the Nucleo and injects them into the real tasks | Exercises the real RTOS, clocks and flash | Needs the board. The `RADIO_MOCK` path looks stale (KI-7). Code must never fly | **Later (Layer 4)** |
-| (c) Host command runner or simulator | A host executable that reads commands (`tc TRANSIT_TO_SM`, `state`, `tick 5000`) against the host build | "Try out the satellite" interactively | Needs (a)'s fakes first | **Later (Layer 3)** |
+| (c) Host command runner or simulator | A host executable that reads commands (`tc TRANSIT_TO_SURVIVAL`, `state`, `tick 5000`) against the host build | "Try out the satellite" interactively | Needs (a)'s fakes first | **Later (Layer 3)** |
 
 ### A3. The layers and the order to build them
 1. **Layer 1, unit tests per module (MVP, now).** Shared fakes, one suite per module, and a one-line CMake registration per suite.
@@ -45,7 +45,7 @@ docker run --rm -v ${PWD}:/app pocat-tests --list                     # list sui
 docker run --rm -v ${PWD}:/app pocat-tests --label obc                # one subsystem (ctest label)
 docker run --rm -v ${PWD}:/app pocat-tests state_machine              # suites matching a regex
 docker run --rm -v ${PWD}:/app pocat-tests test_state_machine -l      # list scenarios in a suite
-docker run --rm -v ${PWD}:/app pocat-tests test_state_machine -f NM_to_SM   # run matching scenarios only
+docker run --rm -v ${PWD}:/app pocat-tests test_state_machine -f NOMINAL_to_SURVIVAL   # run matching scenarios only
 ```
 This short form works because `Dockerfile.test` changes to `ENTRYPOINT ["bash","run_tests.sh"]`. Running with no arguments behaves exactly as it does today.
 
@@ -79,7 +79,7 @@ The MVP writes tests for the first four and marks them `IGNORED: KNOWN BUG`, so 
 |---|---|---|---|
 | notifications | Yes (MVP) | wait returns 0 / drains bits / set bits accumulate / index 1 doesn't leak into index 0 / global bits don't collide / TM bits equal ACK bits | — |
 | task_management | Yes (MVP) | create running/paused sets; task number = table index; health only for running tasks; create failure → pdFAIL; pause/resume handshake; deferral while paused; ACK timeout; health fault resets the right task; KI-4 | Real preemption and priorities |
-| OBC state_machine | Yes (MVP) | freq per state; boot sets per state; NM→SM clock switch once; CM keeps 80 MHz; state persisted; pause old / resume new; no exit bit → no-op; NM priority; KB-3 ×2 | Real clock/peripheral reconfiguration |
+| OBC state_machine | Yes (MVP) | freq per state; boot sets per state; NOMINAL→SURVIVAL clock switch once; CONTINGENCY keeps 80 MHz; state persisted; pause old / resume new; no exit bit → no-op; NOMINAL priority; KB-3 ×2 *(Later: since 2026-11-26 every boot starts in Init and the state is not stored)* | Real clock/peripheral reconfiguration |
 | OBC task (`obc.c`) | Phase 2 | forwards exit bits to the state machine; setup persists boot time | IWDG reset itself |
 | health | Phase 2 | no fault before period; missing kick reported; grace for newly expected tasks; IWDG refreshed only after a clean period; tick wraparound | — |
 | OBDH | Phase 2 | read/write round trip; NULL buffer error; queue full → BUSY; client notified on index 1 only; paused OBDH doesn't serve; KI-5 | Real HAL_FLASH errors, erase timing, power cut |
@@ -214,7 +214,7 @@ pocat_add_suite(test_comms_frame LABEL comms              # suite #includes auth
 ```
 - The fake sources are compiled into each suite, not into a shared library. This avoids mixing sanitized and unsanitized objects.
 - If ASan or UBSan makes `test_ht_handling` behave differently from today, add `NO_SANITIZE` to it with a comment, and report what the sanitizer said. It may be a real finding.
-- `test_ht_handling` gets `stubs_project` via INCLUDES because the stub `flash.h` must shadow the real one only for that suite. New suites use the **real** `include/utils/flash.h`.
+- `test_ht_handling` gets `stubs_project` via INCLUDES because the stub `flash.h` must shadow the real one only for that suite. New suites use the **real** `include/utils/flash.h`. *(Later: `test_ht_handling` and its stub went with flash plan step 4b, and the real header moved to `include/subsystems/obdh/flash.h` in step 5a.)*
 
 ### B3. `run_tests.sh`
 ```bash
@@ -383,17 +383,19 @@ int main(int argc, char **argv) { if (pocat_parse_args(argc, argv) != 0) return 
 
 **`test_state_machine.c`** (`#include` `state_machine.c`, `task_management.c`, `health.c`; `fake_clock` starts at `CLK_FREQ_80MHZ`):
 - `test_freq_for_state_mapping`
-- `test_boot_NM_runs_all_tasks`
-- `test_boot_CM_pauses_only_payload`
-- `test_boot_SM_pauses_payload_adcs_beacon`
-- `test_NM_to_SM_switches_clock_to_2MHz_once`
-- `test_NM_to_CM_does_not_switch_clock`
+- `test_boot_NOMINAL_runs_all_tasks`
+- `test_boot_CONTINGENCY_pauses_only_payload`
+- `test_boot_SURVIVAL_pauses_payload_adcs_beacon`
+- `test_NOMINAL_to_SURVIVAL_switches_clock_to_2MHz_once`
+- `test_NOMINAL_to_CONTINGENCY_does_not_switch_clock`
 - `test_transition_persists_current_state`
 - `test_transition_pauses_old_and_resumes_new_tasks`
 - `test_non_exit_notification_changes_nothing`
-- `test_multiple_exit_bits_NM_has_priority`
+- `test_multiple_exit_bits_NOMINAL_has_priority`
 - `test_transition_preserves_previous_state`: IGNORE, KB-3.
 - `test_transition_does_not_touch_deployment_flags`: IGNORE, KB-3.
+
+*(Later: since 2026-11-26 every boot starts in Init, whose completed steps the activation flags skip and which only `TC_PING` ends, and a state change stores nothing, so the boot and persistence tests above were replaced. `test_state_machine -l` lists the current ones.)*
 
 **`test_comms_frame.c`** (`#include "auth.c"`; `frame.c` and `dedup.c` linked):
 - `test_sha256_abc_known_answer`: expected `ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad`.
@@ -430,7 +432,7 @@ If you're blocked at a step, stop and report. Don't weaken assertions.
   - `ctest` lists 5 tests. The 4 new suites pass; their IGNOREs are only `KNOWN BUG/KI` tests.
   - `test_ht_handling` gives exactly 11 PASS and 3 FAIL. Its assertions are unchanged; diff shows only `main()` changed.
   - Because of those 3 failures, the overall exit code is non-zero, as it is today.
-- **AC3. Commands.** These all work: `--list`, `--label obc`, `state_machine`, `test_state_machine -l`, `test_state_machine -f NM_to_SM`.
+- **AC3. Commands.** These all work: `--list`, `--label obc`, `state_machine`, `test_state_machine -l`, `test_state_machine -f NOMINAL_to_SURVIVAL`.
 - **AC4. One-line registration.** Adding a suite needs no change to `run_tests.sh`.
 - **AC5. Scope of changes.** `git status` shows changes only in `test/`, `run_tests.sh`, `Dockerfile.test` (and optionally `CLAUDE.md` or `.gitattributes`). Nothing changed in `src/`, `include/` or `external/`.
 - **AC6. Sanitizers.** Sanitizers are active on the new suites. Any `NO_SANITIZE` has a justifying comment.

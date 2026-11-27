@@ -10,5 +10,8 @@ TimerHandle_t xTimerCreate(const char *name, TickType_t period, UBaseType_t auto
 BaseType_t    xTimerStart(TimerHandle_t t, TickType_t ticks);
 BaseType_t    xTimerChangePeriod(TimerHandle_t t, TickType_t new_period, TickType_t ticks);
 void         *pvTimerGetTimerID(TimerHandle_t t);
+TickType_t    xTimerGetPeriod(TimerHandle_t t);
+BaseType_t    xTimerIsTimerActive(TimerHandle_t t);
+UBaseType_t   uxTimerGetReloadMode(TimerHandle_t t);
 
 #endif
