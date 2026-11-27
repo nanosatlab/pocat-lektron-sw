@@ -86,3 +86,8 @@ docs/latex/
 
 CLAUDE.md
 include/subsystems/comms/psk.h
+
+# AI documentation, kept locally only
+docs/FLASH-USAGE-SPECIFICATION.md
+docs/flash-variable-allocation.csv
+docs/testing/test-design.md
